@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildFrictionPrompt } from './relationship-prompts.ts';
+import { CommunicationRewrite } from './communication-rewrite.tsx';
 import type { Relationship } from '../../domain/relationship.ts';
 import type { Subject } from '../../domain/subject.ts';
 
@@ -17,6 +18,7 @@ export function RelationshipDetail({
   other: Subject | undefined;
 }) {
   const addCommunicationLog = useInscapeStore((s) => s.addCommunicationLog);
+  const quarantineOtherSubject = useInscapeStore((s) => s.quarantineOtherSubject);
   const space = useInscapeStore((s) => s.space);
   const selfLeading = space?.self_subject.type_profile?.leading_type ?? null;
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
@@ -25,6 +27,7 @@ export function RelationshipDetail({
   const [friction, setFriction] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmQuarantine, setConfirmQuarantine] = useState(false);
 
   function onAddSnippet() {
     const trimmed = snippet.trim();
@@ -89,7 +92,49 @@ export function RelationshipDetail({
         </div>
       )}
       {error && <p className="text-xs opacity-60">AI 暂不可用（{error}）。</p>}
-      <p className="text-xs opacity-50">沟通改写（带反操纵护栏）将在 wave-4 接入。</p>
+
+      <div className="border-t border-black/10 pt-3">
+        <CommunicationRewrite
+          recipientName={other?.display_name ?? '（未知）'}
+          nature={relationship.nature}
+        />
+      </div>
+
+      <div className="border-t border-black/10 pt-3">
+        {confirmQuarantine ? (
+          <div className="space-y-1 text-xs">
+            <p className="text-amber-700">
+              确认此人未满 18 岁？该主体将立即从所有分析中移除并移入隔离区（IS-PRIV-03）。
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  void quarantineOtherSubject(relationship.other_subject_id, new Date().toISOString())
+                }
+                className="rounded bg-amber-600 px-2 py-1 text-white"
+              >
+                确认隔离
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmQuarantine(false)}
+                className="rounded border border-black/15 px-2 py-1"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmQuarantine(true)}
+            className="text-xs text-amber-700 hover:underline"
+          >
+            标记此人未满 18 岁
+          </button>
+        )}
+      </div>
     </div>
   );
 }

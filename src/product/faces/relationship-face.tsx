@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { AddPersonForm } from '../relationship/add-person-form.tsx';
 import { RelationshipDetail } from '../relationship/relationship-detail.tsx';
+import { QuarantineArea } from '../relationship/quarantine-area.tsx';
 
 export function RelationshipFace() {
   const space = useInscapeStore((s) => s.space);
@@ -49,6 +50,8 @@ export function RelationshipFace() {
           other={otherFor(selectedRelationship.other_subject_id)}
         />
       )}
+
+      <QuarantineArea />
     </section>
   );
 }

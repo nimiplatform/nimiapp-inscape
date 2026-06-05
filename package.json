@@ -19,7 +19,8 @@
     "build:shell": "tauri build",
     "lint": "pnpm run typecheck && eslint . --max-warnings 0 && (cd src-tauri && cargo check)",
     "test": "node --test test/*.test.mjs",
-    "check": "pnpm run typecheck && pnpm run test && pnpm run lint",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run lint && pnpm run check:redlines",
+    "check:redlines": "node scripts/check-redlines.mjs",
     "nimicoding": "nimicoding",
     "nimicoding:doctor": "nimicoding doctor"
   },

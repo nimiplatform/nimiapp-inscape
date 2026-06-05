@@ -43,3 +43,25 @@ test('friction prompt is two-sided and blames neither party', () => {
   assert.match(prompt.system, /two-sided|blame neither/i);
   assert.match(prompt.user, /partner/);
 });
+
+test('quarantineOtherSubject removes the subject from analysis into quarantine', async () => {
+  const { store } = await readyStore();
+  await store.getState().addPerson('Lily', 'other', NOW);
+  const subjectId = store.getState().space.other_subjects[0].id;
+  await store.getState().quarantineOtherSubject(subjectId, NOW);
+  const space = store.getState().space;
+  assert.equal(space.other_subjects.length, 0);
+  assert.equal(space.relationships.length, 0);
+  assert.equal(space.quarantine.length, 1);
+  assert.equal(space.quarantine[0].reason, 'under_18_actual_knowledge');
+});
+
+test('deleteQuarantineRecord permanently removes the record', async () => {
+  const { store } = await readyStore();
+  await store.getState().addPerson('Lily', 'other', NOW);
+  const subjectId = store.getState().space.other_subjects[0].id;
+  await store.getState().quarantineOtherSubject(subjectId, NOW);
+  const recordId = store.getState().space.quarantine[0].id;
+  await store.getState().deleteQuarantineRecord(recordId, NOW);
+  assert.equal(store.getState().space.quarantine.length, 0);
+});

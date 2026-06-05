@@ -4,7 +4,11 @@
 // mutations. Every mutation persists through the same fail-close client.
 
 import { createStore } from 'zustand/vanilla';
-import { createEmptyInscapeSpace, type InscapeSpace } from '../../domain/inscape-space.ts';
+import {
+  createEmptyInscapeSpace,
+  type InscapeSpace,
+  type QuarantineRecord,
+} from '../../domain/inscape-space.ts';
 import type { FourLetterType } from '../../domain/typology.ts';
 import type {
   ObservationEvent,
@@ -24,6 +28,7 @@ import type { PosteriorUpdateProposal } from '../inference/ai-proposal-parser.ts
 import {
   newCommunicationLogId,
   newObservationEventId,
+  newQuarantineId,
   newReflectionEntryId,
   newRelationshipId,
   newSubjectId,
@@ -49,6 +54,8 @@ export interface InscapeStoreState {
   addObservationEvent: (note: string, source: ObservationSource, now: string) => Promise<void>;
   addPerson: (displayName: string, nature: RelationshipNature, now: string) => Promise<void>;
   addCommunicationLog: (relationshipId: string, snippet: string, now: string) => Promise<void>;
+  quarantineOtherSubject: (subjectId: string, now: string) => Promise<void>;
+  deleteQuarantineRecord: (id: string, now: string) => Promise<void>;
 }
 
 function describePersistenceError(error: PersistenceError): string {
@@ -230,6 +237,41 @@ export function createInscapeStore(client: PersistenceClient) {
             : relationship,
         );
         await persist({ ...current, relationships, updated_at: now });
+      },
+
+      async quarantineOtherSubject(subjectId: string, now: string) {
+        const current = get().space;
+        if (!current) return;
+        const subject = current.other_subjects.find((s) => s.id === subjectId);
+        if (!subject) return;
+        const relatedRelationships = current.relationships.filter(
+          (r) => r.other_subject_id === subjectId,
+        );
+        // IS-PRIV-03: remove the subject from every analysis surface; retain its
+        // raw data verbatim in the dedicated quarantine region, never processed.
+        const record: QuarantineRecord = {
+          id: newQuarantineId({ now: new Date(now) }),
+          quarantined_at: now,
+          reason: 'under_18_actual_knowledge',
+          payload_json: JSON.stringify({ subject, relationships: relatedRelationships }),
+        };
+        await persist({
+          ...current,
+          other_subjects: current.other_subjects.filter((s) => s.id !== subjectId),
+          relationships: current.relationships.filter((r) => r.other_subject_id !== subjectId),
+          quarantine: [...current.quarantine, record],
+          updated_at: now,
+        });
+      },
+
+      async deleteQuarantineRecord(id: string, now: string) {
+        const current = get().space;
+        if (!current) return;
+        await persist({
+          ...current,
+          quarantine: current.quarantine.filter((q) => q.id !== id),
+          updated_at: now,
+        });
       },
     };
   });

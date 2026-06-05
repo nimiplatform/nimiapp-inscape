@@ -1,0 +1,8 @@
+# Normalize line endings to LF for all text so nimicoding package-canonical
+# seed files (and source) don't diverge under Windows autocrlf.
+* text=auto eol=lf
+
+# Binary assets — never touch.
+*.png binary
+*.ico binary
+*.icns binary

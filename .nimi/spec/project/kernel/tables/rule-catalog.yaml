@@ -1,0 +1,166 @@
+version: 1
+contract: inscape/kernel/core-rules.md
+# Typed mirror of core-rules.md. status: implemented | planned.
+# A planned rule is authority for the eventual implementation (wave-3/wave-4),
+# not a claim that the behavior already ships.
+rules:
+  - id: IS-PROD-01
+    family: IS-PROD
+    summary: 18+ adults-only; no minor experience tier.
+    enforcement: app_attestation + subjects CHECK; first-run gate; under-18 quarantine.
+    status: implemented
+  - id: IS-PROD-02
+    family: IS-PROD
+    summary: Not a dating/matching app; no compatibility_score field.
+    enforcement: schema has no matching-score field anywhere.
+    status: implemented
+  - id: IS-PROD-03
+    family: IS-PROD
+    summary: Not an HR/hiring tool; relationship graph is personal observation.
+    enforcement: observation_attested framing; no personnel-export surface.
+    status: planned
+  - id: IS-PROD-04
+    family: IS-PROD
+    summary: Not a clinical/diagnostic tool.
+    enforcement: permanent non-diagnostic disclaimer; non-pathologizing prompts.
+    status: planned
+  - id: IS-PROD-05
+    family: IS-PROD
+    summary: Not a chat companion; structured-purpose AI only.
+    enforcement: no open chat surface; AI modes are purpose-scoped.
+    status: implemented
+  - id: IS-PROD-06
+    family: IS-PROD
+    summary: Fully local; no cloud, telemetry, or realm sync.
+    enforcement: local SQLite; route=local; no network sink.
+    status: implemented
+  - id: IS-PROD-07
+    family: IS-PROD
+    summary: Three faces only; no agent capsule/notification/background AI.
+    enforcement: IA limited to Today/Relationship/Self.
+    status: planned
+  - id: IS-DATA-01
+    family: IS-DATA
+    summary: InscapeSpace is the single local data root.
+    enforcement: src/domain/inscape-space.ts.
+    status: implemented
+  - id: IS-DATA-02
+    family: IS-DATA
+    summary: Subject is self or other_person; under-18 never stored as a subject.
+    enforcement: subjects.kind CHECK; quarantine table.
+    status: implemented
+  - id: IS-DATA-03
+    family: IS-DATA
+    summary: All signals user-driven; no passive capture.
+    enforcement: signal records originate from user actions only.
+    status: implemented
+  - id: IS-DATA-04
+    family: IS-DATA
+    summary: Every persistence read/write runs validateInscapeSpace (fail-close).
+    enforcement: src/contracts/inscape-space-validator.ts in all adapters.
+    status: implemented
+  - id: IS-DATA-05
+    family: IS-DATA
+    summary: Relational SQLite with per-row CHECK + dedicated quarantine table.
+    enforcement: src-tauri/src/persistence.rs.
+    status: implemented
+  - id: IS-TYPO-01
+    family: IS-TYPO
+    summary: Function stack is authority; 4-letter codes are legibility labels.
+    enforcement: src/domain/typology.ts (stack canonical).
+    status: implemented
+  - id: IS-TYPO-02
+    family: IS-TYPO
+    summary: Beebe 8-position archetype model (hero -> demon) is canonical.
+    enforcement: BEEBE_ARCHETYPES + FUNCTION_STACK_POSITIONS.
+    status: implemented
+  - id: IS-TYPO-03
+    family: IS-TYPO
+    summary: No MBTI(R) authorization claim; trademark string ban + single disclaimer.
+    enforcement: trademark lint (T1-09).
+    status: planned
+  - id: IS-INFER-01
+    family: IS-INFER
+    summary: Type is a posterior distribution; anti-fixation.
+    enforcement: TypeProfile distribution; seed is a prior not a verdict.
+    status: implemented
+  - id: IS-INFER-02
+    family: IS-INFER
+    summary: T1-11 fail-close parser drops invalid AI proposals whole.
+    enforcement: src/product/inference/ai-proposal-parser.ts.
+    status: implemented
+  - id: IS-INFER-03
+    family: IS-INFER
+    summary: Posterior update requires explicit user accept; default no-update.
+    enforcement: accept/reject UI gate (wave-3) over applyPosteriorUpdate.
+    status: planned
+  - id: IS-AI-01
+    family: IS-AI
+    summary: AI access only via @nimiplatform/sdk; no direct providers/HTTP/binaries.
+    enforcement: src/shell/ai/** + ai-boundary lint (T1-07).
+    status: implemented
+  - id: IS-AI-02
+    family: IS-AI
+    summary: route=local only; no cloud rescue; fail-close on missing binding.
+    enforcement: binding resolution fails closed before dispatch.
+    status: implemented
+  - id: IS-AI-03
+    family: IS-AI
+    summary: Structured-purpose AI modes; no open chat.
+    enforcement: per-mode prompt templates (wave-3).
+    status: planned
+  - id: IS-IA-01
+    family: IS-IA
+    summary: Three primary faces (Today/Relationship/Self).
+    enforcement: src/shell/routes/** (wave-3).
+    status: planned
+  - id: IS-IA-02
+    family: IS-IA
+    summary: Distribution-first display; never "your type is X" hero text.
+    enforcement: type-profile views (wave-3).
+    status: planned
+  - id: IS-IA-03
+    family: IS-IA
+    summary: Accept/reject/see-evidence on every AI read.
+    enforcement: read card controls (wave-3).
+    status: planned
+  - id: IS-PRIV-01
+    family: IS-PRIV
+    summary: 18+ attestation gated at DB level (CHECK attested_adult=1).
+    enforcement: src-tauri/src/persistence.rs schema.
+    status: implemented
+  - id: IS-PRIV-02
+    family: IS-PRIV
+    summary: Runtime owns token custody; app holds no token surface.
+    enforcement: src/shell/features/auth/inscape-auth-adapter.ts.
+    status: implemented
+  - id: IS-PRIV-03
+    family: IS-PRIV
+    summary: Under-18 actual knowledge -> fail-close quarantine; no minor UI.
+    enforcement: quarantine table + quarantine flow (wave-3).
+    status: planned
+  - id: IS-PRIV-04
+    family: IS-PRIV
+    summary: CommunicationRewrite 4-layer anti-manipulation + context refusals.
+    enforcement: rewrite guards (wave-4, T1-10).
+    status: planned
+  - id: IS-PRIV-05
+    family: IS-PRIV
+    summary: SQLite 0o600 (T1-05); no telemetry sink.
+    enforcement: persistence.rs restrict_db_permissions; no analytics deps.
+    status: implemented
+  - id: IS-OSS-01
+    family: IS-OSS
+    summary: MIT license across code, spec, and content.
+    enforcement: LICENSE; package.json license.
+    status: implemented
+  - id: IS-OSS-02
+    family: IS-OSS
+    summary: IPIP-derived public-domain question bank.
+    enforcement: question bank + NOTICE (wave-3).
+    status: planned
+  - id: IS-OSS-03
+    family: IS-OSS
+    summary: Standalone nimiapp-inscape repository.
+    enforcement: this repository.
+    status: implemented

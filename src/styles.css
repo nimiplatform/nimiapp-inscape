@@ -1,0 +1,82 @@
+@import "@nimiplatform/kit/ui/styles.css";
+@import "@nimiplatform/kit/ui/themes/light.css";
+@import "@nimiplatform/kit/ui/themes/dark.css";
+@import "@nimiplatform/kit/ui/themes/nimi-accent.css";
+
+@import 'tailwindcss';
+
+/* Tailwind 4 only scans `src/**` by default. The kit's auth + ui components
+ * emit Tailwind utility classes; without explicit @source entries, those
+ * classes are pruned from the bundle and the kit's intended sizing collapses. */
+@source "../node_modules/@nimiplatform/kit/dist/**/*.{js,mjs}";
+
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --inscape-surface-canvas: var(--nimi-surface-canvas, #f6f4ee);
+  --inscape-surface-canvas-subtle: var(--nimi-surface-panel, #f1eee6);
+  --inscape-surface-card: var(--nimi-surface-card, #ffffff);
+  --inscape-surface-card-quiet: #fbfaf6;
+  --inscape-text-primary: var(--nimi-text-primary, #1f2520);
+  --inscape-text-secondary: var(--nimi-text-secondary, #5c615a);
+  --inscape-text-muted: var(--nimi-text-muted, #8c9088);
+  --inscape-text-disabled: var(--nimi-text-disabled, #b8bcb4);
+  --inscape-brand-primary: var(--nimi-action-primary-bg, #2f5f57);
+  --inscape-brand-soft: color-mix(in srgb, var(--inscape-brand-primary) 10%, transparent);
+  --inscape-border-subtle: var(--nimi-border-subtle, #efebe3);
+  --inscape-border-default: var(--nimi-border-default, var(--nimi-border-subtle, #ddd9cf));
+  --inscape-border-strong: var(--nimi-border-strong, #bfbaaf);
+  --inscape-status-danger: var(--nimi-status-danger, #a85447);
+  --inscape-status-success: var(--nimi-status-success, #5f7a4e);
+  --inscape-status-warning: var(--nimi-status-warning, #b5854a);
+  --inscape-status-info: var(--nimi-status-info, #5a7a8e);
+  --inscape-radius-md: 8px;
+  --inscape-radius-lg: 12px;
+  --inscape-radius-xl: 16px;
+  --inscape-radius-2xl: 20px;
+  --inscape-radius-3xl: 24px;
+  --inscape-shadow-1: 0 1px 2px rgba(15, 23, 38, 0.04), 0 1px 1px rgba(15, 23, 38, 0.03);
+  --inscape-shadow-2: 0 6px 16px -8px rgba(15, 23, 38, 0.10), 0 2px 4px rgba(15, 23, 38, 0.04);
+  --inscape-focus-ring: 0 0 0 3px color-mix(in srgb, var(--inscape-brand-primary) 22%, transparent);
+
+  /* Kit themes place popovers below dialogs by default. Selects and menus
+   * opened from a dialog need to sit above that dialog backdrop. */
+  --nimi-z-popover: 100;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--inscape-surface-canvas);
+  color: var(--inscape-text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+
+.inscape-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: clip;
+  position: relative;
+  z-index: 0;
+}
+
+.inscape-app__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+
+.inscape-app__body--integrated {
+  padding: 0;
+}

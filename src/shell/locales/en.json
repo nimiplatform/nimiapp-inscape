@@ -1,0 +1,42 @@
+{
+  "Auth": {
+    "clickToAuthorize": "Click to authorize in browser",
+    "desktopAuthFailed": "Authorization failed. Click the logo to retry.",
+    "currentAccount": "Current account",
+    "authorizeDesktopButton": "Authorize desktop",
+    "useAnotherAccount": "Use another account",
+    "nimiNetwork": "NIMI PLATFORM",
+    "authorizing": "Authorizing...",
+    "comingSoon": "Coming soon",
+    "emailNotRegistered": "Email not registered",
+    "registerConfirmHint": "Register a new account with this email?",
+    "cancel": "Cancel",
+    "confirmRegister": "Confirm registration",
+    "alternative": "Other login methods",
+    "emailPlaceholder": "Enter email address",
+    "chooseAlternative": "Choose another login method",
+    "web3": "Web3 wallet",
+    "useEmailCodeInstead": "Use email verification code",
+    "passwordPlaceholder": "Enter password",
+    "otpConfirmMessage": "We'll send a code to your email",
+    "confirmOtp": "Send code",
+    "setPasswordHint": "Set a password to protect your account",
+    "passwordMinChars": "At least 8 characters",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "settingPassword": "Setting password...",
+    "setPasswordButton": "Set password",
+    "otpSentTo": "Code sent to",
+    "verifying": "Verifying...",
+    "verifyAndContinue": "Verify and continue",
+    "resendIn": "Resend in {{count}}s",
+    "resendCode": "Resend code",
+    "twoFaHint": "Enter your two-factor code",
+    "verifyAndLogin": "Verify and log in",
+    "selectWalletHint": "Select a wallet to connect"
+  },
+  "Shell": {
+    "loading": "Loading...",
+    "logout": "Sign out",
+    "accountMenu": "Account menu"
+  }
+}

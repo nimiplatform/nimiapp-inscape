@@ -1,0 +1,29 @@
+{
+  "productName": "Inscape",
+  "version": "0.1.0",
+  "identifier": "ai.nimi.apps.inscape",
+  "build": {
+    "beforeDevCommand": "pnpm run dev:renderer",
+    "beforeBuildCommand": "pnpm run build",
+    "devUrl": "http://localhost:1431",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Inscape",
+        "width": 1120,
+        "height": 760
+      }
+    ]
+  },
+  "bundle": {
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

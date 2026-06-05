@@ -12,8 +12,8 @@ importers:
         specifier: link:../../nimi-realm/nimi/kit
         version: link:../../nimi-realm/nimi/kit
       '@nimiplatform/sdk':
-        specifier: link:../../nimi-realm/nimi/sdk
-        version: link:../../nimi-realm/nimi/sdk
+        specifier: link:../../nimi-realm/nimi/sdks/typescript
+        version: link:../../nimi-realm/nimi/sdks/typescript
       '@tauri-apps/api':
         specifier: ^2.9.1
         version: 2.11.0

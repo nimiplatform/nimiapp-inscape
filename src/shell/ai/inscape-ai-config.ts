@@ -5,12 +5,12 @@
 // library land in a later wave.
 
 import {
-  createAppAIScopeRef,
-  createScopedAIConfigStore,
-  validateAIConfigRuntimeBindings,
-  type AIConfig,
-  type AIConfigStorageLike,
-  type AIScopeRef,
+  createNimiAIConfigStore,
+  createNimiAppAIScopeRef,
+  validateNimiAIConfig,
+  type NimiAIConfig,
+  type NimiAIHostStorage,
+  type NimiAIScopeRef,
 } from '@nimiplatform/sdk/ai';
 import { resolveBrowserStorage } from '@nimiplatform/kit/core/storage-json';
 import { INSCAPE_APP_ID } from '../../contracts/app-identity.ts';
@@ -26,29 +26,28 @@ function useEphemeralStore(): boolean {
   return typeof window === 'undefined';
 }
 
-const aiConfigStore = createScopedAIConfigStore({
-  storage: () => getStorage() as AIConfigStorageLike | null,
+const aiConfigStore = createNimiAIConfigStore({
+  storage: () => getStorage() as NimiAIHostStorage | null,
   configKeyForScope: () => INSCAPE_AI_CONFIG_STORAGE_KEY,
-  validateRuntimeBindings: true,
   enableEphemeralStore: useEphemeralStore(),
 });
 
-export function createInscapeAIScopeRef(): AIScopeRef {
-  return createAppAIScopeRef(INSCAPE_APP_ID, INSCAPE_AI_SURFACE_ID);
+export function createInscapeAIScopeRef(): NimiAIScopeRef {
+  return createNimiAppAIScopeRef(INSCAPE_APP_ID, INSCAPE_AI_SURFACE_ID);
 }
 
-export function loadInscapeAIConfig(scopeRef: AIScopeRef = createInscapeAIScopeRef()): AIConfig {
+export function loadInscapeAIConfig(scopeRef: NimiAIScopeRef = createInscapeAIScopeRef()): NimiAIConfig {
   return aiConfigStore.load(scopeRef);
 }
 
 export function saveInscapeAIConfig(
-  next: AIConfig,
-  scopeRef: AIScopeRef = createInscapeAIScopeRef(),
-): AIConfig {
+  next: NimiAIConfig,
+  scopeRef: NimiAIScopeRef = createInscapeAIScopeRef(),
+): NimiAIConfig {
   const normalized = { ...next, scopeRef };
-  const bindingErrors = validateAIConfigRuntimeBindings(normalized);
-  if (bindingErrors.length > 0) {
-    throw new Error(`AIConfig binding validation failed: ${bindingErrors.join('; ')}`);
+  const validation = validateNimiAIConfig(normalized);
+  if (!validation.valid) {
+    throw new Error(`AIConfig validation failed: ${validation.errors.join('; ')}`);
   }
   return aiConfigStore.save(normalized);
 }

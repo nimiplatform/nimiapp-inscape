@@ -1,19 +1,15 @@
-import {
-  clearPlatformClient,
-  createNimiAppRuntimePlatformClient,
-  getPlatformClient,
-  type PlatformClient,
-} from '@nimiplatform/sdk';
+import { createNimiClient, createRealmFetchTransport, type NimiClient } from '@nimiplatform/sdk';
 import {
   AccountCallerMode,
   AccountSessionState,
   type AccountCaller,
   type AccountProjection,
-} from '@nimiplatform/sdk/runtime/browser';
+} from '@nimiplatform/sdk/runtime/generated';
 import type { Runtime } from '@nimiplatform/sdk/runtime';
 import { getInscapeRuntimeDefaults } from '../bridge/index.js';
 import { useAppStore } from '../app-shell/app-store.js';
 import { describeError, logRendererEvent } from './renderer-log.js';
+import { getInscapeNimiClient, hasInscapeNimiClient, setInscapeNimiClient } from './inscape-nimi-client.js';
 import { ensureInscapeAIConfigFromFirstRunEvidence } from '../ai/inscape-ai-config-bootstrap.ts';
 import {
   INSCAPE_APP_ID,
@@ -86,51 +82,41 @@ export async function ensureInscapeBootstrapReady(): Promise<void> {
   }
 }
 
-function hasInscapePlatformClient(): boolean {
-  try {
-    getPlatformClient();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function ensureInscapeRuntimeClientReady(): Promise<void> {
   await ensureInscapeBootstrapReady();
-  if (hasInscapePlatformClient()) return;
+  if (hasInscapeNimiClient()) return;
   await runInscapeBootstrap({ force: true });
-  if (!hasInscapePlatformClient()) {
-    throw new Error('Inscape runtime platform client is unavailable after bootstrap retry');
+  if (!hasInscapeNimiClient()) {
+    throw new Error('Inscape Nimi client is unavailable after bootstrap retry');
   }
 }
 
-async function buildInscapePlatformClient(realmBaseUrl: string): Promise<PlatformClient> {
-  // IS-PRIV: type-level rejection of any app-owned token surface.
-  // Runtime is the sole owner of access/refresh token custody.
-  const projection = await createNimiAppRuntimePlatformClient({
-    mode: 'local-first-party',
+async function buildInscapeNimiClient(realmBaseUrl: string): Promise<NimiClient> {
+  const client = createNimiClient({
     appId: INSCAPE_RUNTIME_APP_ID,
-    developerRegistration: import.meta.env?.DEV === true,
-    realmBaseUrl,
-    runtimeOptions: {
-      protectedAccess: {
-        autoIssueForAi: true,
+    runtime: {
+      appId: INSCAPE_RUNTIME_APP_ID,
+      metadata: {
+        callerId: INSCAPE_RUNTIME_APP_ID,
+        surfaceId: 'inscape.session',
+      },
+      transport: {
+        type: 'tauri-ipc',
+        commandNamespace: 'runtime_bridge',
+        eventNamespace: 'runtime_bridge',
       },
     },
-    runtimeTransport: {
-      type: 'tauri-ipc',
-      commandNamespace: 'runtime_bridge',
-      eventNamespace: 'runtime_bridge',
+    realm: {
+      transport: createRealmFetchTransport({
+        baseUrl: realmBaseUrl,
+        credentials: 'include',
+      }),
     },
-    runtimeDefaults: {
-      callerId: INSCAPE_RUNTIME_APP_ID,
-      surfaceId: 'inscape.session',
-    },
+    app: false,
+    permissions: false,
   });
-  if (projection.status !== 'ready') {
-    throw new Error(projection.message);
-  }
-  return projection.client;
+  await client.runtime.ready();
+  return client;
 }
 
 async function doRunInscapeBootstrap(): Promise<void> {
@@ -142,10 +128,11 @@ async function doRunInscapeBootstrap(): Promise<void> {
     const runtimeDefaults = await getInscapeRuntimeDefaults();
     store.setRuntimeDefaults(runtimeDefaults);
 
-    // Step 2: Construct the local-first-party-runtime platform client.
-    clearPlatformClient();
-    const platformClient = await buildInscapePlatformClient(runtimeDefaults.realm.realmBaseUrl);
-    const runtime = platformClient.runtime;
+    // Step 2: Construct the explicit vNext Nimi client.
+    setInscapeNimiClient(null);
+    const client = await buildInscapeNimiClient(runtimeDefaults.realm.realmBaseUrl);
+    setInscapeNimiClient(client);
+    const runtime = client.runtime;
 
     // Step 3: Resolve current account from runtime projection.
     const runtimeAccountUser = runtime
@@ -175,7 +162,7 @@ async function doRunInscapeBootstrap(): Promise<void> {
     // Bind text.generate from runtime first-run evidence. Fail-soft: a
     // not-initialized outcome (runtime not yet AI-ready) is logged, not fatal —
     // the AI surface stays unavailable until a binding exists.
-    const aiConfigInit = await ensureInscapeAIConfigFromFirstRunEvidence({ platformClient });
+    const aiConfigInit = await ensureInscapeAIConfigFromFirstRunEvidence({ client });
     if (aiConfigInit.outcome === 'not-initialized') {
       logRendererEvent({
         level: 'warn',
@@ -189,6 +176,7 @@ async function doRunInscapeBootstrap(): Promise<void> {
     store.setBootstrapReady(true);
     store.setBootstrapError(null);
   } catch (error) {
+    setInscapeNimiClient(null);
     const message = error instanceof Error ? error.message : String(error);
     logRendererEvent({
       level: 'error',
@@ -204,7 +192,7 @@ async function doRunInscapeBootstrap(): Promise<void> {
 
 export async function logoutInscapeRuntimeAccount(): Promise<void> {
   await ensureInscapeRuntimeClientReady();
-  await getPlatformClient().runtime.account.logout({
+  await getInscapeNimiClient().runtime.account.logout({
     caller: inscapeRuntimeAccountCaller,
     reason: 'inscape_logout',
   });

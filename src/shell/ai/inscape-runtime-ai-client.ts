@@ -4,18 +4,21 @@
 // engine. Local-only posture: a binding must be source='local' with empty
 // connectorId, or an explicit cloud connector — no silent route rescue.
 
-import { getPlatformClient, type PlatformClient } from '@nimiplatform/sdk';
-import { createAIConfigEvidence, type AIConfig } from '@nimiplatform/sdk/ai';
+import type { NimiClient } from '@nimiplatform/sdk';
 import {
-  createAIRuntimeEvidence,
-  peekRuntimeSchedulingBatch,
-  projectAIRuntimeEvidenceMetadata,
-  resolveAIConfigRuntimeSchedulingTargetForCapability,
-  type NimiRoutePolicy,
-  type RuntimeRouteBinding,
-} from '@nimiplatform/sdk/runtime';
-import { runAppAiTextGenerate } from '@nimiplatform/sdk/ai-app';
+  createNimiAIConfigEvidence,
+  createNimiAIRuntimeEvidence,
+  createNimiRuntimeAIModel,
+  createNimiRuntimeAISchedulingClient,
+  projectNimiAIRuntimeEvidenceMetadata,
+  runNimiTextGenerate,
+  type NimiAIConfig,
+  type NimiAIConfigTargetRef,
+  type NimiAISchedulingTargetInput,
+  type NimiRuntimeAIRoutePolicy,
+} from '@nimiplatform/sdk/ai';
 import { INSCAPE_APP_ID } from '../../contracts/app-identity.ts';
+import { getInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
 import { createInscapeAIScopeRef, loadInscapeAIConfig } from './inscape-ai-config.ts';
 
 export const INSCAPE_TEXT_GENERATE_CAPABILITY_ID = 'text.generate';
@@ -45,15 +48,36 @@ type ResolvedBinding =
   | {
       ok: true;
       model: string;
-      route: NimiRoutePolicy;
+      route: NimiRuntimeAIRoutePolicy;
       connectorId?: string;
       params: RuntimeTextParams;
       metadata: Record<string, string>;
+      schedulingTarget: NimiAISchedulingTargetInput | null;
     }
   | { ok: false; detail: string };
 
-function bindingModel(binding: RuntimeRouteBinding): string {
-  return String(binding.model || binding.modelId || binding.localModelId || '').trim();
+function targetRefModel(targetRef: NimiAIConfigTargetRef): string {
+  if (targetRef.kind === 'cloud-connector') {
+    return String(targetRef.providerModelId || '').trim();
+  }
+  if (targetRef.kind === 'local-runtime') {
+    return String(targetRef.profileId || targetRef.targetId || targetRef.readinessRef || '').trim();
+  }
+  return '';
+}
+
+function schedulingTargetFor(
+  capability: string,
+  targetRef: NimiAIConfigTargetRef,
+): NimiAISchedulingTargetInput | null {
+  if (targetRef.kind === 'profile-slice') return null;
+  return { capability, targetRef };
+}
+
+function paramsRecord(value: unknown): Readonly<Record<string, unknown>> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Readonly<Record<string, unknown>>
+    : undefined;
 }
 
 function numberParam(params: Readonly<Record<string, unknown>> | undefined, key: string): number | undefined {
@@ -76,44 +100,43 @@ function extractTextParams(params: Readonly<Record<string, unknown>> | undefined
   };
 }
 
-export function resolveInscapeTextGenerateBinding(config: AIConfig): ResolvedBinding {
-  const binding = config.capabilities.selectedBindings[INSCAPE_TEXT_GENERATE_CAPABILITY_ID] || null;
-  if (!binding) {
+export function resolveInscapeTextGenerateBinding(config: NimiAIConfig): ResolvedBinding {
+  const targetRef = config.capabilities.targetRefs[INSCAPE_TEXT_GENERATE_CAPABILITY_ID] || null;
+  if (!targetRef) {
     return {
       ok: false,
       detail:
-        'AIConfig binding is required for text.generate; Inscape Runtime AI failed closed before request dispatch.',
+        'AIConfig targetRef is required for text.generate; Inscape Runtime AI failed closed before request dispatch.',
     };
   }
-  const model = bindingModel(binding);
-  if (!model) {
-    return { ok: false, detail: 'AIConfig binding for text.generate does not include a runtime model id.' };
-  }
-  const connectorId = String(binding.connectorId || '').trim();
-  if (binding.source === 'local' && connectorId) {
+  if (targetRef.kind === 'profile-slice') {
     return {
       ok: false,
-      detail: 'AIConfig binding for text.generate is local but includes connectorId; local bindings must use connectorId="".',
+      detail: `AIConfig targetRef for text.generate still points to profile-slice ${targetRef.sliceId}; apply/materialize a live Runtime target before dispatch.`,
     };
   }
-  if (binding.source === 'cloud' && !connectorId) {
-    return { ok: false, detail: 'AIConfig binding for text.generate is cloud but does not include connectorId.' };
+  const model = targetRefModel(targetRef);
+  if (!model) {
+    return { ok: false, detail: 'AIConfig targetRef for text.generate does not include a Runtime model id.' };
   }
-  if (binding.source !== 'local' && binding.source !== 'cloud') {
-    return { ok: false, detail: `AIConfig binding has unsupported source "${String(binding.source)}".` };
-  }
-  const evidence = createAIConfigEvidence(config);
+  const connectorId = targetRef.kind === 'cloud-connector' ? String(targetRef.connectorId || '').trim() : '';
+  const route = targetRef.kind === 'cloud-connector' ? 'cloud' : 'local';
+  const evidence = createNimiAIConfigEvidence(config);
   return {
     ok: true,
     model,
-    route: binding.source,
+    route,
     ...(connectorId ? { connectorId } : {}),
-    params: extractTextParams(config.capabilities.selectedParams[INSCAPE_TEXT_GENERATE_CAPABILITY_ID]),
+    params: extractTextParams(paramsRecord(config.capabilities.selectedParams[INSCAPE_TEXT_GENERATE_CAPABILITY_ID])),
+    schedulingTarget: schedulingTargetFor(INSCAPE_TEXT_GENERATE_CAPABILITY_ID, targetRef),
     metadata: {
       aiConfigScopeKind: config.scopeRef.kind,
       aiConfigScopeOwnerId: config.scopeRef.ownerId,
+      aiConfigScopeSurfaceId: config.scopeRef.surfaceId || '',
       aiConfigCapabilityId: INSCAPE_TEXT_GENERATE_CAPABILITY_ID,
-      aiConfigBindingSource: binding.source,
+      aiConfigTargetRefKind: targetRef.kind,
+      aiConfigBindingSource: route,
+      aiConfigBindingConnectorId: connectorId,
       aiConfigBindingModel: model,
       aiConfigHash: evidence.configHash,
       surfaceId: 'inscape.session.runtime-ai',
@@ -122,33 +145,31 @@ export function resolveInscapeTextGenerateBinding(config: AIConfig): ResolvedBin
 }
 
 async function schedulingMetadata(
-  client: PlatformClient,
-  config: AIConfig,
+  client: NimiClient,
+  config: NimiAIConfig,
+  target: NimiAISchedulingTargetInput | null,
 ): Promise<Record<string, string> | { readonly failure: string }> {
-  const target = resolveAIConfigRuntimeSchedulingTargetForCapability(
-    config,
-    INSCAPE_TEXT_GENERATE_CAPABILITY_ID,
-  );
   if (!target) return {};
   try {
-    const batch = await peekRuntimeSchedulingBatch({
+    const scheduling = createNimiRuntimeAISchedulingClient({
       appId: INSCAPE_APP_ID,
+      runtime: client.runtime,
       targets: [target],
-      peekScheduling: (request, options) => client.runtime.ai.peekScheduling(request, options),
     });
-    const judgement = batch?.aggregateJudgement ?? null;
+    const batch = await scheduling.peek({ config });
+    const judgement = batch.aggregateJudgement ?? null;
     if (judgement?.state === 'denied') {
       return { failure: `Runtime scheduling denied text.generate: ${judgement.detail || 'denied'}` };
     }
-    return projectAIRuntimeEvidenceMetadata(createAIRuntimeEvidence({ schedulingJudgement: judgement }));
+    return projectNimiAIRuntimeEvidenceMetadata(createNimiAIRuntimeEvidence({ schedulingJudgement: judgement }));
   } catch (error) {
     return { failure: error instanceof Error ? error.message : String(error) };
   }
 }
 
 export type InscapeRuntimeAiClientOptions = {
-  readonly loadConfig?: () => AIConfig;
-  readonly getPlatformClient?: () => PlatformClient;
+  readonly loadConfig?: () => NimiAIConfig;
+  readonly getClient?: () => NimiClient;
 };
 
 export interface InscapeRuntimeAiClient {
@@ -159,11 +180,11 @@ export function createInscapeRuntimeAiClient(
   options: InscapeRuntimeAiClientOptions = {},
 ): InscapeRuntimeAiClient {
   const loadConfig = options.loadConfig ?? (() => loadInscapeAIConfig(createInscapeAIScopeRef()));
-  const getClient = options.getPlatformClient ?? (() => getPlatformClient());
+  const getClient = options.getClient ?? (() => getInscapeNimiClient());
 
   return {
     async generate(request: InscapeTextRequest): Promise<InscapeTextResult> {
-      let config: AIConfig;
+      let config: NimiAIConfig;
       try {
         config = loadConfig();
       } catch (error) {
@@ -178,7 +199,7 @@ export function createInscapeRuntimeAiClient(
         return { ok: false, failure: { kind: 'runtime_unavailable', detail: resolved.detail } };
       }
 
-      let client: PlatformClient;
+      let client: NimiClient;
       try {
         client = getClient();
       } catch (error) {
@@ -188,21 +209,36 @@ export function createInscapeRuntimeAiClient(
         };
       }
 
-      const scheduling = await schedulingMetadata(client, config);
+      const scheduling = await schedulingMetadata(client, config, resolved.schedulingTarget);
       if ('failure' in scheduling) {
         return { ok: false, failure: { kind: 'scheduling_denied', detail: scheduling.failure } };
       }
 
-      const result = await runAppAiTextGenerate({
-        runtime: { generateText: (req) => client.runtime.ai.text.generate(req) },
+      const model = createNimiRuntimeAIModel({
+        runtime: client.runtime,
+        appId: INSCAPE_APP_ID,
+        routePolicy: resolved.route,
+        connectorId: resolved.connectorId,
+        timeoutMs: resolved.params.timeoutMs,
+        model: {
+          modelId: resolved.model,
+          ...(resolved.connectorId ? { providerId: resolved.connectorId } : {}),
+        },
+      });
+      const result = await runNimiTextGenerate({
+        runtime: { model },
         request: {
-          model: resolved.model,
-          input: request.user,
-          ...(request.system ? { system: request.system } : {}),
-          route: resolved.route,
-          ...(resolved.connectorId ? { connectorId: resolved.connectorId } : {}),
-          metadata: { ...resolved.metadata, ...scheduling },
-          ...resolved.params,
+          model: model.model,
+          messages: [
+            ...(request.system ? [{ role: 'system' as const, content: [{ type: 'text' as const, text: request.system }] }] : []),
+            { role: 'user', content: [{ type: 'text', text: request.user }] },
+          ],
+          parameters: {
+            temperature: resolved.params.temperature,
+            topP: resolved.params.topP,
+            maxTokens: resolved.params.maxTokens,
+            metadata: { ...resolved.metadata, ...scheduling },
+          },
         },
       });
 

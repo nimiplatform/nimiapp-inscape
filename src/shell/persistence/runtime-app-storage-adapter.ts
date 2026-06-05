@@ -4,14 +4,16 @@
 // CHECK (attested_adult = 1) gate; this adapter resolves the runtime data root
 // and runs validateInscapeSpace on every read and write.
 
-import { getPlatformClient, type PlatformClient } from '@nimiplatform/sdk';
-import { resolveRuntimeAppStorageRoots } from '@nimiplatform/sdk/runtime';
+import type { NimiClient } from '@nimiplatform/sdk';
+import { resolveNimiRuntimeAppStorageRoots } from '@nimiplatform/sdk/runtime';
 import {
   invoke,
   toShellBridgeNimiError,
+  type JsonObject,
 } from '@nimiplatform/kit/shell/renderer/bridge';
 import { validateInscapeSpace } from '../../contracts/inscape-space-validator.ts';
 import { INSCAPE_APP_ID } from '../../contracts/app-identity.ts';
+import { getInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
 import type { InscapeSpace } from '../../domain/inscape-space.ts';
 import type {
   ClearResult,
@@ -23,15 +25,15 @@ import type {
 const STORAGE_LABEL = 'inscape app';
 
 export interface RuntimeAppStoragePersistenceAdapterOptions {
-  readonly getPlatformClient?: () => PlatformClient;
+  readonly getClient?: () => NimiClient;
 }
 
 export class RuntimeAppStoragePersistenceAdapter implements PersistenceClient {
   readonly adapter_kind = 'runtime_app_storage' as const;
-  private readonly getClient: () => PlatformClient;
+  private readonly getClient: () => NimiClient;
 
   constructor(options: RuntimeAppStoragePersistenceAdapterOptions = {}) {
-    this.getClient = options.getPlatformClient ?? (() => getPlatformClient());
+    this.getClient = options.getClient ?? (() => getInscapeNimiClient());
   }
 
   async load(): Promise<LoadResult> {
@@ -169,7 +171,7 @@ export class RuntimeAppStoragePersistenceAdapter implements PersistenceClient {
   private async dataRoot(): Promise<string> {
     const client = this.getClient();
     await client.runtime.ready();
-    const roots = await resolveRuntimeAppStorageRoots({
+    const roots = await resolveNimiRuntimeAppStorageRoots({
       appLifecycle: client.runtime.appLifecycle,
       appId: INSCAPE_APP_ID,
       label: STORAGE_LABEL,
@@ -180,7 +182,7 @@ export class RuntimeAppStoragePersistenceAdapter implements PersistenceClient {
 
 async function invokeInscapeCommand<T = void>(
   command: string,
-  args?: Record<string, unknown>,
+  args?: JsonObject,
 ): Promise<T> {
   try {
     return await invoke(command, args ?? {}) as T;

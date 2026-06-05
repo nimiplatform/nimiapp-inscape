@@ -1,17 +1,17 @@
 // First-run AIConfig initialization. On a fresh install the runtime's
 // product-control first-run evidence carries the locally-installed text model;
-// this projects that evidence into the text.generate binding and saves it to
+// this projects that evidence into the text.generate targetRef and saves it to
 // the Inscape AIConfig. Fail-closed: if the evidence is missing or not ready,
-// no binding is fabricated — the outcome is 'not-initialized' and the AI
+// no target is fabricated — the outcome is 'not-initialized' and the AI
 // surface stays unavailable until the runtime is ready.
 
+import type { NimiClient } from '@nimiplatform/sdk';
 import {
-  getPlatformClient,
-  getRuntimeProductControlRecord,
-  type PlatformClient,
-} from '@nimiplatform/sdk';
-import { projectFirstRunExecutionEvidenceToAIConfigBindings } from '@nimiplatform/sdk/runtime';
-import type { AIConfig, AIScopeRef } from '@nimiplatform/sdk/ai';
+  getNimiRuntimeProductControlRecord,
+  projectNimiFirstRunExecutionEvidenceToAIConfigTargets,
+} from '@nimiplatform/sdk/runtime';
+import type { NimiAIConfig, NimiAIScopeRef } from '@nimiplatform/sdk/ai';
+import { getInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
 import {
   createInscapeAIScopeRef,
   loadInscapeAIConfig,
@@ -20,10 +20,10 @@ import {
 import { INSCAPE_TEXT_GENERATE_CAPABILITY_ID } from './inscape-runtime-ai-client.ts';
 
 export type InscapeFirstRunAIConfigInitOutcome =
-  | { outcome: 'already-bound'; config: AIConfig }
+  | { outcome: 'already-bound'; config: NimiAIConfig }
   | {
       outcome: 'initialized';
-      config: AIConfig;
+      config: NimiAIConfig;
       executionEvidenceRef: string;
       runtimeBaselineRef: string;
     }
@@ -39,28 +39,27 @@ export type InscapeFirstRunAIConfigInitOutcome =
     };
 
 export type InscapeFirstRunAIConfigInitOptions = {
-  readonly scopeRef?: AIScopeRef;
-  readonly platformClient?: PlatformClient;
-  readonly getPlatformClient?: () => PlatformClient;
-  readonly loadConfig?: (scopeRef: AIScopeRef) => AIConfig;
-  readonly saveConfig?: (next: AIConfig, scopeRef: AIScopeRef) => AIConfig;
+  readonly scopeRef?: NimiAIScopeRef;
+  readonly client?: NimiClient;
+  readonly getClient?: () => NimiClient;
+  readonly loadConfig?: (scopeRef: NimiAIScopeRef) => NimiAIConfig;
+  readonly saveConfig?: (next: NimiAIConfig, scopeRef: NimiAIScopeRef) => NimiAIConfig;
 };
 
 function detailFromError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function readTextGenerateBinding(config: AIConfig) {
-  return config.capabilities.selectedBindings[INSCAPE_TEXT_GENERATE_CAPABILITY_ID] || null;
+function readTextGenerateTargetRef(config: NimiAIConfig) {
+  return config.capabilities.targetRefs[INSCAPE_TEXT_GENERATE_CAPABILITY_ID] || null;
 }
 
-function ensureAIConfigShape(config: AIConfig, scopeRef: AIScopeRef): AIConfig {
+function ensureAIConfigShape(config: NimiAIConfig, scopeRef: NimiAIScopeRef): NimiAIConfig {
   return {
     ...config,
     scopeRef,
     capabilities: {
-      selectedBindings: { ...(config.capabilities.selectedBindings || {}) },
-      localProfileRefs: { ...(config.capabilities.localProfileRefs || {}) },
+      targetRefs: { ...(config.capabilities.targetRefs || {}) },
       selectedParams: { ...(config.capabilities.selectedParams || {}) },
     },
     profileOrigin: config.profileOrigin ?? null,
@@ -76,16 +75,16 @@ export async function ensureInscapeAIConfigFromFirstRunEvidence(
     ?? ((next, targetScopeRef) => saveInscapeAIConfig(next, targetScopeRef));
   const config = ensureAIConfigShape(loadConfig(scopeRef), scopeRef);
 
-  if (readTextGenerateBinding(config)) {
+  if (readTextGenerateTargetRef(config)) {
     return { outcome: 'already-bound', config };
   }
 
-  const platformClient = options.platformClient
-    ?? (options.getPlatformClient ? options.getPlatformClient() : getPlatformClient());
+  const client = options.client
+    ?? (options.getClient ? options.getClient() : getInscapeNimiClient());
 
   let recordProjection;
   try {
-    recordProjection = await getRuntimeProductControlRecord(platformClient.runtime);
+    recordProjection = await getNimiRuntimeProductControlRecord(client.runtime.generated);
   } catch (error) {
     return {
       outcome: 'not-initialized',
@@ -108,7 +107,7 @@ export async function ensureInscapeAIConfigFromFirstRunEvidence(
 
   let resolvedEvidence;
   try {
-    resolvedEvidence = await platformClient.runtime.local.resolveFirstRunExecutionEvidence({
+    resolvedEvidence = await client.runtime.generated.resolveFirstRunExecutionEvidence({
       executionEvidenceRef,
       expectedRuntimeBaselineRef: runtimeBaselineRef,
       expectedDataRootRef: '',
@@ -130,10 +129,10 @@ export async function ensureInscapeAIConfigFromFirstRunEvidence(
     };
   }
 
-  let textBinding;
+  let textTargetRef;
   try {
-    textBinding = projectFirstRunExecutionEvidenceToAIConfigBindings(resolvedEvidence.ref)
-      .find((item) => item.capability === INSCAPE_TEXT_GENERATE_CAPABILITY_ID)?.binding ?? null;
+    textTargetRef = projectNimiFirstRunExecutionEvidenceToAIConfigTargets(resolvedEvidence.ref)
+      .find((item) => item.capability === INSCAPE_TEXT_GENERATE_CAPABILITY_ID)?.targetRef ?? null;
   } catch (error) {
     return {
       outcome: 'not-initialized',
@@ -142,7 +141,7 @@ export async function ensureInscapeAIConfigFromFirstRunEvidence(
     };
   }
 
-  if (!textBinding) {
+  if (!textTargetRef) {
     return {
       outcome: 'not-initialized',
       reason: 'first_run_text_binding_missing',
@@ -150,13 +149,13 @@ export async function ensureInscapeAIConfigFromFirstRunEvidence(
     };
   }
 
-  const next: AIConfig = {
+  const next: NimiAIConfig = {
     ...config,
     capabilities: {
       ...config.capabilities,
-      selectedBindings: {
-        ...config.capabilities.selectedBindings,
-        [INSCAPE_TEXT_GENERATE_CAPABILITY_ID]: textBinding,
+      targetRefs: {
+        ...config.capabilities.targetRefs,
+        [INSCAPE_TEXT_GENERATE_CAPABILITY_ID]: textTargetRef,
       },
     },
   };

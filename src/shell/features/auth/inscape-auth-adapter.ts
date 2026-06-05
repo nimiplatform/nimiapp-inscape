@@ -1,6 +1,6 @@
 import type { AuthPlatformAdapter } from '@nimiplatform/kit/auth';
-import { getPlatformClient } from '@nimiplatform/sdk';
 import { inscapeTauriOAuthBridge } from '../../bridge/index.js';
+import { getInscapeNimiClient } from '../../infra/inscape-nimi-client.js';
 import {
   ensureInscapeRuntimeClientReady,
   loadInscapeRuntimeAccountUser,
@@ -22,7 +22,7 @@ function unsupported<T>(): Promise<T> {
 
 export async function loadCurrentUser(): Promise<InscapeAuthUser | null> {
   await ensureInscapeRuntimeClientReady();
-  return loadInscapeRuntimeAccountUser(getPlatformClient().runtime);
+  return loadInscapeRuntimeAccountUser(getInscapeNimiClient().runtime);
 }
 
 export function createInscapeDesktopBrowserAuthAdapter(): AuthPlatformAdapter {
@@ -55,7 +55,7 @@ export function createInscapeRuntimeAccountBrowserBroker() {
   return {
     begin: async (input: { callbackUrl: string; baseUrl?: string; timeoutMs: number }) => {
       await ensureInscapeRuntimeClientReady();
-      const response = await getPlatformClient().runtime.account.beginLogin({
+      const response = await getInscapeNimiClient().runtime.account.beginLogin({
         caller: inscapeRuntimeAccountCaller,
         redirectUri: input.callbackUrl,
         callbackOrigin: new URL(input.callbackUrl).origin,
@@ -88,7 +88,7 @@ export function createInscapeRuntimeAccountBrowserBroker() {
       callbackUrl: string;
     }) => {
       await ensureInscapeRuntimeClientReady();
-      const response = await getPlatformClient().runtime.account.completeLogin({
+      const response = await getInscapeNimiClient().runtime.account.completeLogin({
         caller: inscapeRuntimeAccountCaller,
         loginAttemptId: input.loginAttemptId,
         code: input.code,

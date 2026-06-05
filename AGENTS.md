@@ -50,7 +50,7 @@ refactor block product work.
   `CHECK (attested_adult = 1)`; the space is never persisted without an adult
   attestation. Keep this gate at the DB level.
 - **Runtime owns identity**: the app never custodies access/refresh tokens
-  (`createNimiAppRuntimePlatformClient` + `runtime.account.*`). No app-owned
+  (app-scoped `NimiClient` + `runtime.account.*`). No app-owned
   token surface.
 - **Local only**: no cloud, no telemetry, no cross-app data hub.
 - **No astrology**: this is typology, not bazi/ganzhi. No ShiJing vocabulary.

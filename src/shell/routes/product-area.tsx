@@ -1,47 +1,60 @@
-// Wave-1 placeholder product area. The real Today / Relationship / Self faces
-// (and the InscapeStoreProvider + persistence wiring) land in wave-2 / wave-3.
-// For now this confirms the authenticated shell renders and carries the wave-1
-// live smoke: one fail-close text.generate round-trip.
+// Wave-3.1 — IA shell. Wires the InscapeStore to SQLite persistence, the
+// first-run 18+ gate, and the three-face navigation. The five value-prop
+// surfaces and AI modes A–E land in wave-3.2..3.4.
 
-import { useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAppStore } from '../app-shell/app-store.js';
-import { createInscapeRuntimeAiClient } from '../ai/inscape-runtime-ai-client.ts';
+import { RuntimeAppStoragePersistenceAdapter } from '../persistence/runtime-app-storage-adapter.ts';
+import { InMemoryPersistenceAdapter } from '../../product/persistence/in-memory-adapter.ts';
+import type { PersistenceClient } from '../../product/persistence/persistence-client.ts';
+import {
+  InscapeStoreProvider,
+  useInscapeStore,
+} from '../../product/state/inscape-store-provider.tsx';
+import { InscapeShell } from '../../product/shell/inscape-shell.tsx';
+import { FirstRunGate } from '../../product/first-run/first-run-gate.tsx';
 
-type SmokeState =
-  | { status: 'idle' }
-  | { status: 'running' }
-  | { status: 'ok'; text: string }
-  | { status: 'fail'; detail: string };
+function pickPersistenceClient(): PersistenceClient {
+  if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+    return new RuntimeAppStoragePersistenceAdapter();
+  }
+  return new InMemoryPersistenceAdapter();
+}
 
 export function ProductArea() {
   const user = useAppStore((s) => s.auth.user);
-  const [smoke, setSmoke] = useState<SmokeState>({ status: 'idle' });
+  const client = useMemo(() => pickPersistenceClient(), []);
   if (!user?.id) return null;
-
-  async function runAiSmoke() {
-    setSmoke({ status: 'running' });
-    const client = createInscapeRuntimeAiClient();
-    const result = await client.generate({
-      system: 'You are Inscape, a Jungian-typology reflection tool. Reply in one short sentence.',
-      user: 'Say hello and name one cognitive function.',
-    });
-    setSmoke(
-      result.ok
-        ? { status: 'ok', text: result.text }
-        : { status: 'fail', detail: `${result.failure.kind}: ${result.failure.detail}` },
-    );
-  }
-
   return (
-    <div className="inscape-app__placeholder">
-      <h1>心相 · Inscape</h1>
-      <p>Signed in as {user.displayName || user.id}.</p>
-      <p>Wave-1 shell baseline. Today / Relationship / Self land in later waves.</p>
-      <button type="button" onClick={() => void runAiSmoke()} disabled={smoke.status === 'running'}>
-        {smoke.status === 'running' ? 'Generating…' : 'Test AI (text.generate)'}
-      </button>
-      {smoke.status === 'ok' && <p>AI ✓ {smoke.text}</p>}
-      {smoke.status === 'fail' && <p>AI ✗ {smoke.detail}</p>}
-    </div>
+    <InscapeStoreProvider client={client}>
+      <InscapeBootGate />
+    </InscapeStoreProvider>
+  );
+}
+
+function InscapeBootGate() {
+  const status = useInscapeStore((s) => s.status);
+  const error = useInscapeStore((s) => s.error);
+  const initialize = useInscapeStore((s) => s.initialize);
+
+  useEffect(() => {
+    void initialize();
+  }, [initialize]);
+
+  if (status === 'loading') {
+    return <CenteredNote text="加载中…" />;
+  }
+  if (status === 'error') {
+    return <CenteredNote text={`无法加载本地数据：${error ?? 'unknown'}`} />;
+  }
+  if (status === 'first-run') {
+    return <FirstRunGate />;
+  }
+  return <InscapeShell />;
+}
+
+function CenteredNote({ text }: { text: string }) {
+  return (
+    <div className="flex h-full items-center justify-center p-8 text-sm opacity-70">{text}</div>
   );
 }

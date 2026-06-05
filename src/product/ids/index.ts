@@ -1,34 +1,39 @@
-// W-c01 — id factories.
-//
-// Single admitted strategy: ULID. Each entity gets a named factory so
-// call sites read intentfully and so future per-entity policy changes
-// (e.g. a different prefix or a different shape) localize here.
+// IS-DATA — id factories. Single admitted strategy: ULID. Named per entity so
+// call sites read intentfully and future per-entity policy localizes here.
 
 import { newUlid, type NewUlidOptions } from './ulid.ts';
 
 export { newUlid, isUlid, ULID_PATTERN, ULID_LENGTH, ULID_ALPHABET } from './ulid.ts';
 export type { NewUlidOptions } from './ulid.ts';
 
-export function newConcernTagId(options?: NewUlidOptions): string {
+export function newSubjectId(options?: NewUlidOptions): string {
   return newUlid(options);
 }
 
-export function newEventMemoryId(options?: NewUlidOptions): string {
+export function newTypingEpisodeId(options?: NewUlidOptions): string {
   return newUlid(options);
 }
 
-export function newPlanItemId(options?: NewUlidOptions): string {
+export function newObservationEventId(options?: NewUlidOptions): string {
   return newUlid(options);
 }
 
-export function newReadingId(options?: NewUlidOptions): string {
+export function newReflectionEntryId(options?: NewUlidOptions): string {
   return newUlid(options);
 }
 
-export function newConversationId(options?: NewUlidOptions): string {
+export function newRelationshipId(options?: NewUlidOptions): string {
   return newUlid(options);
 }
 
-export function newConversationTurnId(options?: NewUlidOptions): string {
+export function newCommunicationLogId(options?: NewUlidOptions): string {
+  return newUlid(options);
+}
+
+export function newFrictionPatternId(options?: NewUlidOptions): string {
+  return newUlid(options);
+}
+
+export function newQuarantineId(options?: NewUlidOptions): string {
   return newUlid(options);
 }

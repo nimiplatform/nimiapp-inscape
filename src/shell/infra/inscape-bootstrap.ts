@@ -14,6 +14,7 @@ import type { Runtime } from '@nimiplatform/sdk/runtime';
 import { getInscapeRuntimeDefaults } from '../bridge/index.js';
 import { useAppStore } from '../app-shell/app-store.js';
 import { describeError, logRendererEvent } from './renderer-log.js';
+import { ensureInscapeAIConfigFromFirstRunEvidence } from '../ai/inscape-ai-config-bootstrap.ts';
 import {
   INSCAPE_APP_ID,
   INSCAPE_APP_INSTANCE_ID as CANONICAL_INSCAPE_APP_INSTANCE_ID,
@@ -171,7 +172,19 @@ async function doRunInscapeBootstrap(): Promise<void> {
       await runtime.ready();
     }
 
-    // AI-config bootstrap (text.generate binding) is wired in Increment 3.
+    // Bind text.generate from runtime first-run evidence. Fail-soft: a
+    // not-initialized outcome (runtime not yet AI-ready) is logged, not fatal —
+    // the AI surface stays unavailable until a binding exists.
+    const aiConfigInit = await ensureInscapeAIConfigFromFirstRunEvidence({ platformClient });
+    if (aiConfigInit.outcome === 'not-initialized') {
+      logRendererEvent({
+        level: 'warn',
+        area: 'inscape-bootstrap.ai-config',
+        message: 'action:first-run-ai-config-init-skipped',
+        flowId,
+        details: { reason: aiConfigInit.reason, detail: aiConfigInit.detail },
+      });
+    }
 
     store.setBootstrapReady(true);
     store.setBootstrapError(null);

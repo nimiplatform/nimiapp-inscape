@@ -4,6 +4,7 @@
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { InitialTyping } from '../self/initial-typing.tsx';
 import { TypeProfileView } from '../self/type-profile-view.tsx';
+import { SelfMirror } from '../self/self-mirror.tsx';
 
 export function SelfFace() {
   const space = useInscapeStore((s) => s.space);
@@ -15,6 +16,8 @@ export function SelfFace() {
       <h2 className="text-lg font-medium">自我</h2>
 
       {profile ? <TypeProfileView profile={profile} /> : <InitialTyping />}
+
+      {profile && <SelfMirror profile={profile} />}
 
       <div>
         <h3 className="mb-2 text-sm font-medium">反思归档</h3>

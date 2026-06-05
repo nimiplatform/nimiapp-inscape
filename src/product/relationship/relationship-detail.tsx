@@ -7,6 +7,7 @@ import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildFrictionPrompt } from './relationship-prompts.ts';
 import { CommunicationRewrite } from './communication-rewrite.tsx';
+import { DyadInsight } from './dyad-insight.tsx';
 import type { Relationship } from '../../domain/relationship.ts';
 import type { Subject } from '../../domain/subject.ts';
 
@@ -61,7 +62,10 @@ export function RelationshipDetail({
       <h4 className="text-sm font-medium">
         {other?.display_name ?? '（未知）'} · {relationship.nature}
       </h4>
-      <div className="flex gap-2">
+
+      <DyadInsight relationship={relationship} other={other} />
+
+      <div className="flex gap-2 border-t border-black/10 pt-3">
         <input
           value={snippet}
           onChange={(e) => setSnippet(e.target.value)}

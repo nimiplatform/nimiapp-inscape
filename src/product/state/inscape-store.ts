@@ -56,6 +56,7 @@ export interface InscapeStoreState {
   addCommunicationLog: (relationshipId: string, snippet: string, now: string) => Promise<void>;
   quarantineOtherSubject: (subjectId: string, now: string) => Promise<void>;
   deleteQuarantineRecord: (id: string, now: string) => Promise<void>;
+  setOtherSubjectType: (subjectId: string, type: FourLetterType, now: string) => Promise<void>;
 }
 
 function describePersistenceError(error: PersistenceError): string {
@@ -270,6 +271,25 @@ export function createInscapeStore(client: PersistenceClient) {
         await persist({
           ...current,
           quarantine: current.quarantine.filter((q) => q.id !== id),
+          updated_at: now,
+        });
+      },
+
+      async setOtherSubjectType(subjectId: string, type: FourLetterType, now: string) {
+        const current = get().space;
+        if (!current) return;
+        const otherProfile = seedTypeProfileFromType(type, now);
+        const selfLeading = current.self_subject.type_profile?.leading_type ?? null;
+        await persist({
+          ...current,
+          other_subjects: current.other_subjects.map((s) =>
+            s.id === subjectId ? { ...s, type_profile: otherProfile } : s,
+          ),
+          relationships: current.relationships.map((r) =>
+            r.other_subject_id === subjectId
+              ? { ...r, type_dyad: { self_type: selfLeading, other_type: type } }
+              : r,
+          ),
           updated_at: now,
         });
       },

@@ -3,13 +3,17 @@
 // (IS-PROD-07).
 
 import { useState } from 'react';
+import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { FACES, type FaceId } from '../navigation/tab-descriptor.ts';
 import { TodayFace } from '../faces/today-face.tsx';
 import { RelationshipFace } from '../faces/relationship-face.tsx';
 import { SelfFace } from '../faces/self-face.tsx';
 
 export function InscapeShell() {
-  const [active, setActive] = useState<FaceId>('today');
+  // Onboarding aha: a user with no type prior lands on Self to set it and meet
+  // the mirror first, rather than an empty Today.
+  const hasType = useInscapeStore((s) => Boolean(s.space?.self_subject.type_profile));
+  const [active, setActive] = useState<FaceId>(hasType ? 'today' : 'self');
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-6 border-b border-black/10 px-6 py-3">

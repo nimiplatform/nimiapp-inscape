@@ -12,6 +12,12 @@ test("today's read prompt forbids predictions/horoscopes and grounds in reflecti
   assert.match(prompt.user, /busy meeting day/);
 });
 
+test("today's read grounds in the function stack when a profile exists", () => {
+  const prompt = buildTodaysReadPrompt([], seedTypeProfileFromType('INTP', '2026-06-05T00:00:00Z'));
+  assert.match(prompt.user, /Hero Ti/);
+  assert.match(prompt.user, /inferior\/grip Fe/);
+});
+
 test('decision aid prompt walks the eight functions in Beebe order, no prescription', () => {
   const profile = seedTypeProfileFromType('INTJ', '2026-06-05T00:00:00Z');
   const prompt = buildDecisionAidPrompt('take the job?', profile);

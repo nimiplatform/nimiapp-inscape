@@ -3,6 +3,7 @@
 // update proposal (strict JSON for the T1-11 fail-close parser).
 
 import { COGNITIVE_FUNCTIONS } from '../../domain/typology.ts';
+import { RESPOND_IN_CHINESE } from '../insight/prompt-directives.ts';
 import type { TypeProfile } from '../../domain/type-profile.ts';
 
 export interface AiPrompt {
@@ -15,7 +16,8 @@ export function buildResonancePrompt(reflection: string, profile: TypeProfile | 
     'You are Inscape, a Jungian cognitive-function reflection tool — not a therapist and not a diagnostician.',
     'Read the reflection and offer ONE short, strengths-first observation about a possible cognitive-function pattern.',
     'Do not pathologize and do not diagnose. Close by noting it is a pattern to consider, and if it does not resonate, to ignore it.',
-    "Reply in the user's language, 2-3 sentences, no lists.",
+    '2-3 sentences, no lists.',
+    RESPOND_IN_CHINESE,
   ].join(' ');
   const user = profile?.leading_type
     ? `My function-stack pattern is commonly described as ${profile.leading_type}. Reflection: ${reflection}`
@@ -38,6 +40,7 @@ export function buildPosteriorProposalPrompt(reflection: string, profile: TypePr
     '"dichotomy_updates":[{"dichotomy":"E_I|S_N|T_F|J_P|A_T","proposed_value":-1..1,"proposed_confidence":0..1}],',
     '"rationale":"<short reason>"}',
     'Include at least one update only if the reflection genuinely warrants it; keep changes small and use the exact codes above.',
+    'The rationale value must be written in 简体中文.',
   ].join(' ');
   const user = `Current posterior: ${posteriorSummary(profile)}. Reflection: ${reflection}`;
   return { system, user };

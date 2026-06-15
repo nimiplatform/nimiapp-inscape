@@ -4,11 +4,9 @@ use serde::Serialize;
 
 // Shared modules from the kit/shell/tauri crate (nimi-shell-tauri). Auth, OAuth,
 // runtime bridge, runtime defaults, and session logging all come from the crate.
-use nimi_shell_tauri::auth_session_commands;
 use nimi_shell_tauri::desktop_paths;
 use nimi_shell_tauri::oauth_commands;
 use nimi_shell_tauri::runtime_bridge;
-use nimi_shell_tauri::runtime_defaults as defaults;
 use nimi_shell_tauri::session_logging;
 
 // Inscape-owned relational SQLite persistence (G1).
@@ -90,22 +88,12 @@ fn main() {
             persistence::inscape_space_save,
             persistence::inscape_space_clear,
             inscape_start_window_drag,
-            defaults::runtime_defaults,
-            auth_session_commands::auth_session_load,
-            auth_session_commands::auth_session_save,
-            auth_session_commands::auth_session_clear,
             oauth_commands::open_external_url,
-            oauth_commands::oauth_token_exchange,
             oauth_commands::oauth_listen_for_code,
             runtime_bridge::runtime_bridge_unary,
             runtime_bridge::runtime_bridge_stream_open,
             runtime_bridge::runtime_bridge_stream_close,
             runtime_bridge::runtime_bridge_status,
-            runtime_bridge::runtime_bridge_start,
-            runtime_bridge::runtime_bridge_stop,
-            runtime_bridge::runtime_bridge_restart,
-            runtime_bridge::runtime_bridge_config_get,
-            runtime_bridge::runtime_bridge_config_set,
             session_logging::log_renderer_event,
         ])
         .run(tauri::generate_context!())

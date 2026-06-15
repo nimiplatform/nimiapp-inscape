@@ -1,12 +1,12 @@
-app_id: inscape
+app_id: nimi.inscape
 display_name: Inscape
 profile: workspace-app
 manifest_role: submitted-input
 permissions:
   # Provisional scope set — finalized in wave-1 Increment 3 (gate G3) when the
   # AI consumption path is wired and verified against the live runtime
-  # (runtime.ai.text.generate / stream / embed). The SDK-level identity is
-  # ai.nimi.apps.inscape (see src/contracts/app-identity.ts).
+  # (runtime.ai.text.generate / stream / embed). The single app identity is
+  # nimi.inscape across manifest, Runtime/SDK, storage, AIConfig, and Tauri.
   declared_nimi_api_scopes:
     - scope: app.local.drafts
       qualifier: app-local-drafts

@@ -6,8 +6,10 @@
 
 - **App name (Chinese)**: 心相
 - **App name (English)**: Inscape
-- **App ID (SDK / runtime / Tauri identifier)**: `ai.nimi.apps.inscape`
-  (manifest `app_id: inscape`)
+- **Canonical Nimi app_id**: `nimi.inscape`
+- **Product slug**: `inscape`
+- **Tauri identifier**: `nimi.inscape`
+- **Submitted manifest app_id**: `nimi.inscape`
 - **One-line**: A fully local, open-source, 18+ desktop app that turns Jungian
   typology (cognitive-function stack + Beebe archetypes) into daily-life
   application — type as a moving probability distribution, refined only by

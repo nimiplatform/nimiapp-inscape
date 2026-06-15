@@ -4,7 +4,6 @@ import { getInscapeNimiClient } from '../../infra/inscape-nimi-client.js';
 import {
   ensureInscapeRuntimeClientReady,
   loadInscapeRuntimeAccountUser,
-  logoutInscapeRuntimeAccount,
   inscapeRuntimeAccountCaller,
   type InscapeAuthUser,
 } from '../../infra/inscape-bootstrap.js';
@@ -15,6 +14,9 @@ const INSCAPE_EMBEDDED_AUTH_UNSUPPORTED =
 const INSCAPE_TOKEN_PROXY_FORBIDDEN =
   'Inscape does not own access/refresh token custody (IS-PRIV). '
   + 'Runtime is the sole owner — login through the desktop browser broker.';
+const INSCAPE_ACCOUNT_CONTROL_FORBIDDEN =
+  'Inscape is a developer-registered local app and cannot own Runtime account logout. '
+  + 'Use the first-party Desktop account surface.';
 
 function unsupported<T>(): Promise<T> {
   return Promise.reject(new Error(INSCAPE_EMBEDDED_AUTH_UNSUPPORTED));
@@ -23,6 +25,11 @@ function unsupported<T>(): Promise<T> {
 export async function loadCurrentUser(): Promise<InscapeAuthUser | null> {
   await ensureInscapeRuntimeClientReady();
   return loadInscapeRuntimeAccountUser(getInscapeNimiClient().runtime);
+}
+
+export async function logoutInscapeRuntimeAccountFromAuthAdapter(): Promise<void> {
+  await ensureInscapeRuntimeClientReady();
+  throw new Error(INSCAPE_ACCOUNT_CONTROL_FORBIDDEN);
 }
 
 export function createInscapeDesktopBrowserAuthAdapter(): AuthPlatformAdapter {
@@ -44,7 +51,7 @@ export function createInscapeDesktopBrowserAuthAdapter(): AuthPlatformAdapter {
       throw new Error(INSCAPE_TOKEN_PROXY_FORBIDDEN);
     },
     clearPersistedSession: async () => {
-      await logoutInscapeRuntimeAccount();
+      await logoutInscapeRuntimeAccountFromAuthAdapter();
     },
     oauthBridge: inscapeTauriOAuthBridge,
     syncAfterLogin: async () => {},

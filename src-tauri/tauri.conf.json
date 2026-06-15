@@ -1,7 +1,7 @@
 {
   "productName": "Inscape",
   "version": "0.1.0",
-  "identifier": "ai.nimi.apps.inscape",
+  "identifier": "nimi.inscape",
   "build": {
     "beforeDevCommand": "pnpm run dev:renderer",
     "beforeBuildCommand": "pnpm run build",

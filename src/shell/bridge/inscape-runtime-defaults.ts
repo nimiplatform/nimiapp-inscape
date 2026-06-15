@@ -1,4 +1,3 @@
-import { getRuntimeDefaults } from '@nimiplatform/kit/shell/renderer/bridge';
 import type { InscapeRuntimeDefaults } from './inscape-types.js';
 
 function readEnv(name: string): string {
@@ -32,9 +31,7 @@ function resolveWebBaseUrl(): string {
 }
 
 export async function getInscapeRuntimeDefaults(): Promise<InscapeRuntimeDefaults> {
-  const shared = await getRuntimeDefaults();
   return {
-    ...shared,
     webBaseUrl: resolveWebBaseUrl(),
   };
 }

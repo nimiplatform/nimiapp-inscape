@@ -1,5 +1,5 @@
 // Inscape AIConfig storage for the text.generate surface. Generic SDK config
-// store (browser local storage), scoped to ai.nimi.apps.inscape / inscape.session.
+// store (browser local storage), scoped to nimi.inscape / inscape.session.
 // The model binding is populated from runtime first-run evidence by
 // inscape-ai-config-bootstrap.ts. The model-config UI surface + AIProfile
 // library land in a later wave.

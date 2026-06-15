@@ -2,9 +2,8 @@ import { create } from 'zustand';
 import type { InscapeRuntimeDefaults } from '../bridge/index.js';
 
 // IS-PRIV: Nimi platform owns identity. The renderer-side app store
-// keeps only the runtime-projected account identity. Short-lived access
-// tokens are pulled from runtime.account.getAccessToken at call time and
-// NEVER persisted in this store.
+// keeps only the runtime-projected account identity. Raw Realm access tokens
+// are never exposed to Inscape.
 export type AuthUser = {
   id: string;
   displayName: string;

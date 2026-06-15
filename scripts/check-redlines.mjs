@@ -8,7 +8,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const SOURCE_EXTS = new Set(['.ts', '.tsx']);
+const SOURCE_EXTS = new Set(['.ts', '.tsx', '.rs']);
 
 function walk(dir) {
   const out = [];
@@ -51,12 +51,47 @@ const RULES = [
     re: /Myers-?Briggs|MBTI\s*(®|\(R\))/,
     hint: 'no MBTI(R) trademark in product copy; use Jungian / 16-type (allowlisted disclaimer only)',
   },
+  {
+    id: 'IS-AUTH local-first-party-forbidden',
+    re: /LOCAL_FIRST_PARTY_APP|createNimiLocalFirstPartyRuntimeAccountCaller|local-first-party/,
+    hint: 'Inscape is a developer-registered local app, not a first-party local app',
+  },
+  {
+    id: 'IS-AUTH raw-token-forbidden',
+    re: /runtime\.account\.getAccessToken|getAccessToken\(/,
+    hint: 'developer-registered local apps must not receive raw Runtime/Realm access tokens',
+  },
+  {
+    id: 'IS-AUTH auth-session-bridge-forbidden',
+    re: /auth_session_(load|save|clear)|auth_session_commands/,
+    hint: 'Runtime owns account custody; Inscape must not register app-local auth_session IPC',
+  },
+  {
+    id: 'IS-AUTH realm-token-transport-forbidden',
+    re: /createRealmFetchTransport|credentials\s*:\s*['"]include['"]/,
+    hint: 'Inscape must not construct app-owned Realm token/cookie transport',
+  },
+  {
+    id: 'IS-AUTH oauth-token-exchange-forbidden',
+    re: /createTauriOAuthBridge|oauthTokenExchange,|oauth_commands::oauth_token_exchange/,
+    hint: 'developer-registered local apps must expose only code-listen OAuth bridge surfaces; Runtime owns token exchange',
+  },
+  {
+    id: 'IS-AUTH runtime-defaults-forbidden',
+    re: /\bgetRuntimeDefaults\b|parseRuntimeDefaults|RuntimeDefaults as SharedRuntimeDefaults|runtime_defaults::runtime_defaults|defaults::runtime_defaults/,
+    hint: 'Inscape must not expose full RuntimeDefaults because they can carry raw Realm token fields',
+  },
+  {
+    id: 'IS-AUTH daemon-control-forbidden',
+    re: /startDaemon|stopDaemon|restartDaemon|getDaemonConfig|setDaemonConfig|runtime_bridge::runtime_bridge_(start|stop|restart|config_get|config_set)/,
+    hint: 'Desktop Developer Mode owns Runtime daemon lifecycle and developer-registration config',
+  },
 ];
 
 const violations = [];
 const warnings = [];
 
-const files = walk('src');
+const files = [...walk('src'), ...walk(join('src-tauri', 'src'))];
 for (const file of files) {
   const code = stripComments(readFileSync(file, 'utf8'));
   for (const rule of RULES) {

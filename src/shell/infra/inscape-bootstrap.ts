@@ -1,15 +1,32 @@
-import { createNimiClient, createRealmFetchTransport, type NimiClient } from '@nimiplatform/sdk';
+import { createNimiClient, type NimiClient } from '@nimiplatform/sdk';
 import {
-  AccountCallerMode,
+  Runtime,
+  createNimiDeveloperRegisteredRuntimeAccountCaller,
+  createNimiRuntimeAppSessionMetadataProvider,
+  createNimiRuntimeFullAppRegistration,
+  toNimiRuntimeTimestamp,
+  withNimiRuntimeIdempotencyMetadata,
+  type NimiRuntimeAccountCaller,
+  type RuntimeOptions,
+} from '@nimiplatform/sdk/runtime';
+import {
   AccountSessionState,
-  type AccountCaller,
+  AuthorizationPreset,
+  ExternalPrincipalType,
+  PolicyMode,
   type AccountProjection,
+  type AuthorizeExternalPrincipalResponse,
 } from '@nimiplatform/sdk/runtime/generated';
-import type { Runtime } from '@nimiplatform/sdk/runtime';
+import {
+  createNimiClientId,
+  createNimiError,
+  ReasonCode,
+  type CoreMetadata,
+} from '@nimiplatform/sdk/types';
 import { getInscapeRuntimeDefaults } from '../bridge/index.js';
 import { useAppStore } from '../app-shell/app-store.js';
 import { describeError, logRendererEvent } from './renderer-log.js';
-import { getInscapeNimiClient, hasInscapeNimiClient, setInscapeNimiClient } from './inscape-nimi-client.js';
+import { hasInscapeNimiClient, setInscapeNimiClient } from './inscape-nimi-client.js';
 import { ensureInscapeAIConfigFromFirstRunEvidence } from '../ai/inscape-ai-config-bootstrap.ts';
 import {
   INSCAPE_APP_ID,
@@ -17,25 +34,44 @@ import {
   INSCAPE_DEVICE_ID as CANONICAL_INSCAPE_DEVICE_ID,
 } from '../../contracts/app-identity.ts';
 
-// IS-PRIV / IS-DATA: Nimi owns the account / session / runtime
-// boundary; Inscape is admitted as an active local first-party Runtime
-// account/session consumer. Caller identity is fixed; runtime owns
-// refresh-token custody and short-lived access-token projection. No
-// app-owned token surface is admitted.
+// IS-PRIV / IS-DATA: Inscape is a non-first-party developer-registered local
+// Runtime account/session consumer. Runtime owns login custody, app sessions,
+// and protected access metadata. Raw Realm account tokens and first-party
+// account-control calls are not exposed to Inscape.
 
 export const INSCAPE_RUNTIME_APP_ID = INSCAPE_APP_ID;
 export const INSCAPE_RUNTIME_APP_INSTANCE_ID = CANONICAL_INSCAPE_APP_INSTANCE_ID;
 export const INSCAPE_RUNTIME_DEVICE_ID = CANONICAL_INSCAPE_DEVICE_ID;
 
-export const inscapeRuntimeAccountCaller: AccountCaller = {
-  appId: INSCAPE_RUNTIME_APP_ID,
-  appInstanceId: INSCAPE_RUNTIME_APP_INSTANCE_ID,
-  deviceId: INSCAPE_RUNTIME_DEVICE_ID,
-  mode: AccountCallerMode.LOCAL_FIRST_PARTY_APP,
-  scopes: [],
-};
+const INSCAPE_RUNTIME_APP_SESSION_INSTANCE_ID = `${INSCAPE_RUNTIME_APP_ID}.platform-runtime-session`;
+const INSCAPE_RUNTIME_APP_SESSION_DEVICE_ID = 'platform-runtime-session';
+const INSCAPE_RUNTIME_APP_SESSION_TTL_SECONDS = 3600;
+const INSCAPE_RUNTIME_APP_SESSION_REFRESH_SKEW_MS = 30_000;
+const INSCAPE_RUNTIME_PROTECTED_SCOPES = ['ai.spend.meter'] as const;
+const INSCAPE_RUNTIME_PROTECTED_SCOPE_CATALOG_VERSION = 'sdk-v2';
+const INSCAPE_RUNTIME_PROTECTED_TOKEN_TTL_SECONDS = 3600;
+const INSCAPE_RUNTIME_PROTECTED_TOKEN_REFRESH_SKEW_MS = 60_000;
+const INSCAPE_RUNTIME_PROTECTED_CONSENT_ID = 'inscape-runtime-account';
+const INSCAPE_RUNTIME_DEVELOPER_REGISTRATION = import.meta.env?.DEV === true;
+
+export const inscapeRuntimeAccountCaller: NimiRuntimeAccountCaller =
+  createNimiDeveloperRegisteredRuntimeAccountCaller({
+    appId: INSCAPE_RUNTIME_APP_ID,
+    appInstanceId: INSCAPE_RUNTIME_APP_INSTANCE_ID,
+    deviceId: INSCAPE_RUNTIME_DEVICE_ID,
+  });
 
 let bootstrapPromise: Promise<void> | null = null;
+let protectedAccessCache: {
+  readonly subjectUserId: string;
+  readonly metadata: CoreMetadata;
+  readonly expiresAtMs: number;
+} | null = null;
+let protectedAccessInflight: Promise<{
+  readonly subjectUserId: string;
+  readonly metadata: CoreMetadata;
+  readonly expiresAtMs: number;
+}> | null = null;
 
 export type InscapeAuthUser = {
   id: string;
@@ -91,27 +127,171 @@ export async function ensureInscapeRuntimeClientReady(): Promise<void> {
   }
 }
 
-async function buildInscapeNimiClient(realmBaseUrl: string): Promise<NimiClient> {
+function inscapeRuntimeOptions(authMetadata?: () => Promise<CoreMetadata>): RuntimeOptions {
+  return {
+    appId: INSCAPE_RUNTIME_APP_ID,
+    metadata: {
+      callerId: INSCAPE_RUNTIME_APP_ID,
+      surfaceId: 'inscape.session',
+    },
+    ...(authMetadata ? { authMetadata } : {}),
+    transport: {
+      type: 'tauri-ipc',
+      commandNamespace: 'runtime_bridge',
+      eventNamespace: 'runtime_bridge',
+    },
+  };
+}
+
+async function registerInscapeRuntimeAccountCaller(accountRuntime: Runtime): Promise<void> {
+  await createNimiRuntimeFullAppRegistration(
+    () => ({ auth: accountRuntime.auth }),
+    {
+      appId: INSCAPE_RUNTIME_APP_ID,
+      appInstanceId: inscapeRuntimeAccountCaller.appInstanceId,
+      deviceId: inscapeRuntimeAccountCaller.deviceId,
+      capabilities: [...INSCAPE_RUNTIME_PROTECTED_SCOPES],
+      developerRegistration: INSCAPE_RUNTIME_DEVELOPER_REGISTRATION,
+      rejectionLabel: 'Inscape Runtime account caller registration rejected',
+    },
+  )();
+}
+
+function createInscapeRuntimeAuthMetadataProvider(accountRuntime: Runtime): () => Promise<CoreMetadata> {
+  const requiredRuntimeSessionMetadata = createNimiRuntimeAppSessionMetadataProvider({
+    appId: INSCAPE_RUNTIME_APP_ID,
+    appInstanceId: INSCAPE_RUNTIME_APP_SESSION_INSTANCE_ID,
+    deviceId: INSCAPE_RUNTIME_APP_SESSION_DEVICE_ID,
+    ttlSeconds: INSCAPE_RUNTIME_APP_SESSION_TTL_SECONDS,
+    refreshSkewMs: INSCAPE_RUNTIME_APP_SESSION_REFRESH_SKEW_MS,
+    capabilities: [...INSCAPE_RUNTIME_PROTECTED_SCOPES],
+    developerRegistration: INSCAPE_RUNTIME_DEVELOPER_REGISTRATION,
+    auth: accountRuntime.auth,
+  });
+  return async () => {
+    const session = await accountRuntime.account.getAccountSessionStatus({
+      caller: inscapeRuntimeAccountCaller,
+    });
+    if (session.state !== AccountSessionState.AUTHENTICATED || !session.accountProjection?.accountId) {
+      return {};
+    }
+    const appSessionMetadata = await requiredRuntimeSessionMetadata();
+    const protectedAccessMetadata = await getInscapeRuntimeProtectedAccessMetadata(
+      accountRuntime,
+      session.accountProjection.accountId,
+    );
+    return {
+      ...appSessionMetadata,
+      ...protectedAccessMetadata,
+    };
+  };
+}
+
+async function getInscapeRuntimeProtectedAccessMetadata(
+  accountRuntime: Runtime,
+  subjectUserId: string,
+): Promise<CoreMetadata> {
+  if (
+    protectedAccessCache
+    && protectedAccessCache.subjectUserId === subjectUserId
+    && protectedAccessCache.expiresAtMs - Date.now() > INSCAPE_RUNTIME_PROTECTED_TOKEN_REFRESH_SKEW_MS
+  ) {
+    return protectedAccessCache.metadata;
+  }
+  protectedAccessInflight ??= issueInscapeRuntimeProtectedAccessMetadata(accountRuntime, subjectUserId);
+  try {
+    protectedAccessCache = await protectedAccessInflight;
+    return protectedAccessCache.metadata;
+  } finally {
+    protectedAccessInflight = null;
+  }
+}
+
+async function issueInscapeRuntimeProtectedAccessMetadata(
+  accountRuntime: Runtime,
+  subjectUserId: string,
+): Promise<{
+  readonly subjectUserId: string;
+  readonly metadata: CoreMetadata;
+  readonly expiresAtMs: number;
+}> {
+  const token = await accountRuntime.grants.authorizeExternalPrincipal({
+    domain: 'app-auth',
+    appId: INSCAPE_RUNTIME_APP_ID,
+    externalPrincipalId: INSCAPE_RUNTIME_APP_ID,
+    externalPrincipalType: ExternalPrincipalType.APP,
+    subjectUserId,
+    consentId: INSCAPE_RUNTIME_PROTECTED_CONSENT_ID,
+    consentVersion: 'v1',
+    decisionAt: toNimiRuntimeTimestamp(new Date()),
+    policyVersion: 'inscape-runtime-account-v1',
+    policyMode: PolicyMode.CUSTOM,
+    preset: AuthorizationPreset.UNSPECIFIED,
+    scopes: [...INSCAPE_RUNTIME_PROTECTED_SCOPES],
+    resourceSelectors: {
+      conversationIds: [],
+      messageIds: [],
+      documentIds: [],
+      labels: {},
+    },
+    canDelegate: false,
+    maxDelegationDepth: 0,
+    ttlSeconds: INSCAPE_RUNTIME_PROTECTED_TOKEN_TTL_SECONDS,
+    scopeCatalogVersion: INSCAPE_RUNTIME_PROTECTED_SCOPE_CATALOG_VERSION,
+    policyOverride: false,
+  }, withNimiRuntimeIdempotencyMetadata({
+    metadata: { domain: 'app-auth' },
+  }, createNimiClientId(`inscape-runtime-protected-${sanitizeProtectedAccessId(subjectUserId)}`)));
+  const tokenId = normalizeRuntimeAuthText(token.tokenId);
+  const secret = normalizeRuntimeAuthText(token.secret);
+  if (!tokenId || !secret) {
+    throw createNimiError({
+      message: 'Inscape Runtime protected access token response is missing credentials.',
+      reasonCode: ReasonCode.PRINCIPAL_UNAUTHORIZED,
+      actionHint: 'authorize_inscape_runtime_protected_access',
+      source: 'runtime',
+    });
+  }
+  return {
+    subjectUserId,
+    metadata: {
+      'x-nimi-access-token-id': tokenId,
+      'x-nimi-access-token-secret': secret,
+    },
+    expiresAtMs: runtimeTimestampMillis(token) || Date.now() + (INSCAPE_RUNTIME_PROTECTED_TOKEN_TTL_SECONDS * 1000),
+  };
+}
+
+function runtimeTimestampMillis(token: AuthorizeExternalPrincipalResponse): number {
+  const expiresAt = token.expiresAt;
+  if (!expiresAt) {
+    return 0;
+  }
+  const seconds = Number(expiresAt.seconds || 0);
+  const nanos = Number(expiresAt.nanos || 0);
+  const millis = (seconds * 1000) + Math.floor(nanos / 1_000_000);
+  return Number.isFinite(millis) && millis > 0 ? millis : 0;
+}
+
+function sanitizeProtectedAccessId(subjectUserId: string): string {
+  return subjectUserId.replace(/[^a-zA-Z0-9._:-]/g, '_').slice(0, 80) || 'unknown';
+}
+
+function normalizeRuntimeAuthText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+async function buildInscapeNimiClient(): Promise<NimiClient> {
+  const accountRuntime = new Runtime(inscapeRuntimeOptions());
+  await accountRuntime.ready();
+  await registerInscapeRuntimeAccountCaller(accountRuntime);
+  const runtime = new Runtime(inscapeRuntimeOptions(
+    createInscapeRuntimeAuthMetadataProvider(accountRuntime),
+  ));
   const client = createNimiClient({
     appId: INSCAPE_RUNTIME_APP_ID,
-    runtime: {
-      appId: INSCAPE_RUNTIME_APP_ID,
-      metadata: {
-        callerId: INSCAPE_RUNTIME_APP_ID,
-        surfaceId: 'inscape.session',
-      },
-      transport: {
-        type: 'tauri-ipc',
-        commandNamespace: 'runtime_bridge',
-        eventNamespace: 'runtime_bridge',
-      },
-    },
-    realm: {
-      transport: createRealmFetchTransport({
-        baseUrl: realmBaseUrl,
-        credentials: 'include',
-      }),
-    },
+    runtime,
+    realm: false,
     app: false,
     permissions: false,
   });
@@ -124,29 +304,28 @@ async function doRunInscapeBootstrap(): Promise<void> {
   const flowId = `inscape-bootstrap-${Date.now().toString(36)}`;
 
   try {
-    // Step 1: Runtime defaults (realm base URL, transport).
+    // Step 1: Runtime defaults (transport and platform projection).
     const runtimeDefaults = await getInscapeRuntimeDefaults();
     store.setRuntimeDefaults(runtimeDefaults);
 
-    // Step 2: Construct the explicit vNext Nimi client.
+    // Step 2: Construct the developer-registered Runtime client. Desktop
+    // Developer Mode owns the Runtime developer-registration gate.
     setInscapeNimiClient(null);
-    const client = await buildInscapeNimiClient(runtimeDefaults.realm.realmBaseUrl);
+    const client = await buildInscapeNimiClient();
     setInscapeNimiClient(client);
     const runtime = client.runtime;
 
     // Step 3: Resolve current account from runtime projection.
-    const runtimeAccountUser = runtime
-      ? await loadInscapeRuntimeAccountUser(runtime).catch((error) => {
-          logRendererEvent({
-            level: 'warn',
-            area: 'inscape-bootstrap.account',
-            message: 'action:runtime-account-projection-unavailable',
-            flowId,
-            details: { error: describeError(error) },
-          });
-          return null;
-        })
-      : null;
+    const runtimeAccountUser = await loadInscapeRuntimeAccountUser(runtime).catch((error) => {
+      logRendererEvent({
+        level: 'warn',
+        area: 'inscape-bootstrap.account',
+        message: 'action:runtime-account-projection-unavailable',
+        flowId,
+        details: { error: describeError(error) },
+      });
+      return null;
+    });
     if (runtimeAccountUser) {
       store.setAuthSession(runtimeAccountUser);
     } else {
@@ -155,13 +334,8 @@ async function doRunInscapeBootstrap(): Promise<void> {
 
     // Step 4: Runtime SDK readiness. Product surfaces must not mount against a
     // runtime client that cannot answer Runtime app storage projections.
-    if (runtime) {
-      await runtime.ready();
-    }
+    await runtime.ready();
 
-    // Bind text.generate from runtime first-run evidence. Fail-soft: a
-    // not-initialized outcome (runtime not yet AI-ready) is logged, not fatal —
-    // the AI surface stays unavailable until a binding exists.
     const aiConfigInit = await ensureInscapeAIConfigFromFirstRunEvidence({ client });
     if (aiConfigInit.outcome === 'not-initialized') {
       logRendererEvent({
@@ -192,8 +366,10 @@ async function doRunInscapeBootstrap(): Promise<void> {
 
 export async function logoutInscapeRuntimeAccount(): Promise<void> {
   await ensureInscapeRuntimeClientReady();
-  await getInscapeNimiClient().runtime.account.logout({
-    caller: inscapeRuntimeAccountCaller,
-    reason: 'inscape_logout',
+  throw createNimiError({
+    message: 'Inscape is a developer-registered local app and cannot own Runtime account logout. Sign out from the first-party Desktop account surface.',
+    reasonCode: ReasonCode.PRINCIPAL_UNAUTHORIZED,
+    actionHint: 'use_desktop_account_surface',
+    source: 'runtime',
   });
 }

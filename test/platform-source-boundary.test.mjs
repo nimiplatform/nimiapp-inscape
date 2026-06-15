@@ -19,6 +19,6 @@ test('dev resolver treats local Nimi SDK and Kit source as the only platform con
   assert.match(blockAfter('exclude'), /'@nimiplatform\/sdk\/runtime'/);
   assert.match(blockAfter('exclude'), /'@nimiplatform\/kit\/shell\/renderer\/bridge'/);
   assert.doesNotMatch(blockAfter('include'), /@nimiplatform\/(?:sdk|kit)/);
-  assert.match(styles, /@source "\.\.\/\.\.\/nimi-realm\/nimi\/kit\/\*\*\/\*\.\{ts,tsx\}";/);
+  assert.match(styles, /@source "\.\.\/\.\.\/\.\.\/nimi\/kit\/\*\*\/\*\.\{ts,tsx\}";/);
   assert.doesNotMatch(styles, /@nimiplatform\/kit\/dist/);
 });

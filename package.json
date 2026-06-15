@@ -25,8 +25,8 @@
     "nimicoding:doctor": "nimicoding doctor"
   },
   "dependencies": {
-    "@nimiplatform/kit": "link:../../nimi-realm/nimi/kit",
-    "@nimiplatform/sdk": "link:../../nimi-realm/nimi/sdks/typescript",
+    "@nimiplatform/kit": "link:../../nimi/kit",
+    "@nimiplatform/sdk": "link:../../nimi/sdks/typescript",
     "@tauri-apps/api": "^2.9.1",
     "i18next": "^25.10.10",
     "react": "^19.1.0",

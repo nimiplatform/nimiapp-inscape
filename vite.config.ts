@@ -10,7 +10,7 @@ const appReactJsxRuntime = fileURLToPath(
   new URL('./node_modules/react/jsx-runtime.js', import.meta.url),
 );
 const appRoot = fileURLToPath(new URL('.', import.meta.url));
-const nimiRepoRoot = path.resolve(appRoot, '../../nimi-realm/nimi');
+const nimiRepoRoot = path.resolve(appRoot, '../../nimi');
 const nimiSdkSourceRoot = path.resolve(nimiRepoRoot, 'sdks/typescript');
 const nimiKitSourceRoot = path.resolve(nimiRepoRoot, 'kit');
 

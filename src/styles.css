@@ -8,7 +8,7 @@
 /* Tailwind 4 only scans `src/**` by default. The kit's auth + ui components
  * emit Tailwind utility classes; without explicit @source entries, those
  * classes are pruned from the bundle and the kit's intended sizing collapses. */
-@source "../../nimi-realm/nimi/kit/**/*.{ts,tsx}";
+@source "../../../nimi/kit/**/*.{ts,tsx}";
 
 :root {
   color-scheme: light;

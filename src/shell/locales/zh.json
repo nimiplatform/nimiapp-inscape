@@ -38,5 +38,168 @@
     "loading": "加载中...",
     "logout": "退出登录",
     "accountMenu": "账户菜单"
+  },
+  "App": {
+    "brand": "心相 · Inscape"
+  },
+  "Language": {
+    "ariaLabel": "界面语言",
+    "short": {
+      "en": "EN",
+      "zh": "中文"
+    }
+  },
+  "Status": {
+    "loading": "加载中...",
+    "localDataLoadFailed": "无法加载本地数据：{{error}}"
+  },
+  "Common": {
+    "unknown": "未知",
+    "none": "无",
+    "listSeparator": "、",
+    "aiUnavailable": "AI 暂不可用（{{error}}）。",
+    "generate": "生成",
+    "generating": "生成中..."
+  },
+  "Navigation": {
+    "ariaLabel": "产品区域",
+    "faces": {
+      "today": "今日",
+      "relationship": "关系",
+      "self": "自我"
+    }
+  },
+  "FirstRun": {
+    "adult": "我已年满 18 周岁。",
+    "understood": "我理解 Inscape 不是心理诊断工具；如有心理困扰我会寻求专业帮助。",
+    "continue": "继续"
+  },
+  "Today": {
+    "title": "今日"
+  },
+  "TodaysRead": {
+    "title": "今日解读",
+    "right": "准",
+    "wrong": "不准",
+    "evidence": "证据",
+    "feedbackRecorded": "已记录反馈",
+    "noEvidence": "无近期反思作为依据。"
+  },
+  "DecisionAid": {
+    "title": "决策辅助 · 八功能",
+    "needsProfile": "先在「自我」建立类型先验。",
+    "placeholder": "描述你面临的决策（≤500 字）...",
+    "running": "走查中...",
+    "run": "走查八功能"
+  },
+  "ReflectionJournal": {
+    "title": "反思日记",
+    "placeholder": "写下今天的反思...",
+    "processing": "处理中...",
+    "save": "保存",
+    "needsProfile": "先在「自我」建立类型先验，反思才能提出后验更新建议。",
+    "aiUnavailableSaved": "AI 暂不可用（{{error}}）。反思已保存。",
+    "posteriorTitle": "后验更新建议",
+    "functionUpdate": "{{function}} → {{strength}}（置信 {{confidence}}）",
+    "dichotomyUpdate": "{{dichotomy}} → {{value}}",
+    "accept": "接受",
+    "reject": "拒绝"
+  },
+  "Self": {
+    "title": "自我",
+    "archiveTitle": "反思归档",
+    "archiveEmpty": "还没有反思条目。在「今日」写下反思后会出现在这里。"
+  },
+  "InitialTyping": {
+    "title": "建立你的类型先验",
+    "description": "如果你已经测过 16 型并知道自己的 4 字母代码，先填它作为先验；反思会持续修正分布。",
+    "placeholder": "选择 4 字母代码...",
+    "create": "建立"
+  },
+  "TypeProfile": {
+    "namedBefore": "这一模式常被描述为 ",
+    "namedAfter": "，但功能栈才是真正的信息。",
+    "unnamed": "分布尚未足够明确以命名一个 4 字母代码。",
+    "posteriorTitle": "功能栈后验",
+    "dichotomyTitle": "维度分布",
+    "footnote": "类型是会移动的分布，不是固定标签。"
+  },
+  "SelfMirror": {
+    "title": "自我镜子",
+    "engine": "引擎：{{hero}}（{{heroCore}}）+ {{parent}}",
+    "growthEdge": "成长 / 压力边：{{inferior}}（{{inferiorCore}}）"
+  },
+  "Relationship": {
+    "title": "关系",
+    "empty": "还没有关系。添加一个人，开始建立你的关系图谱。",
+    "buttonLabel": "{{name}} · {{nature}}"
+  },
+  "RelationshipNature": {
+    "partner": "伴侣",
+    "parent": "父母",
+    "child": "子女",
+    "sibling": "手足",
+    "friend": "朋友",
+    "coworker": "同事",
+    "mentor": "导师",
+    "other": "其他"
+  },
+  "AddPerson": {
+    "title": "添加一个人",
+    "namePlaceholder": "名字或代称",
+    "adult": "我确认此人已满 18 周岁。",
+    "observation": "我确认这些是我基于成人之间互动的个人观察，而非此人的个人数据档案。",
+    "add": "添加"
+  },
+  "RelationshipDetail": {
+    "snippetPlaceholder": "粘贴一段对话片段...",
+    "addSnippet": "添加片段",
+    "collectedSnippets_one": "已收集 {{count}} 段片段。",
+    "collectedSnippets_other": "已收集 {{count}} 段片段。",
+    "analyzing": "分析中...",
+    "analyze": "分析摩擦模式",
+    "quarantineWarning": "确认此人未满 18 岁？该主体将立即从所有分析中移除并移入隔离区（IS-PRIV-03）。",
+    "confirmQuarantine": "确认隔离",
+    "cancel": "取消",
+    "markUnder18": "标记此人未满 18 岁"
+  },
+  "DyadInsight": {
+    "needsSelfType": "先在「自我」建立你的类型，才能看你们的相处洞察。",
+    "assignType": "给 {{name}} 一个类型，解锁「你 × Ta」相处洞察：",
+    "otherFallback": "对方",
+    "selectType": "选择 4 字母代码...",
+    "set": "设定",
+    "inferHint": "不知道 ta 的代码？用几句话描述，让 Inscape 推断：",
+    "descriptionPlaceholder": "ta 是个什么样的人？例如：常推动快速决策，逻辑强，喜欢主导。",
+    "inferring": "推断中...",
+    "infer": "用描述推断",
+    "inferFailed": "未能从描述中可靠推断类型，请直接选择代码。",
+    "headline": "你（{{selfType}}）× Ta（{{otherType}}）",
+    "sharedDifferent": "共享维度：{{shared}}；差异维度：{{different}}",
+    "dominant": "主导：你 {{selfDominant}} / ta {{otherDominant}}（{{relation}}）",
+    "dynamic": "动态：{{headline}}",
+    "sharedEgo": "共享自我功能：{{functions}}",
+    "generate": "生成相处洞察"
+  },
+  "CommunicationRewrite": {
+    "title": "沟通改写",
+    "placeholder": "粘贴你打算发送的草稿...",
+    "rewriting": "改写中...",
+    "generate": "生成改写",
+    "refusalFollowup": "试试「今日」的反思日记：这条信息想要保护的是什么？Inscape 可以帮你看清底层的读法，但不会帮你写施压信息。",
+    "disclaimer": "这些改写仅基于你的视角——对方没有参与此框定。请当作草稿，而非脚本。",
+    "historySummary": "本次会话的改写历史（{{count}}）",
+    "refusal": {
+      "money": "这条信息涉及金钱情境，Inscape 不在此类情境下提供改写。",
+      "employment": "这条信息涉及雇佣 / 职权情境，Inscape 不在此类情境下提供改写。",
+      "sexual_consent": "这条信息涉及性同意情境，Inscape 不在此类情境下提供改写。",
+      "decision_pressure": "这条信息读起来像在施加决策压力或下最后通牒；改写它可能让施压更容易传达，而这不是这个功能的用途。"
+    }
+  },
+  "Quarantine": {
+    "title": "隔离区",
+    "description": "以下主体被判定为未满 18 岁，已从所有分析中移除并永不处理。你可以永久删除，或保留隔离。",
+    "quarantinedAt": "隔离于 {{time}}",
+    "delete": "永久删除"
   }
 }

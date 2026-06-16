@@ -28,3 +28,8 @@ test('INTP × ISFJ headline falls back to the different-axis resonance', () => {
   assert.equal(a.dominantRelation, 'different_axis');
   assert.match(dyadHeadline(a), /互补/);
 });
+
+test('dyad headline can be localized to English', () => {
+  const a = analyzeDyad('INTP', 'ISFJ');
+  assert.match(dyadHeadline(a, 'en'), /complementary/);
+});

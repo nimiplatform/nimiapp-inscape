@@ -3,15 +3,18 @@
 // (a user-driven signal), 🔍 shows the reflections it was grounded in.
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildTodaysReadPrompt } from './today-prompts.ts';
 
 export function TodaysRead() {
+  const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
   const addObservationEvent = useInscapeStore((s) => s.addObservationEvent);
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
   const profile = space?.self_subject.type_profile ?? null;
+  const locale = space?.settings.locale;
   const recent = (space?.self_subject.reflection_entries ?? []).slice(-3);
 
   const [read, setRead] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export function TodaysRead() {
     setError(null);
     setFeedback(null);
     setShowEvidence(false);
-    const result = await client.generate(buildTodaysReadPrompt(recent.map((r) => r.text), profile));
+    const result = await client.generate(buildTodaysReadPrompt(recent.map((r) => r.text), profile, locale));
     if (result.ok) {
       setRead(result.text);
     } else {
@@ -44,14 +47,14 @@ export function TodaysRead() {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        <h3 className="text-sm font-medium">今日解读</h3>
+        <h3 className="text-sm font-medium">{t('TodaysRead.title')}</h3>
         <button
           type="button"
           onClick={() => void onGenerate()}
           disabled={working}
           className="rounded bg-black/80 px-3 py-1 text-xs text-white disabled:opacity-40"
         >
-          {working ? '生成中…' : '生成'}
+          {working ? t('Common.generating') : t('Common.generate')}
         </button>
       </div>
 
@@ -60,15 +63,15 @@ export function TodaysRead() {
           <p className="whitespace-pre-wrap">{read}</p>
           <div className="flex items-center gap-3 text-xs">
             <button type="button" onClick={() => onFeedback('right')} className="opacity-70 hover:opacity-100">
-              ✓ 准
+              ✓ {t('TodaysRead.right')}
             </button>
             <button type="button" onClick={() => onFeedback('wrong')} className="opacity-70 hover:opacity-100">
-              ✗ 不准
+              ✗ {t('TodaysRead.wrong')}
             </button>
             <button type="button" onClick={() => setShowEvidence((v) => !v)} className="opacity-70 hover:opacity-100">
-              🔍 证据
+              🔍 {t('TodaysRead.evidence')}
             </button>
-            {feedback && <span className="opacity-50">已记录反馈</span>}
+            {feedback && <span className="opacity-50">{t('TodaysRead.feedbackRecorded')}</span>}
           </div>
           {showEvidence && (
             <div className="text-xs opacity-70">
@@ -79,13 +82,13 @@ export function TodaysRead() {
                   ))}
                 </ul>
               ) : (
-                <span>无近期反思作为依据。</span>
+                <span>{t('TodaysRead.noEvidence')}</span>
               )}
             </div>
           )}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">AI 暂不可用（{error}）。</p>}
+      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

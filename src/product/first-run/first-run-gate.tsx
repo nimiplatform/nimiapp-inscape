@@ -4,9 +4,13 @@
 // establishes the adult-attested space.
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { normalizeInscapeLocale, DEFAULT_INSCAPE_LOCALE } from '../../domain/locale.ts';
+import { StandaloneLanguageSwitch } from '../settings/language-switch.tsx';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 
 export function FirstRunGate() {
+  const { t, i18n } = useTranslation();
   const completeFirstRun = useInscapeStore((s) => s.completeFirstRun);
   const [adult, setAdult] = useState(false);
   const [understood, setUnderstood] = useState(false);
@@ -15,15 +19,19 @@ export function FirstRunGate() {
 
   function onContinue() {
     setSubmitting(true);
-    void completeFirstRun(new Date().toISOString());
+    const locale = normalizeInscapeLocale(i18n.resolvedLanguage || i18n.language) ?? DEFAULT_INSCAPE_LOCALE;
+    void completeFirstRun(new Date().toISOString(), locale);
   }
 
   return (
     <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-5 p-8">
-      <h1 className="text-xl font-semibold">心相 · Inscape</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">{t('App.brand')}</h1>
+        <StandaloneLanguageSwitch />
+      </div>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
-        <span>我已年满 18 周岁。</span>
+        <span>{t('FirstRun.adult')}</span>
       </label>
       <label className="flex items-start gap-2 text-sm">
         <input
@@ -31,7 +39,7 @@ export function FirstRunGate() {
           checked={understood}
           onChange={(e) => setUnderstood(e.target.checked)}
         />
-        <span>我理解 Inscape 不是心理诊断工具；如有心理困扰我会寻求专业帮助。</span>
+        <span>{t('FirstRun.understood')}</span>
       </label>
       <button
         type="button"
@@ -39,7 +47,7 @@ export function FirstRunGate() {
         onClick={onContinue}
         className="self-start rounded bg-black/80 px-4 py-2 text-white disabled:opacity-40"
       >
-        继续
+        {t('FirstRun.continue')}
       </button>
     </div>
   );

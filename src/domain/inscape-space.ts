@@ -3,13 +3,14 @@
 
 import type { AgeAttestation, Subject } from './subject.ts';
 import type { Relationship } from './relationship.ts';
+import { DEFAULT_INSCAPE_LOCALE, type InscapeLocale } from './locale.ts';
 
 export const INSCAPE_SPACE_SCHEMA_VERSION = 1;
 
 export interface InscapeSettings {
   /** Opt-in local-only debug log (Scenario 12). Never network telemetry. */
   readonly local_debug_logging: boolean;
-  readonly locale: string;
+  readonly locale: InscapeLocale;
 }
 
 /**
@@ -56,7 +57,11 @@ function emptySelfSubject(now: string, attestedAdult: boolean): Subject {
   };
 }
 
-export function createEmptyInscapeSpace(now: string, attestedAdult: boolean): InscapeSpace {
+export function createEmptyInscapeSpace(
+  now: string,
+  attestedAdult: boolean,
+  locale: InscapeLocale = DEFAULT_INSCAPE_LOCALE,
+): InscapeSpace {
   return {
     schema_version: INSCAPE_SPACE_SCHEMA_VERSION,
     attested_adult: attestedAdult,
@@ -64,7 +69,7 @@ export function createEmptyInscapeSpace(now: string, attestedAdult: boolean): In
     other_subjects: [],
     relationships: [],
     quarantine: [],
-    settings: { local_debug_logging: false, locale: 'en' },
+    settings: { local_debug_logging: false, locale },
     created_at: now,
     updated_at: now,
   };

@@ -18,6 +18,11 @@ test("today's read grounds in the function stack when a profile exists", () => {
   assert.match(prompt.user, /inferior\/grip Fe/);
 });
 
+test("today's read can explicitly request English output", () => {
+  const prompt = buildTodaysReadPrompt(['busy meeting day'], null, 'en');
+  assert.match(prompt.system, /Respond in clear, natural English/);
+});
+
 test('decision aid prompt walks the eight functions in Beebe order, no prescription', () => {
   const profile = seedTypeProfileFromType('INTJ', '2026-06-05T00:00:00Z');
   const prompt = buildDecisionAidPrompt('take the job?', profile);

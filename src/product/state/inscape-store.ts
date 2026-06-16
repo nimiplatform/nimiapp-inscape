@@ -9,6 +9,7 @@ import {
   type InscapeSpace,
   type QuarantineRecord,
 } from '../../domain/inscape-space.ts';
+import { type InscapeLocale } from '../../domain/locale.ts';
 import type { FourLetterType } from '../../domain/typology.ts';
 import type {
   ObservationEvent,
@@ -43,7 +44,8 @@ export interface InscapeStoreState {
   readonly space: InscapeSpace | null;
   readonly error: string | null;
   initialize: () => Promise<void>;
-  completeFirstRun: (now: string) => Promise<void>;
+  completeFirstRun: (now: string, locale?: InscapeLocale) => Promise<void>;
+  setLocale: (locale: InscapeLocale, now: string) => Promise<boolean>;
   setInitialType: (type: FourLetterType, now: string) => Promise<void>;
   addReflectionEntry: (text: string, now: string) => Promise<string>;
   applyAcceptedPosteriorUpdate: (
@@ -96,15 +98,26 @@ export function createInscapeStore(client: PersistenceClient) {
         );
       },
 
-      async completeFirstRun(now: string) {
+      async completeFirstRun(now: string, locale?: InscapeLocale) {
         // 18+ attestation recorded; the space cannot persist without it (IS-PRIV).
-        const space = createEmptyInscapeSpace(now, true);
+        const space = createEmptyInscapeSpace(now, true, locale);
         const saved = await client.save(space);
         if (!saved.ok) {
           set({ status: 'error', error: describePersistenceError(saved.error) });
           return;
         }
         set({ status: 'ready', space });
+      },
+
+      async setLocale(locale: InscapeLocale, now: string): Promise<boolean> {
+        const current = get().space;
+        if (!current) return false;
+        if (current.settings.locale === locale) return true;
+        return persist({
+          ...current,
+          settings: { ...current.settings, locale },
+          updated_at: now,
+        });
       },
 
       async setInitialType(type: FourLetterType, now: string) {

@@ -3,13 +3,16 @@
 // (IS-PROD-07).
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { FACES, type FaceId } from '../navigation/tab-descriptor.ts';
 import { TodayFace } from '../faces/today-face.tsx';
 import { RelationshipFace } from '../faces/relationship-face.tsx';
 import { SelfFace } from '../faces/self-face.tsx';
+import { PersistedLanguageSwitch } from '../settings/language-switch.tsx';
 
 export function InscapeShell() {
+  const { t } = useTranslation();
   // Onboarding aha: a user with no type prior lands on Self to set it and meet
   // the mirror first, rather than an empty Today.
   const hasType = useInscapeStore((s) => Boolean(s.space?.self_subject.type_profile));
@@ -17,8 +20,8 @@ export function InscapeShell() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-6 border-b border-black/10 px-6 py-3">
-        <span className="font-semibold">心相 · Inscape</span>
-        <nav className="flex gap-1" aria-label="faces">
+        <span className="font-semibold">{t('App.brand')}</span>
+        <nav className="flex gap-1" aria-label={t('Navigation.ariaLabel')}>
           {FACES.map((face) => (
             <button
               key={face.id}
@@ -31,10 +34,11 @@ export function InscapeShell() {
                   : 'rounded px-3 py-1 opacity-70 hover:opacity-100'
               }
             >
-              {face.label}
+              {t(`Navigation.faces.${face.id}`)}
             </button>
           ))}
         </nav>
+        <PersistedLanguageSwitch className="ml-auto" />
       </header>
       <main className="flex-1 overflow-auto p-6">
         {active === 'today' && <TodayFace />}

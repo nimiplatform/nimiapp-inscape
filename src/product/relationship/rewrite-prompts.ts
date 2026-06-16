@@ -2,6 +2,8 @@
 // Layer 3 (mandatory output disclaimer). Pure builder.
 
 import type { RelationshipNature } from '../../domain/relationship.ts';
+import type { InscapeLocale } from '../../domain/locale.ts';
+import { DEFAULT_AI_OUTPUT_LOCALE, respondInLocale } from '../insight/prompt-directives.ts';
 import type { AiPrompt } from '../today/reflection-prompts.ts';
 
 export const REWRITE_DISCLAIMER =
@@ -12,6 +14,7 @@ export function buildRewritePrompt(
   recipientName: string,
   nature: RelationshipNature,
   selfLeadingType: string | null,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
 ): AiPrompt {
   const system = [
     "You are Inscape's communication-rewrite surface.",
@@ -20,7 +23,7 @@ export function buildRewritePrompt(
     'Your job is NOT to help the user get their way — it is to help them communicate cleanly and respectfully.',
     'Produce 2-3 alternative rewrites tuned to the relationship, each clear and boundaried.',
     'Do NOT add pressure, deadlines, ultimatums, or conditions the user did not already state.',
-    "Reply in the user's language.",
+    respondInLocale(locale),
   ].join(' ');
   const user = `Recipient: ${recipientName} (${nature}). My pattern: ${selfLeadingType ?? 'unknown'}. Draft message: ${draft}`;
   return { system, user };

@@ -3,6 +3,8 @@
 // a valid code; a bad guess is dropped, not coerced). Pure.
 
 import { isFourLetterType, type FourLetterType } from '../../domain/typology.ts';
+import type { InscapeLocale } from '../../domain/locale.ts';
+import { DEFAULT_AI_OUTPUT_LOCALE } from '../insight/prompt-directives.ts';
 import type { AiPrompt } from '../today/reflection-prompts.ts';
 
 export interface InferredType {
@@ -15,12 +17,18 @@ export type InferTypeResult =
   | { ok: true; inferred: InferredType }
   | { ok: false; failure: { kind: 'invalid_json' | 'schema_violation'; detail: string } };
 
-export function buildInferTypePrompt(description: string): AiPrompt {
+export function buildInferTypePrompt(
+  description: string,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): AiPrompt {
   const system = [
     'You are Inscape. From a short description of a person, infer the single most likely Jungian 16-type 4-letter code.',
     'Return ONLY a single JSON object — no markdown, no prose — matching:',
     '{"type":"<one of the 16 uppercase codes>","confidence":0..1,"rationale":"<short>"}.',
     'Keep confidence modest for thin descriptions. Do not invent codes outside the 16.',
+    locale === 'zh'
+      ? 'The rationale value must be written in 简体中文.'
+      : 'The rationale value must be written in English.',
   ].join(' ');
   return { system, user: `Description: ${description}` };
 }

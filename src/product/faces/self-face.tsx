@@ -5,26 +5,26 @@ import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { InitialTyping } from '../self/initial-typing.tsx';
 import { TypeProfileView } from '../self/type-profile-view.tsx';
 import { SelfMirror } from '../self/self-mirror.tsx';
+import { useTranslation } from 'react-i18next';
 
 export function SelfFace() {
+  const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
   const profile = space?.self_subject.type_profile ?? null;
   const reflections = space?.self_subject.reflection_entries ?? [];
 
   return (
     <section className="space-y-6">
-      <h2 className="text-lg font-medium">自我</h2>
+      <h2 className="text-lg font-medium">{t('Self.title')}</h2>
 
       {profile ? <TypeProfileView profile={profile} /> : <InitialTyping />}
 
       {profile && <SelfMirror profile={profile} />}
 
       <div>
-        <h3 className="mb-2 text-sm font-medium">反思归档</h3>
+        <h3 className="mb-2 text-sm font-medium">{t('Self.archiveTitle')}</h3>
         {reflections.length === 0 ? (
-          <p className="text-sm opacity-60">
-            还没有反思条目。在「今日」写下反思后会出现在这里（wave-3.3）。
-          </p>
+          <p className="text-sm opacity-60">{t('Self.archiveEmpty')}</p>
         ) : (
           <ul className="space-y-1 text-sm">
             {reflections.map((entry) => (

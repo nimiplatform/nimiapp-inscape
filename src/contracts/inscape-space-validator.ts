@@ -4,6 +4,7 @@
 
 import type { InscapeSpace } from '../domain/inscape-space.ts';
 import { INSCAPE_SPACE_SCHEMA_VERSION } from '../domain/inscape-space.ts';
+import { isInscapeLocale } from '../domain/locale.ts';
 import type { Subject } from '../domain/subject.ts';
 import type { Relationship } from '../domain/relationship.ts';
 
@@ -109,6 +110,9 @@ export function validateInscapeSpace(space: InscapeSpace): InscapeSpaceValidatio
     return missing('settings.local_debug_logging');
   }
   if (!isNonEmptyString(space.settings.locale)) return missing('settings.locale');
+  if (!isInscapeLocale(space.settings.locale)) {
+    return invalid('settings.locale', 'must be "en" or "zh"');
+  }
 
   if (!isNonEmptyString(space.created_at)) return missing('created_at');
   if (!isNonEmptyString(space.updated_at)) return missing('updated_at');

@@ -3,21 +3,23 @@
 // SQLite CHECKs enforce them too).
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import type { RelationshipNature } from '../../domain/relationship.ts';
 
-const NATURES: ReadonlyArray<{ value: RelationshipNature; label: string }> = [
-  { value: 'partner', label: '伴侣' },
-  { value: 'parent', label: '父母' },
-  { value: 'child', label: '子女' },
-  { value: 'sibling', label: '手足' },
-  { value: 'friend', label: '朋友' },
-  { value: 'coworker', label: '同事' },
-  { value: 'mentor', label: '导师' },
-  { value: 'other', label: '其他' },
+const NATURES: readonly RelationshipNature[] = [
+  'partner',
+  'parent',
+  'child',
+  'sibling',
+  'friend',
+  'coworker',
+  'mentor',
+  'other',
 ];
 
 export function AddPersonForm() {
+  const { t } = useTranslation();
   const addPerson = useInscapeStore((s) => s.addPerson);
   const [name, setName] = useState('');
   const [nature, setNature] = useState<RelationshipNature>('friend');
@@ -36,12 +38,12 @@ export function AddPersonForm() {
 
   return (
     <div className="space-y-2 rounded border border-black/10 p-3">
-      <h3 className="text-sm font-medium">添加一个人</h3>
+      <h3 className="text-sm font-medium">{t('AddPerson.title')}</h3>
       <div className="flex flex-wrap items-center gap-2">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="名字或代称"
+          placeholder={t('AddPerson.namePlaceholder')}
           className="rounded border border-black/15 px-2 py-1 text-sm"
         />
         <select
@@ -50,15 +52,15 @@ export function AddPersonForm() {
           className="rounded border border-black/15 px-2 py-1 text-sm"
         >
           {NATURES.map((n) => (
-            <option key={n.value} value={n.value}>
-              {n.label}
+            <option key={n} value={n}>
+              {t(`RelationshipNature.${n}`)}
             </option>
           ))}
         </select>
       </div>
       <label className="flex items-start gap-2 text-xs">
         <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
-        <span>我确认此人已满 18 周岁。</span>
+        <span>{t('AddPerson.adult')}</span>
       </label>
       <label className="flex items-start gap-2 text-xs">
         <input
@@ -66,7 +68,7 @@ export function AddPersonForm() {
           checked={observation}
           onChange={(e) => setObservation(e.target.checked)}
         />
-        <span>我确认这些是我基于成人之间互动的个人观察，而非此人的个人数据档案。</span>
+        <span>{t('AddPerson.observation')}</span>
       </label>
       <button
         type="button"
@@ -74,7 +76,7 @@ export function AddPersonForm() {
         onClick={onAdd}
         className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
       >
-        添加
+        {t('AddPerson.add')}
       </button>
     </div>
   );

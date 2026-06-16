@@ -38,6 +38,13 @@ test('empty attested space validates', () => {
   assert.equal(validateInscapeSpace(createEmptyInscapeSpace(NOW, true)).ok, true);
 });
 
+test('rejects an unsupported locale', () => {
+  const s = createEmptyInscapeSpace(NOW, true);
+  const r = validateInscapeSpace({ ...s, settings: { ...s.settings, locale: 'fr' } });
+  assert.equal(r.ok, false);
+  assert.equal(r.error.field, 'settings.locale');
+});
+
 test('space with an other_person + relationship validates', () => {
   const s = createEmptyInscapeSpace(NOW, true);
   const space = { ...s, other_subjects: [otherSubject('m1')], relationships: [relationship('m1')] };

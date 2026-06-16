@@ -3,6 +3,7 @@
 // (Mode C, 4-layer anti-manipulation) lands in wave-4.
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildFrictionPrompt } from './relationship-prompts.ts';
@@ -18,10 +19,12 @@ export function RelationshipDetail({
   relationship: Relationship;
   other: Subject | undefined;
 }) {
+  const { t } = useTranslation();
   const addCommunicationLog = useInscapeStore((s) => s.addCommunicationLog);
   const quarantineOtherSubject = useInscapeStore((s) => s.quarantineOtherSubject);
   const space = useInscapeStore((s) => s.space);
   const selfLeading = space?.self_subject.type_profile?.leading_type ?? null;
+  const locale = space?.settings.locale;
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
 
   const [snippet, setSnippet] = useState('');
@@ -47,6 +50,7 @@ export function RelationshipDetail({
         relationship.communication_logs.map((l) => l.snippet),
         selfLeading,
         relationship.nature,
+        locale,
       ),
     );
     if (result.ok) {
@@ -60,7 +64,10 @@ export function RelationshipDetail({
   return (
     <div className="space-y-2 rounded border border-black/10 p-3">
       <h4 className="text-sm font-medium">
-        {other?.display_name ?? '（未知）'} · {relationship.nature}
+        {t('Relationship.buttonLabel', {
+          name: other?.display_name ?? t('Common.unknown'),
+          nature: t(`RelationshipNature.${relationship.nature}`),
+        })}
       </h4>
 
       <DyadInsight relationship={relationship} other={other} />
@@ -69,7 +76,7 @@ export function RelationshipDetail({
         <input
           value={snippet}
           onChange={(e) => setSnippet(e.target.value)}
-          placeholder="粘贴一段对话片段…"
+          placeholder={t('RelationshipDetail.snippetPlaceholder')}
           className="flex-1 rounded border border-black/15 px-2 py-1 text-sm"
         />
         <button
@@ -78,28 +85,32 @@ export function RelationshipDetail({
           disabled={!snippet.trim()}
           className="rounded border border-black/15 px-2 py-1 text-sm disabled:opacity-40"
         >
-          添加片段
+          {t('RelationshipDetail.addSnippet')}
         </button>
       </div>
-      <p className="text-xs opacity-60">已收集 {relationship.communication_logs.length} 段片段。</p>
+      <p className="text-xs opacity-60">
+        {t('RelationshipDetail.collectedSnippets', {
+          count: relationship.communication_logs.length,
+        })}
+      </p>
       <button
         type="button"
         onClick={() => void onAnalyze()}
         disabled={working || relationship.communication_logs.length === 0}
         className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
       >
-        {working ? '分析中…' : '分析摩擦模式'}
+        {working ? t('RelationshipDetail.analyzing') : t('RelationshipDetail.analyze')}
       </button>
       {friction && (
         <div className="whitespace-pre-wrap rounded border border-black/10 bg-black/[0.02] p-3 text-sm">
           {friction}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">AI 暂不可用（{error}）。</p>}
+      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
 
       <div className="border-t border-black/10 pt-3">
         <CommunicationRewrite
-          recipientName={other?.display_name ?? '（未知）'}
+          recipientName={other?.display_name ?? t('Common.unknown')}
           nature={relationship.nature}
         />
       </div>
@@ -107,9 +118,7 @@ export function RelationshipDetail({
       <div className="border-t border-black/10 pt-3">
         {confirmQuarantine ? (
           <div className="space-y-1 text-xs">
-            <p className="text-amber-700">
-              确认此人未满 18 岁？该主体将立即从所有分析中移除并移入隔离区（IS-PRIV-03）。
-            </p>
+            <p className="text-amber-700">{t('RelationshipDetail.quarantineWarning')}</p>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -118,14 +127,14 @@ export function RelationshipDetail({
                 }
                 className="rounded bg-amber-600 px-2 py-1 text-white"
               >
-                确认隔离
+                {t('RelationshipDetail.confirmQuarantine')}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmQuarantine(false)}
                 className="rounded border border-black/15 px-2 py-1"
               >
-                取消
+                {t('RelationshipDetail.cancel')}
               </button>
             </div>
           </div>
@@ -135,7 +144,7 @@ export function RelationshipDetail({
             onClick={() => setConfirmQuarantine(true)}
             className="text-xs text-amber-700 hover:underline"
           >
-            标记此人未满 18 岁
+            {t('RelationshipDetail.markUnder18')}
           </button>
         )}
       </div>

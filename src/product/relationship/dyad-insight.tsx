@@ -4,6 +4,7 @@
 // directly; the narrative is LLM, grounded in that skeleton.
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { analyzeDyad } from './dyad-analysis.ts';
@@ -24,10 +25,12 @@ export function DyadInsight({
   relationship: Relationship;
   other: Subject | undefined;
 }) {
+  const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
   const setOtherSubjectType = useInscapeStore((s) => s.setOtherSubjectType);
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
   const selfType = space?.self_subject.type_profile?.leading_type ?? null;
+  const locale = space?.settings.locale;
   const otherType = other?.type_profile?.leading_type ?? null;
 
   const [code, setCode] = useState('');
@@ -45,7 +48,7 @@ export function DyadInsight({
     setWorking(true);
     setInsight(null);
     setError(null);
-    const result = await client.generate(buildDyadInsightPrompt(analysis));
+    const result = await client.generate(buildDyadInsightPrompt(analysis, locale));
     if (result.ok) {
       setInsight(result.text);
     } else {
@@ -59,7 +62,7 @@ export function DyadInsight({
     if (!trimmed || inferring) return;
     setInferring(true);
     setInferError(null);
-    const result = await client.generate(buildInferTypePrompt(trimmed));
+    const result = await client.generate(buildInferTypePrompt(trimmed, locale));
     if (result.ok) {
       const parsed = parseInferredType(result.text);
       if (parsed.ok) {
@@ -69,7 +72,7 @@ export function DyadInsight({
           new Date().toISOString(),
         );
       } else {
-        setInferError('未能从描述中可靠推断类型，请直接选择代码。');
+        setInferError(t('DyadInsight.inferFailed'));
       }
     } else {
       setInferError(`${result.failure.kind}: ${result.failure.detail}`);
@@ -78,21 +81,22 @@ export function DyadInsight({
   }
 
   if (!selfType) {
-    return <p className="text-xs opacity-60">先在「自我」建立你的类型，才能看你们的相处洞察。</p>;
+    return <p className="text-xs opacity-60">{t('DyadInsight.needsSelfType')}</p>;
   }
 
   if (!otherType || !analysis) {
     const valid = isFourLetterType(code);
+    const otherName = other?.display_name ?? t('DyadInsight.otherFallback');
     return (
       <div className="space-y-2">
-        <p className="text-sm">给 {other?.display_name ?? '对方'} 一个类型，解锁「你 × Ta」相处洞察：</p>
+        <p className="text-sm">{t('DyadInsight.assignType', { name: otherName })}</p>
         <div className="flex items-center gap-2">
           <select
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="rounded border border-black/15 px-2 py-1 text-sm"
           >
-            <option value="">选择 4 字母代码…</option>
+            <option value="">{t('DyadInsight.selectType')}</option>
             {FOUR_LETTER_TYPES.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -112,16 +116,16 @@ export function DyadInsight({
             }
             className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
           >
-            设定
+            {t('DyadInsight.set')}
           </button>
         </div>
         <div className="space-y-1">
-          <p className="text-xs opacity-70">不知道 ta 的代码？用几句话描述，让 Inscape 推断：</p>
+          <p className="text-xs opacity-70">{t('DyadInsight.inferHint')}</p>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            placeholder="ta 是个什么样的人？（例如：常推动快速决策，逻辑强，喜欢主导）"
+            placeholder={t('DyadInsight.descriptionPlaceholder')}
             className="w-full rounded border border-black/15 p-2 text-sm"
           />
           <button
@@ -130,7 +134,7 @@ export function DyadInsight({
             onClick={() => void onInfer()}
             className="rounded border border-black/15 px-3 py-1 text-sm disabled:opacity-40"
           >
-            {inferring ? '推断中…' : '用描述推断'}
+            {inferring ? t('DyadInsight.inferring') : t('DyadInsight.infer')}
           </button>
           {inferError && <p className="text-xs opacity-60">{inferError}</p>}
         </div>
@@ -141,19 +145,29 @@ export function DyadInsight({
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">
-        你（{selfType}）× Ta（{otherType}）
+        {t('DyadInsight.headline', { selfType, otherType })}
       </h4>
       <ul className="space-y-0.5 text-xs opacity-70">
         <li>
-          共享维度：{analysis.sharedDichotomies.join('、') || '无'}；差异维度：
-          {analysis.differingDichotomies.join('、') || '无'}
+          {t('DyadInsight.sharedDifferent', {
+            shared: analysis.sharedDichotomies.join(t('Common.listSeparator')) || t('Common.none'),
+            different: analysis.differingDichotomies.join(t('Common.listSeparator')) || t('Common.none'),
+          })}
         </li>
         <li>
-          主导：你 {analysis.selfDominant} / ta {analysis.otherDominant}（{dominantRelationLabel(analysis)}）
+          {t('DyadInsight.dominant', {
+            selfDominant: analysis.selfDominant,
+            otherDominant: analysis.otherDominant,
+            relation: dominantRelationLabel(analysis, locale),
+          })}
         </li>
-        <li>动态：{dyadHeadline(analysis)}</li>
+        <li>{t('DyadInsight.dynamic', { headline: dyadHeadline(analysis, locale) })}</li>
         {analysis.sharedEgoFunctions.length > 0 && (
-          <li>共享自我功能：{analysis.sharedEgoFunctions.join('、')}</li>
+          <li>
+            {t('DyadInsight.sharedEgo', {
+              functions: analysis.sharedEgoFunctions.join(t('Common.listSeparator')),
+            })}
+          </li>
         )}
       </ul>
       <button
@@ -162,14 +176,14 @@ export function DyadInsight({
         disabled={working}
         className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
       >
-        {working ? '生成中…' : '生成相处洞察'}
+        {working ? t('Common.generating') : t('DyadInsight.generate')}
       </button>
       {insight && (
         <div className="whitespace-pre-wrap rounded border border-black/10 bg-black/[0.02] p-3 text-sm">
           {insight}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">AI 暂不可用（{error}）。</p>}
+      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

@@ -2,28 +2,42 @@
 // curated FUNCTION_CORE semantics. Recognizable and a little provocative, never
 // a verdict. Pure builder.
 
-import { FUNCTION_CORE } from '../insight/function-knowledge.ts';
-import { RESPOND_IN_CHINESE, USE_EXACT_LABELS } from '../insight/prompt-directives.ts';
+import type { InscapeLocale } from '../../domain/locale.ts';
+import { functionCore } from '../insight/function-knowledge.ts';
+import {
+  DEFAULT_AI_OUTPUT_LOCALE,
+  respondInLocale,
+  useExactLabelsDirective,
+} from '../insight/prompt-directives.ts';
 import type { AiPrompt } from '../today/reflection-prompts.ts';
 import type { SelfAnalysis } from './self-analysis.ts';
 
-export function buildSelfMirrorPrompt(analysis: SelfAnalysis): AiPrompt {
+const SECTION_HEADERS: Record<InscapeLocale, string> = {
+  zh: '你的引擎 / 盲区与劣势 / 压力之下 / 成长边.',
+  en: 'Your engine / Blind spots and weak points / Under stress / Growth edge.',
+};
+
+export function buildSelfMirrorPrompt(
+  analysis: SelfAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): AiPrompt {
+  const core = functionCore(locale);
   const facts = [
     `Leading type: ${analysis.leadingType}.`,
-    `Hero (dominant) ${analysis.hero} = ${FUNCTION_CORE[analysis.hero]}.`,
-    `Parent (auxiliary) ${analysis.parent} = ${FUNCTION_CORE[analysis.parent]}.`,
-    `Inferior / anima ${analysis.inferior} = ${FUNCTION_CORE[analysis.inferior]} — this is BOTH the stress/grip point AND the primary growth edge; the 成长边 section must be about developing ${analysis.inferior}.`,
-    `Demon ${analysis.demon} = ${FUNCTION_CORE[analysis.demon]} — the deepest, least-developed shadow, NOT the day-to-day growth target; do not frame 成长边 around ${analysis.demon}.`,
+    `Hero (dominant) ${analysis.hero} = ${core[analysis.hero]}.`,
+    `Parent (auxiliary) ${analysis.parent} = ${core[analysis.parent]}.`,
+    `Inferior / anima ${analysis.inferior} = ${core[analysis.inferior]} — this is BOTH the stress/grip point AND the primary growth edge; the Growth edge section must be about developing ${analysis.inferior}.`,
+    `Demon ${analysis.demon} = ${core[analysis.demon]} — the deepest, least-developed shadow, NOT the day-to-day growth target; do not frame Growth edge around ${analysis.demon}.`,
     `Currently loudest function in recent signals: ${analysis.loudest}.`,
   ].join(' ');
   const system = [
     'You are Inscape. Produce a self-mirror: a recognizable, slightly provocative read of how this person operates,',
     'grounded in their cognitive-function stack. Use EXACTLY these section headers, in order:',
-    '你的引擎 / 盲区与劣势 / 压力之下 / 成长边.',
+    SECTION_HEADERS[locale],
     'Ground every point in the provided function facts. No flattery, no pathologizing, no determinism —',
     'tendencies a person can recognize, not a verdict — 2-3 short sentences per section.',
-    RESPOND_IN_CHINESE,
-    USE_EXACT_LABELS,
+    respondInLocale(locale),
+    useExactLabelsDirective(locale),
   ].join(' ');
   return { system, user: `Facts: ${facts}` };
 }

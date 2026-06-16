@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS app_attestation (\
 CREATE TABLE IF NOT EXISTS settings (\
   id INTEGER PRIMARY KEY CHECK (id = 1),\
   local_debug_logging INTEGER NOT NULL CHECK (local_debug_logging IN (0, 1)),\
-  locale TEXT NOT NULL\
+  locale TEXT NOT NULL CHECK (locale IN ('en', 'zh'))\
 );\
 CREATE TABLE IF NOT EXISTS subjects (\
   id TEXT PRIMARY KEY,\
@@ -208,6 +208,13 @@ fn bool_to_i64(value: bool) -> i64 {
     }
 }
 
+fn validate_locale(locale: &str) -> Result<(), String> {
+    match locale {
+        "en" | "zh" => Ok(()),
+        _ => Err(format!("unsupported locale: {locale}")),
+    }
+}
+
 fn insert_subject(tx: &Connection, subject: &Subject) -> Result<(), String> {
     let type_profile_text = match &subject.type_profile {
         Some(value) => Some(
@@ -289,6 +296,7 @@ pub fn save_space(conn: &mut Connection, space: &InscapeSpace) -> Result<(), Str
     if !space.attested_adult || !space.self_subject.age_attestation.attested_adult {
         return Err("inscape space save refused: adult attestation required".to_string());
     }
+    validate_locale(&space.settings.locale)?;
     let tx = conn
         .transaction()
         .map_err(|e| format!("begin transaction failed: {e}"))?;
@@ -599,6 +607,7 @@ pub fn load_space(conn: &Connection) -> Result<Option<InscapeSpace>, String> {
             |row| Ok(Settings { local_debug_logging: row.get::<_, i64>(0)? == 1, locale: row.get(1)? }),
         )
         .map_err(|e| format!("read settings failed: {e}"))?;
+    validate_locale(&settings.locale)?;
 
     let mut subjects = read_subjects(conn)?;
     let self_index = subjects.iter().position(|s| s.kind == "self");

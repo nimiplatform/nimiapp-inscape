@@ -3,12 +3,14 @@
 // rewrite (Mode C) lands in wave-4 with its 4-layer anti-manipulation defence.
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { AddPersonForm } from '../relationship/add-person-form.tsx';
 import { RelationshipDetail } from '../relationship/relationship-detail.tsx';
 import { QuarantineArea } from '../relationship/quarantine-area.tsx';
 
 export function RelationshipFace() {
+  const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
   const relationships = space?.relationships ?? [];
   const others = space?.other_subjects ?? [];
@@ -19,11 +21,11 @@ export function RelationshipFace() {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-medium">关系</h2>
+      <h2 className="text-lg font-medium">{t('Relationship.title')}</h2>
       <AddPersonForm />
 
       {relationships.length === 0 ? (
-        <p className="text-sm opacity-60">还没有关系。添加一个人，开始建立你的关系图谱。</p>
+        <p className="text-sm opacity-60">{t('Relationship.empty')}</p>
       ) : (
         <ul className="space-y-1">
           {relationships.map((relationship) => {
@@ -36,7 +38,10 @@ export function RelationshipFace() {
                   className="text-sm underline-offset-2 hover:underline"
                   aria-current={selected === relationship.id ? 'true' : undefined}
                 >
-                  {other?.display_name ?? '（未知）'} · {relationship.nature}
+                  {t('Relationship.buttonLabel', {
+                    name: other?.display_name ?? t('Common.unknown'),
+                    nature: t(`RelationshipNature.${relationship.nature}`),
+                  })}
                 </button>
               </li>
             );

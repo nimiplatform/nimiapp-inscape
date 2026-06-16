@@ -3,6 +3,7 @@
 // surfaces and AI modes A–E land in wave-3.2..3.4.
 
 import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../app-shell/app-store.js';
 import { RuntimeAppStoragePersistenceAdapter } from '../persistence/runtime-app-storage-adapter.ts';
 import { InMemoryPersistenceAdapter } from '../../product/persistence/in-memory-adapter.ts';
@@ -13,6 +14,7 @@ import {
 } from '../../product/state/inscape-store-provider.tsx';
 import { InscapeShell } from '../../product/shell/inscape-shell.tsx';
 import { FirstRunGate } from '../../product/first-run/first-run-gate.tsx';
+import { usePersistedInscapeLocaleSync } from '../../product/settings/language-switch.tsx';
 
 function pickPersistenceClient(): PersistenceClient {
   if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
@@ -33,19 +35,21 @@ export function ProductArea() {
 }
 
 function InscapeBootGate() {
+  const { t } = useTranslation();
   const status = useInscapeStore((s) => s.status);
   const error = useInscapeStore((s) => s.error);
   const initialize = useInscapeStore((s) => s.initialize);
+  usePersistedInscapeLocaleSync();
 
   useEffect(() => {
     void initialize();
   }, [initialize]);
 
   if (status === 'loading') {
-    return <CenteredNote text="加载中…" />;
+    return <CenteredNote text={t('Status.loading')} />;
   }
   if (status === 'error') {
-    return <CenteredNote text={`无法加载本地数据：${error ?? 'unknown'}`} />;
+    return <CenteredNote text={t('Status.localDataLoadFailed', { error: error ?? 'unknown' })} />;
   }
   if (status === 'first-run') {
     return <FirstRunGate />;

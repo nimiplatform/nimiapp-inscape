@@ -44,6 +44,11 @@ test('friction prompt is two-sided and blames neither party', () => {
   assert.match(prompt.user, /partner/);
 });
 
+test('friction prompt can explicitly request English output', () => {
+  const prompt = buildFrictionPrompt(['a', 'b'], 'INTJ', 'partner', 'en');
+  assert.match(prompt.system, /Respond in clear, natural English/);
+});
+
 test('quarantineOtherSubject removes the subject from analysis into quarantine', async () => {
   const { store } = await readyStore();
   await store.getState().addPerson('Lily', 'other', NOW);

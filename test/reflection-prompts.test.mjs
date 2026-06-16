@@ -21,3 +21,9 @@ test('posterior proposal prompt demands strict JSON with the exact codes', () =>
   // current posterior is summarized into the user message
   assert.match(prompt.user, /Ni /);
 });
+
+test('posterior proposal prompt localizes rationale language', () => {
+  const profile = seedTypeProfileFromType('INTJ', '2026-06-05T00:00:00Z');
+  const prompt = buildPosteriorProposalPrompt('reflection text', profile, 'en');
+  assert.match(prompt.system, /rationale value must be written in English/);
+});

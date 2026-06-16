@@ -38,5 +38,168 @@
     "loading": "Loading...",
     "logout": "Sign out",
     "accountMenu": "Account menu"
+  },
+  "App": {
+    "brand": "心相 · Inscape"
+  },
+  "Language": {
+    "ariaLabel": "Interface language",
+    "short": {
+      "en": "EN",
+      "zh": "中文"
+    }
+  },
+  "Status": {
+    "loading": "Loading...",
+    "localDataLoadFailed": "Unable to load local data: {{error}}"
+  },
+  "Common": {
+    "unknown": "Unknown",
+    "none": "None",
+    "listSeparator": ", ",
+    "aiUnavailable": "AI is temporarily unavailable ({{error}}).",
+    "generate": "Generate",
+    "generating": "Generating..."
+  },
+  "Navigation": {
+    "ariaLabel": "Product areas",
+    "faces": {
+      "today": "Today",
+      "relationship": "Relationships",
+      "self": "Self"
+    }
+  },
+  "FirstRun": {
+    "adult": "I confirm that I am at least 18 years old.",
+    "understood": "I understand that Inscape is not a psychological diagnostic tool; if I am in psychological distress, I will seek professional help.",
+    "continue": "Continue"
+  },
+  "Today": {
+    "title": "Today"
+  },
+  "TodaysRead": {
+    "title": "Today's read",
+    "right": "Accurate",
+    "wrong": "Off",
+    "evidence": "Evidence",
+    "feedbackRecorded": "Feedback recorded",
+    "noEvidence": "No recent reflections were available as evidence."
+  },
+  "DecisionAid": {
+    "title": "Decision aid · eight functions",
+    "needsProfile": "Set your type prior in Self first.",
+    "placeholder": "Describe the decision you are facing (500 characters max)...",
+    "running": "Walking through...",
+    "run": "Walk the eight functions"
+  },
+  "ReflectionJournal": {
+    "title": "Reflection journal",
+    "placeholder": "Write today's reflection...",
+    "processing": "Processing...",
+    "save": "Save",
+    "needsProfile": "Set your type prior in Self first, then reflections can propose posterior updates.",
+    "aiUnavailableSaved": "AI is temporarily unavailable ({{error}}). The reflection was saved.",
+    "posteriorTitle": "Posterior update suggestion",
+    "functionUpdate": "{{function}} -> {{strength}} (confidence {{confidence}})",
+    "dichotomyUpdate": "{{dichotomy}} -> {{value}}",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "Self": {
+    "title": "Self",
+    "archiveTitle": "Reflection archive",
+    "archiveEmpty": "No reflection entries yet. Reflections written in Today will appear here."
+  },
+  "InitialTyping": {
+    "title": "Set your type prior",
+    "description": "If you have taken a 16-type assessment and know your four-letter code, use it as a prior. Reflections will keep adjusting the distribution.",
+    "placeholder": "Choose a four-letter code...",
+    "create": "Set"
+  },
+  "TypeProfile": {
+    "namedBefore": "This pattern is commonly described as ",
+    "namedAfter": ", but the function stack is the real signal.",
+    "unnamed": "The distribution is not yet clear enough to name a four-letter code.",
+    "posteriorTitle": "Function-stack posterior",
+    "dichotomyTitle": "Dichotomy distribution",
+    "footnote": "Type is a moving distribution, not a fixed label."
+  },
+  "SelfMirror": {
+    "title": "Self mirror",
+    "engine": "Engine: {{hero}} ({{heroCore}}) + {{parent}}",
+    "growthEdge": "Growth / stress edge: {{inferior}} ({{inferiorCore}})"
+  },
+  "Relationship": {
+    "title": "Relationships",
+    "empty": "No relationships yet. Add a person to start building your relationship map.",
+    "buttonLabel": "{{name}} · {{nature}}"
+  },
+  "RelationshipNature": {
+    "partner": "Partner",
+    "parent": "Parent",
+    "child": "Child",
+    "sibling": "Sibling",
+    "friend": "Friend",
+    "coworker": "Coworker",
+    "mentor": "Mentor",
+    "other": "Other"
+  },
+  "AddPerson": {
+    "title": "Add a person",
+    "namePlaceholder": "Name or alias",
+    "adult": "I confirm this person is at least 18 years old.",
+    "observation": "I confirm these are my personal observations from adult-to-adult interaction, not this person's personal data profile.",
+    "add": "Add"
+  },
+  "RelationshipDetail": {
+    "snippetPlaceholder": "Paste a conversation snippet...",
+    "addSnippet": "Add snippet",
+    "collectedSnippets_one": "{{count}} snippet collected.",
+    "collectedSnippets_other": "{{count}} snippets collected.",
+    "analyzing": "Analyzing...",
+    "analyze": "Analyze friction pattern",
+    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine (IS-PRIV-03).",
+    "confirmQuarantine": "Confirm quarantine",
+    "cancel": "Cancel",
+    "markUnder18": "Mark this person as under 18"
+  },
+  "DyadInsight": {
+    "needsSelfType": "Set your type in Self first to see interaction insight.",
+    "assignType": "Give {{name}} a type to unlock the \"You × Ta\" interaction insight:",
+    "otherFallback": "the other person",
+    "selectType": "Choose a four-letter code...",
+    "set": "Set",
+    "inferHint": "Do not know Ta's code? Describe them in a few sentences and let Inscape infer:",
+    "descriptionPlaceholder": "What are they like? Example: pushes fast decisions, strong logic, likes to lead.",
+    "inferring": "Inferring...",
+    "infer": "Infer from description",
+    "inferFailed": "Could not infer a type reliably from the description. Choose the code directly.",
+    "headline": "You ({{selfType}}) × Ta ({{otherType}})",
+    "sharedDifferent": "Shared dichotomies: {{shared}}; differing dichotomies: {{different}}",
+    "dominant": "Dominant: you {{selfDominant}} / Ta {{otherDominant}} ({{relation}})",
+    "dynamic": "Dynamic: {{headline}}",
+    "sharedEgo": "Shared ego functions: {{functions}}",
+    "generate": "Generate interaction insight"
+  },
+  "CommunicationRewrite": {
+    "title": "Communication rewrite",
+    "placeholder": "Paste the draft you plan to send...",
+    "rewriting": "Rewriting...",
+    "generate": "Generate rewrite",
+    "refusalFollowup": "Try the reflection journal in Today: what is this message trying to protect? Inscape can help you see the underlying read, but it will not help write pressure.",
+    "disclaimer": "These rewrites are based only on your perspective; the other person did not participate in this framing. Treat them as drafts, not scripts.",
+    "historySummary": "Rewrite history in this session ({{count}})",
+    "refusal": {
+      "money": "This message involves a money context, so Inscape does not provide rewrites here.",
+      "employment": "This message involves employment or authority, so Inscape does not provide rewrites here.",
+      "sexual_consent": "This message involves sexual consent, so Inscape does not provide rewrites here.",
+      "decision_pressure": "This message reads like decision pressure or an ultimatum; rewriting it could make pressure easier to deliver, and that is not the purpose of this feature."
+    }
+  },
+  "Quarantine": {
+    "title": "Quarantine",
+    "description": "The subjects below were identified as under 18, removed from all analysis, and will never be processed. You can delete them permanently or leave them quarantined.",
+    "quarantinedAt": "Quarantined at {{time}}",
+    "delete": "Delete permanently"
   }
 }

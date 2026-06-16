@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { AmbientBackground } from '@nimiplatform/kit/ui';
+import { useTranslation } from 'react-i18next';
 import { useAppStore } from './app-store.js';
 import { runInscapeBootstrap } from '../infra/inscape-bootstrap.js';
 import { InscapeLoginPage } from '../features/auth/inscape-login-page.js';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const authStatus = useAppStore((s) => s.auth.status);
   const bootstrapReady = useAppStore((s) => s.bootstrapReady);
   const bootstrapError = useAppStore((s) => s.bootstrapError);
@@ -28,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       <AmbientBackground variant="mesh" className="flex h-screen w-screen items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin mx-auto" />
-          <p className="text-gray-500">加载中...</p>
+          <p className="text-gray-500">{t('Shell.loading')}</p>
         </div>
       </AmbientBackground>
     );

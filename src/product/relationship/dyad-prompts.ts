@@ -3,17 +3,35 @@
 // dyad dynamics (authored knowledge + personalization, not a generic LLM dump).
 // Pure builder.
 
-import { FUNCTION_CORE } from '../insight/function-knowledge.ts';
+import type { InscapeLocale } from '../../domain/locale.ts';
+import { functionCore } from '../insight/function-knowledge.ts';
 import {
-  AXIS_OPPOSITE_DYNAMICS,
-  DOMINANT_RELATION_DYNAMICS,
-  INFERIOR_GRIP_NOTE,
+  axisOppositeDynamics,
+  dominantRelationDynamics,
+  inferiorGripNote as localizedInferiorGripNote,
 } from '../insight/dyad-knowledge.ts';
-import { RESPOND_IN_CHINESE, USE_EXACT_LABELS } from '../insight/prompt-directives.ts';
+import {
+  DEFAULT_AI_OUTPUT_LOCALE,
+  respondInLocale,
+  useExactLabelsDirective,
+} from '../insight/prompt-directives.ts';
 import type { AiPrompt } from '../today/reflection-prompts.ts';
 import type { DyadAnalysis } from './dyad-analysis.ts';
 
-export function dominantRelationLabel(analysis: DyadAnalysis): string {
+export function dominantRelationLabel(
+  analysis: DyadAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): string {
+  if (locale === 'en') {
+    switch (analysis.dominantRelation) {
+      case 'same_function':
+        return 'same dominant function';
+      case 'same_axis_opposite_attitude':
+        return 'same axis, opposite attitude (substantive resonance + attitude/rhythm friction)';
+      default:
+        return 'different axis (complementary, but rapport must be built)';
+    }
+  }
   switch (analysis.dominantRelation) {
     case 'same_function':
       return '同一主导功能';
@@ -24,27 +42,45 @@ export function dominantRelationLabel(analysis: DyadAnalysis): string {
   }
 }
 
-function axisOppositeNote(analysis: DyadAnalysis): string {
+function axisOppositeNote(
+  analysis: DyadAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): string {
   return analysis.dominantRelation === 'same_axis_opposite_attitude'
-    ? AXIS_OPPOSITE_DYNAMICS[analysis.selfDominant[0]] ?? ''
+    ? axisOppositeDynamics(locale)[analysis.selfDominant[0]] ?? ''
     : '';
 }
 
-function inferiorGripNote(analysis: DyadAnalysis): string {
+function inferiorGripNote(
+  analysis: DyadAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): string {
   return analysis.selfDominantPositionInOther === 4 || analysis.otherDominantPositionInSelf === 4
-    ? INFERIOR_GRIP_NOTE
+    ? localizedInferiorGripNote(locale)
     : '';
 }
 
 /** One-line curated headline for the skeleton (shown before generating). */
-export function dyadHeadline(analysis: DyadAnalysis): string {
-  return axisOppositeNote(analysis) || DOMINANT_RELATION_DYNAMICS[analysis.dominantRelation].resonance;
+export function dyadHeadline(
+  analysis: DyadAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): string {
+  return axisOppositeNote(analysis, locale) || dominantRelationDynamics(locale)[analysis.dominantRelation].resonance;
 }
 
-export function buildDyadInsightPrompt(analysis: DyadAnalysis): AiPrompt {
+const SECTION_HEADERS: Record<InscapeLocale, string> = {
+  zh: '共鸣点 / 摩擦点 / 盲区互补 / 破冰与相处.',
+  en: 'Resonance / Friction / Blind-spot complement / How to break the ice and relate.',
+};
+
+export function buildDyadInsightPrompt(
+  analysis: DyadAnalysis,
+  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
+): AiPrompt {
+  const core = functionCore(locale);
   const facts = [
-    `Self type: ${analysis.selfType} (dominant ${analysis.selfDominant} = ${FUNCTION_CORE[analysis.selfDominant]}).`,
-    `Other type: ${analysis.otherType} (dominant ${analysis.otherDominant} = ${FUNCTION_CORE[analysis.otherDominant]}).`,
+    `Self type: ${analysis.selfType} (dominant ${analysis.selfDominant} = ${core[analysis.selfDominant]}).`,
+    `Other type: ${analysis.otherType} (dominant ${analysis.otherDominant} = ${core[analysis.otherDominant]}).`,
     `Shared dichotomies: ${analysis.sharedDichotomies.join(', ') || 'none'}.`,
     `Differing dichotomies: ${analysis.differingDichotomies.join(', ') || 'none'}.`,
     `Dominant-function relation: ${analysis.dominantRelation}.`,
@@ -52,29 +88,31 @@ export function buildDyadInsightPrompt(analysis: DyadAnalysis): AiPrompt {
     `Shared ego functions: ${analysis.sharedEgoFunctions.join(', ') || 'none'}.`,
   ].join(' ');
 
-  const curated = DOMINANT_RELATION_DYNAMICS[analysis.dominantRelation];
-  const axisNote = axisOppositeNote(analysis);
-  const inferiorNote = inferiorGripNote(analysis);
+  const curated = dominantRelationDynamics(locale)[analysis.dominantRelation];
+  const axisNote = axisOppositeNote(analysis, locale);
+  const inferiorNote = inferiorGripNote(analysis, locale);
   const curatedFacts = [
-    `权威动态·共鸣: ${curated.resonance}`,
-    `权威动态·摩擦: ${curated.friction}`,
-    `权威动态·桥接: ${curated.bridge}`,
-    axisNote ? `权威动态·同轴: ${axisNote}` : '',
-    inferiorNote ? `权威动态·提示: ${inferiorNote}` : '',
+    `${locale === 'zh' ? '权威动态·共鸣' : 'Curated dynamic - resonance'}: ${curated.resonance}`,
+    `${locale === 'zh' ? '权威动态·摩擦' : 'Curated dynamic - friction'}: ${curated.friction}`,
+    `${locale === 'zh' ? '权威动态·桥接' : 'Curated dynamic - bridge'}: ${curated.bridge}`,
+    axisNote ? `${locale === 'zh' ? '权威动态·同轴' : 'Curated dynamic - same axis'}: ${axisNote}` : '',
+    inferiorNote ? `${locale === 'zh' ? '权威动态·提示' : 'Curated dynamic - note'}: ${inferiorNote}` : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   const system = [
     'You are Inscape. From the cognitive-function interplay facts of two people, produce a grounded relationship read.',
-    'Use EXACTLY these four section headers, in order: 共鸣点 / 摩擦点 / 盲区互补 / 破冰与相处.',
+    `Use EXACTLY these four section headers, in order: ${SECTION_HEADERS[locale]}`,
     'Ground every point in the provided facts — do not invent type facts or use sign-of-the-zodiac language.',
-    'The 权威动态 facts are CURATED, authoritative typology dynamics: personalize them to these two specific types and do NOT contradict them.',
-    'Be two-sided and concrete. Under 破冰与相处, give actionable tips for BOTH directions (how self can reach the other, and vice versa).',
+    'The curated dynamic facts are authoritative typology dynamics: personalize them to these two specific types and do NOT contradict them.',
+    locale === 'zh'
+      ? 'Be two-sided and concrete. Under 破冰与相处, give actionable tips for BOTH directions (how self can reach the other, and vice versa).'
+      : 'Be two-sided and concrete. Under How to break the ice and relate, give actionable tips for BOTH directions (how self can reach the other, and vice versa).',
     'These are tendencies, not fate; no pathologizing, no determinism.',
     '2-4 short bullets per section.',
-    RESPOND_IN_CHINESE,
-    USE_EXACT_LABELS,
+    respondInLocale(locale),
+    useExactLabelsDirective(locale),
   ].join(' ');
 
   return { system, user: `Facts: ${facts} ${curatedFacts}` };

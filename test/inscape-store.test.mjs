@@ -16,12 +16,14 @@ test('completeFirstRun persists an attested space and becomes ready', async () =
   const client = new InMemoryPersistenceAdapter();
   const store = createInscapeStore(client);
   await store.getState().initialize();
-  await store.getState().completeFirstRun(NOW);
+  await store.getState().completeFirstRun(NOW, 'zh');
   assert.equal(store.getState().status, 'ready');
   assert.equal(store.getState().space.attested_adult, true);
+  assert.equal(store.getState().space.settings.locale, 'zh');
   const reload = await client.load();
   assert.equal(reload.ok, true);
   assert.equal(reload.snapshot.self_subject.kind, 'self');
+  assert.equal(reload.snapshot.settings.locale, 'zh');
 });
 
 test('initialize with an existing space becomes ready', async () => {
@@ -30,6 +32,19 @@ test('initialize with an existing space becomes ready', async () => {
   await store.getState().initialize();
   assert.equal(store.getState().status, 'ready');
   assert.equal(store.getState().space.schema_version, 1);
+});
+
+test('setLocale persists a supported locale', async () => {
+  const client = new InMemoryPersistenceAdapter();
+  const store = createInscapeStore(client);
+  await store.getState().initialize();
+  await store.getState().completeFirstRun(NOW, 'zh');
+  const saved = await store.getState().setLocale('en', '2026-06-06T00:00:00Z');
+  assert.equal(saved, true);
+  assert.equal(store.getState().space.settings.locale, 'en');
+  assert.equal(store.getState().space.updated_at, '2026-06-06T00:00:00Z');
+  const reload = await client.load();
+  assert.equal(reload.snapshot.settings.locale, 'en');
 });
 
 test('setInitialType seeds the self type_profile and persists', async () => {

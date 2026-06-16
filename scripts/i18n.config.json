@@ -1,0 +1,35 @@
+{
+  "supportedLocales": [
+    "en",
+    "zh"
+  ],
+  "check": {
+    "sourceLocale": "en",
+    "localesDir": "src/shell/locales"
+  },
+  "audit": {
+    "scopeDirs": [
+      "index.html",
+      "src/main.tsx",
+      "src/product",
+      "src/shell"
+    ],
+    "extensions": [
+      ".tsx",
+      ".html"
+    ],
+    "excludePathPatterns": [
+      "/test/",
+      ".test.",
+      ".spec.",
+      "src/shell/locales/"
+    ],
+    "allowTextPatterns": [
+      "^Inscape$",
+      "^Nimi$",
+      "^18\\+$",
+      "^[A-Z0-9_+.-]+$",
+      "^[-–—·•→←×✓✗…:;,.!?/()\\[\\]{}\\s]+$"
+    ]
+  }
+}

@@ -19,8 +19,11 @@
     "build:shell": "tauri build",
     "lint": "pnpm run typecheck && eslint . --max-warnings 0 && (cd src-tauri && cargo check)",
     "test": "node --test test/*.test.mjs",
-    "check": "pnpm run typecheck && pnpm run test && pnpm run lint && pnpm run check:redlines",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run lint && pnpm run check:redlines && pnpm run check:i18n",
     "check:redlines": "node scripts/check-redlines.mjs",
+    "check:i18n": "pnpm run i18n:check && pnpm run i18n:audit",
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "i18n:audit": "node scripts/i18n-audit.mjs",
     "nimicoding": "nimicoding",
     "nimicoding:doctor": "nimicoding doctor"
   },

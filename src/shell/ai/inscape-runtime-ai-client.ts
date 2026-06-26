@@ -50,6 +50,7 @@ type ResolvedBinding =
       model: string;
       route: NimiRuntimeAIRoutePolicy;
       connectorId?: string;
+      readonly targetRef: NimiAIConfigTargetRef;
       params: RuntimeTextParams;
       metadata: Record<string, string>;
       schedulingTarget: NimiAISchedulingTargetInput | null;
@@ -61,7 +62,7 @@ function targetRefModel(targetRef: NimiAIConfigTargetRef): string {
     return String(targetRef.providerModelId || '').trim();
   }
   if (targetRef.kind === 'local-runtime') {
-    return String(targetRef.profileId || targetRef.targetId || targetRef.readinessRef || '').trim();
+    return String(targetRef.profileBindingId || targetRef.readinessRef || '').trim();
   }
   return '';
 }
@@ -127,6 +128,7 @@ export function resolveInscapeTextGenerateBinding(config: NimiAIConfig): Resolve
     model,
     route,
     ...(connectorId ? { connectorId } : {}),
+    targetRef,
     params: extractTextParams(paramsRecord(config.capabilities.selectedParams[INSCAPE_TEXT_GENERATE_CAPABILITY_ID])),
     schedulingTarget: schedulingTargetFor(INSCAPE_TEXT_GENERATE_CAPABILITY_ID, targetRef),
     metadata: {
@@ -224,6 +226,7 @@ export function createInscapeRuntimeAiClient(
           modelId: resolved.model,
           ...(resolved.connectorId ? { providerId: resolved.connectorId } : {}),
         },
+        targetRef: resolved.targetRef,
       });
       const result = await runNimiTextGenerate({
         runtime: { model },

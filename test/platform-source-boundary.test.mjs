@@ -5,6 +5,7 @@ import test from 'node:test';
 const viteConfig = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
 const runtimeAiClient = readFileSync(new URL('../src/shell/ai/inscape-runtime-ai-client.ts', import.meta.url), 'utf8');
+const tauriMainSource = readFileSync(new URL('../src-tauri/src/main.rs', import.meta.url), 'utf8');
 
 function blockAfter(label) {
   return viteConfig.match(new RegExp(`${label}:\\s*\\[([\\s\\S]*?)\\]`))?.[1] ?? '';
@@ -35,4 +36,19 @@ test('runtime AI client consumes v2 targetRef without retired local ids', () => 
   assert.doesNotMatch(targetRefModelBody, /targetId/);
   assert.match(runtimeAiClient, /readonly targetRef: NimiAIConfigTargetRef/);
   assert.match(runtimeAiClient, /targetRef: resolved\.targetRef/);
+});
+
+test('Tauri host consumes standard shell capabilities and shell-ui aliases', () => {
+  assert.match(tauriMainSource, /use nimi_shell_tauri::capabilities::\{data, oauth, runtime, session_logging\}/);
+  assert.match(tauriMainSource, /oauth::open_external_url/);
+  assert.match(tauriMainSource, /oauth::oauth_listen_for_code/);
+  assert.match(tauriMainSource, /runtime::runtime_bridge_unary/);
+  assert.match(tauriMainSource, /runtime::runtime_bridge_stream_open/);
+  assert.match(tauriMainSource, /runtime::runtime_bridge_stream_close/);
+  assert.match(tauriMainSource, /runtime::runtime_bridge_status/);
+  assert.match(tauriMainSource, /confirm_dialog/);
+  assert.match(tauriMainSource, /start_window_drag/);
+  assert.match(tauriMainSource, /focus_main_window/);
+  assert.doesNotMatch(tauriMainSource, /use nimi_shell_tauri::(?:desktop_paths|oauth_commands|runtime_bridge|session_logging);/);
+  assert.doesNotMatch(tauriMainSource, /runtime_app_storage::/);
 });

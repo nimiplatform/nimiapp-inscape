@@ -10,7 +10,7 @@
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 
-use nimi_shell_tauri::runtime_app_storage;
+use nimi_shell_tauri::capabilities::storage;
 
 const INSCAPE_DB_FILE: &str = "inscape.db";
 
@@ -218,7 +218,8 @@ fn validate_locale(locale: &str) -> Result<(), String> {
 fn insert_subject(tx: &Connection, subject: &Subject) -> Result<(), String> {
     let type_profile_text = match &subject.type_profile {
         Some(value) => Some(
-            serde_json::to_string(value).map_err(|e| format!("type_profile serialize failed: {e}"))?,
+            serde_json::to_string(value)
+                .map_err(|e| format!("type_profile serialize failed: {e}"))?,
         ),
         None => None,
     };
@@ -373,7 +374,8 @@ fn read_subjects(conn: &Connection) -> Result<Vec<Subject>, String> {
     for (id, kind, display_name, tp_json, aaa, aat, aam) in base {
         let type_profile = match tp_json {
             Some(text) => Some(
-                serde_json::from_str(&text).map_err(|e| format!("type_profile parse failed: {e}"))?,
+                serde_json::from_str(&text)
+                    .map_err(|e| format!("type_profile parse failed: {e}"))?,
             ),
             None => None,
         };
@@ -397,7 +399,9 @@ fn read_subjects(conn: &Connection) -> Result<Vec<Subject>, String> {
 
 fn read_typing_episodes(conn: &Connection, subject_id: &str) -> Result<Vec<TypingEpisode>, String> {
     let mut stmt = conn
-        .prepare("SELECT id, source, created_at, summary FROM typing_episodes WHERE subject_id = ?1")
+        .prepare(
+            "SELECT id, source, created_at, summary FROM typing_episodes WHERE subject_id = ?1",
+        )
         .map_err(|e| format!("prepare typing_episodes failed: {e}"))?;
     let mapped = stmt
         .query_map(params![subject_id], |row| {
@@ -421,7 +425,9 @@ fn read_observation_events(
     subject_id: &str,
 ) -> Result<Vec<ObservationEvent>, String> {
     let mut stmt = conn
-        .prepare("SELECT id, source, created_at, note FROM observation_events WHERE subject_id = ?1")
+        .prepare(
+            "SELECT id, source, created_at, note FROM observation_events WHERE subject_id = ?1",
+        )
         .map_err(|e| format!("prepare observation_events failed: {e}"))?;
     let mapped = stmt
         .query_map(params![subject_id], |row| {
@@ -505,7 +511,9 @@ fn read_communication_logs(
     relationship_id: &str,
 ) -> Result<Vec<CommunicationLog>, String> {
     let mut stmt = conn
-        .prepare("SELECT id, created_at, snippet FROM communication_logs WHERE relationship_id = ?1")
+        .prepare(
+            "SELECT id, created_at, snippet FROM communication_logs WHERE relationship_id = ?1",
+        )
         .map_err(|e| format!("prepare communication_logs failed: {e}"))?;
     let mapped = stmt
         .query_map(params![relationship_id], |row| {
@@ -604,7 +612,12 @@ pub fn load_space(conn: &Connection) -> Result<Option<InscapeSpace>, String> {
         .query_row(
             "SELECT local_debug_logging, locale FROM settings WHERE id = 1",
             [],
-            |row| Ok(Settings { local_debug_logging: row.get::<_, i64>(0)? == 1, locale: row.get(1)? }),
+            |row| {
+                Ok(Settings {
+                    local_debug_logging: row.get::<_, i64>(0)? == 1,
+                    locale: row.get(1)?,
+                })
+            },
         )
         .map_err(|e| format!("read settings failed: {e}"))?;
     validate_locale(&settings.locale)?;
@@ -646,14 +659,18 @@ pub struct SpaceSavePayload {
 }
 
 fn db_path(storage_root: &str) -> Result<std::path::PathBuf, String> {
-    runtime_app_storage::scoped_storage_child(storage_root, "inscape data root", INSCAPE_DB_FILE)
+    storage::scoped_storage_child(storage_root, "inscape data root", INSCAPE_DB_FILE)
 }
 
 fn open_db(storage_root: &str) -> Result<Connection, String> {
     let path = db_path(storage_root)?;
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("create inscape storage directory failed ({}): {e}", parent.display()))?;
+        std::fs::create_dir_all(parent).map_err(|e| {
+            format!(
+                "create inscape storage directory failed ({}): {e}",
+                parent.display()
+            )
+        })?;
     }
     let conn = Connection::open(&path)
         .map_err(|e| format!("open inscape db failed ({}): {e}", path.display()))?;
@@ -666,8 +683,12 @@ fn open_db(storage_root: &str) -> Result<Connection, String> {
 fn restrict_db_permissions(path: &std::path::Path) -> Result<(), String> {
     use std::os::unix::fs::PermissionsExt;
     // T1-05: 0o600 on the SQLite file.
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
-        .map_err(|e| format!("set inscape db permissions failed ({}): {e}", path.display()))
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).map_err(|e| {
+        format!(
+            "set inscape db permissions failed ({}): {e}",
+            path.display()
+        )
+    })
 }
 
 #[cfg(not(unix))]
@@ -685,9 +706,11 @@ pub fn inscape_space_load(payload: StorageRootPayload) -> Result<Option<String>,
     }
     let conn = open_db(&payload.storage_root)?;
     match load_space(&conn)? {
-        Some(space) => Ok(Some(
-            serde_json::to_string(&space).map_err(|e| format!("serialize inscape space failed: {e}"))?,
-        )),
+        Some(space) => {
+            Ok(Some(serde_json::to_string(&space).map_err(|e| {
+                format!("serialize inscape space failed: {e}")
+            })?))
+        }
         None => Ok(None),
     }
 }
@@ -758,7 +781,10 @@ mod tests {
                 id: "rel1".into(),
                 other_subject_id: "m1".into(),
                 nature: "coworker".into(),
-                type_dyad: TypeDyad { self_type: None, other_type: None },
+                type_dyad: TypeDyad {
+                    self_type: None,
+                    other_type: None,
+                },
                 communication_logs: vec![CommunicationLog {
                     id: "log1".into(),
                     created_at: "2026-06-05T00:00:00Z".into(),
@@ -768,7 +794,10 @@ mod tests {
                 observation_attested: true,
             }],
             quarantine: vec![],
-            settings: Settings { local_debug_logging: false, locale: "en".into() },
+            settings: Settings {
+                local_debug_logging: false,
+                locale: "en".into(),
+            },
             created_at: "2026-06-05T00:00:00Z".into(),
             updated_at: "2026-06-05T00:00:00Z".into(),
         }
@@ -798,7 +827,10 @@ mod tests {
              VALUES ('x', 'other_person', 'Lily', NULL, 0, '2026-06-05T00:00:00Z', 're_declaration')",
             [],
         );
-        assert!(result.is_err(), "CHECK(age_attested_adult = 1) must reject a non-adult subject");
+        assert!(
+            result.is_err(),
+            "CHECK(age_attested_adult = 1) must reject a non-adult subject"
+        );
     }
 
     #[test]

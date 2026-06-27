@@ -1,13 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use tauri::Manager;
 
-// Shared modules from the kit/shell/tauri crate (nimi-shell-tauri). Auth, OAuth,
-// runtime bridge, runtime defaults, and session logging all come from the crate.
-use nimi_shell_tauri::desktop_paths;
-use nimi_shell_tauri::oauth_commands;
-use nimi_shell_tauri::runtime_bridge;
-use nimi_shell_tauri::session_logging;
+// Shared standard shell capabilities from the kit/shell/tauri crate.
+use nimi_shell_tauri::capabilities::{data, oauth, runtime, session_logging};
 
 // Inscape-owned relational SQLite persistence (G1).
 mod persistence;
@@ -19,18 +16,34 @@ struct InscapeStorageDirs {
     nimi_data_dir: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ConfirmDialogPayload {
+    #[allow(dead_code)]
+    title: Option<String>,
+    #[allow(dead_code)]
+    description: Option<String>,
+    #[allow(dead_code)]
+    level: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ConfirmDialogResult {
+    confirmed: bool,
+}
+
 #[tauri::command]
 fn get_storage_dirs() -> Result<InscapeStorageDirs, String> {
-    let nimi_dir = desktop_paths::resolve_nimi_dir()?;
-    let nimi_data_dir = desktop_paths::resolve_nimi_data_dir()?;
+    let nimi_dir = data::resolve_nimi_dir()?;
+    let nimi_data_dir = data::resolve_nimi_data_dir()?;
     Ok(InscapeStorageDirs {
         nimi_dir: nimi_dir.display().to_string(),
         nimi_data_dir: nimi_data_dir.display().to_string(),
     })
 }
 
-#[tauri::command]
-fn inscape_start_window_drag(window: tauri::WebviewWindow) -> Result<(), String> {
+fn start_dragging_window(window: tauri::WebviewWindow) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     if window.is_fullscreen().unwrap_or(false) {
         return Ok(());
@@ -42,6 +55,39 @@ fn inscape_start_window_drag(window: tauri::WebviewWindow) -> Result<(), String>
         Ok(result) => result,
         Err(_) => Err("window drag unavailable".to_string()),
     }
+}
+
+#[tauri::command]
+fn start_window_drag(window: tauri::WebviewWindow) -> Result<(), String> {
+    start_dragging_window(window)
+}
+
+#[tauri::command]
+fn inscape_start_window_drag(window: tauri::WebviewWindow) -> Result<(), String> {
+    start_dragging_window(window)
+}
+
+#[tauri::command]
+fn focus_main_window(app: tauri::AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .or_else(|| app.webview_windows().into_values().next())
+        .ok_or_else(|| "main window unavailable".to_string())?;
+    let _ = window.unminimize();
+    window.show().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn confirm_dialog(payload: ConfirmDialogPayload) -> Result<ConfirmDialogResult, String> {
+    let _ = payload;
+    Err(nimi_shell_tauri::capabilities::standard_shell_error(
+        "capability-unavailable",
+        "inscape-native-confirm-dialog-unavailable",
+        "Use Inscape in-app confirmation UI for product confirmations.",
+        "tauri",
+        None,
+    ))
 }
 
 fn load_dotenv_files() {
@@ -88,12 +134,15 @@ fn main() {
             persistence::inscape_space_save,
             persistence::inscape_space_clear,
             inscape_start_window_drag,
-            oauth_commands::open_external_url,
-            oauth_commands::oauth_listen_for_code,
-            runtime_bridge::runtime_bridge_unary,
-            runtime_bridge::runtime_bridge_stream_open,
-            runtime_bridge::runtime_bridge_stream_close,
-            runtime_bridge::runtime_bridge_status,
+            confirm_dialog,
+            start_window_drag,
+            focus_main_window,
+            oauth::open_external_url,
+            oauth::oauth_listen_for_code,
+            runtime::runtime_bridge_unary,
+            runtime::runtime_bridge_stream_open,
+            runtime::runtime_bridge_stream_close,
+            runtime::runtime_bridge_status,
             session_logging::log_renderer_event,
         ])
         .run(tauri::generate_context!())

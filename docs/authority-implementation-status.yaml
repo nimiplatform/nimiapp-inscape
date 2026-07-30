@@ -1,0 +1,135 @@
+# NON-AUTHORITY evidence document. Product authority lives only in .nimi/spec/**.
+# Tracks implementation status per authority unit; carried over from the
+# pre-authority rule catalog on 2026-07-23. status: implemented | planned.
+format: inscape.authority-implementation-status/v1
+units:
+  - unit: rule.inscape.product.r001
+    legacy_id: IS-PROD-01
+    enforcement: app_attestation + subjects CHECK; first-run gate; under-18 quarantine.
+    status: implemented
+  - unit: rule.inscape.product.r002
+    legacy_id: IS-PROD-02
+    enforcement: schema has no matching-score field anywhere.
+    status: implemented
+  - unit: rule.inscape.product.r003
+    legacy_id: IS-PROD-03
+    enforcement: observation_attested framing; no personnel-export surface.
+    status: planned
+  - unit: rule.inscape.product.r004
+    legacy_id: IS-PROD-04
+    enforcement: permanent non-diagnostic disclaimer; non-pathologizing prompts.
+    status: planned
+  - unit: rule.inscape.product.r005
+    legacy_id: IS-PROD-05
+    enforcement: no open chat surface; AI modes are purpose-scoped.
+    status: implemented
+  - unit: rule.inscape.product.r006
+    legacy_id: IS-PROD-06
+    enforcement: local SQLite; route=local; no network sink.
+    status: implemented
+  - unit: rule.inscape.product.r007
+    legacy_id: IS-PROD-07
+    enforcement: IA limited to Today/Relationship/Self.
+    status: planned
+  - unit: rule.inscape.data-model.r001
+    legacy_id: IS-DATA-01
+    enforcement: src/domain/inscape-space.ts.
+    status: implemented
+  - unit: rule.inscape.data-model.r002
+    legacy_id: IS-DATA-02
+    enforcement: subjects.kind CHECK; quarantine table.
+    status: implemented
+  - unit: rule.inscape.data-model.r003
+    legacy_id: IS-DATA-03
+    enforcement: signal records originate from user actions only.
+    status: implemented
+  - unit: rule.inscape.data-model.r004
+    legacy_id: IS-DATA-04
+    enforcement: src/contracts/inscape-space-validator.ts in all adapters.
+    status: implemented
+  - unit: rule.inscape.data-model.r005
+    legacy_id: IS-DATA-05
+    enforcement: src-tauri/src/persistence.rs.
+    status: implemented
+  - unit: rule.inscape.typology.r001
+    legacy_id: IS-TYPO-01
+    enforcement: src/domain/typology.ts (stack canonical).
+    status: implemented
+  - unit: rule.inscape.typology.r002
+    legacy_id: IS-TYPO-02
+    enforcement: BEEBE_ARCHETYPES + FUNCTION_STACK_POSITIONS.
+    status: implemented
+  - unit: rule.inscape.typology.r003
+    legacy_id: IS-TYPO-03
+    enforcement: trademark lint (T1-09).
+    status: planned
+  - unit: rule.inscape.inference.r001
+    legacy_id: IS-INFER-01
+    enforcement: TypeProfile distribution; seed is a prior not a verdict.
+    status: implemented
+  # Legacy summary work-item anchor: T1-11.
+  - unit: rule.inscape.inference.r002
+    legacy_id: IS-INFER-02
+    enforcement: src/product/inference/ai-proposal-parser.ts.
+    status: implemented
+  - unit: rule.inscape.inference.r003
+    legacy_id: IS-INFER-03
+    enforcement: accept/reject UI gate (wave-3) over applyPosteriorUpdate.
+    status: planned
+  - unit: rule.inscape.runtime-ai.r001
+    legacy_id: IS-AI-01
+    enforcement: src/shell/ai/** + ai-boundary lint (T1-07).
+    status: implemented
+  - unit: rule.inscape.runtime-ai.r002
+    legacy_id: IS-AI-02
+    enforcement: binding resolution fails closed before dispatch.
+    status: implemented
+  - unit: rule.inscape.runtime-ai.r003
+    legacy_id: IS-AI-03
+    enforcement: per-mode prompt templates (wave-3).
+    status: planned
+  - unit: rule.inscape.ia.r001
+    legacy_id: IS-IA-01
+    enforcement: src/shell/routes/** (wave-3).
+    status: planned
+  - unit: rule.inscape.ia.r002
+    legacy_id: IS-IA-02
+    enforcement: type-profile views (wave-3).
+    status: planned
+  - unit: rule.inscape.ia.r003
+    legacy_id: IS-IA-03
+    enforcement: read card controls (wave-3).
+    status: planned
+  - unit: rule.inscape.privacy.r001
+    legacy_id: IS-PRIV-01
+    enforcement: src-tauri/src/persistence.rs schema.
+    status: implemented
+  - unit: rule.inscape.privacy.r002
+    legacy_id: IS-PRIV-02
+    enforcement: src/shell/features/auth/inscape-auth-adapter.ts.
+    status: implemented
+  - unit: rule.inscape.privacy.r003
+    legacy_id: IS-PRIV-03
+    enforcement: quarantine table + quarantine flow (wave-3).
+    status: planned
+  - unit: rule.inscape.privacy.r004
+    legacy_id: IS-PRIV-04
+    enforcement: rewrite guards (wave-4, T1-10).
+    status: planned
+  # Legacy summary work-item anchor: T1-05.
+  - unit: rule.inscape.privacy.r005
+    legacy_id: IS-PRIV-05
+    enforcement: persistence.rs restrict_db_permissions; no analytics deps.
+    status: implemented
+  - unit: rule.inscape.oss.r001
+    legacy_id: IS-OSS-01
+    enforcement: LICENSE; package.json license.
+    status: implemented
+  - unit: rule.inscape.oss.r002
+    legacy_id: IS-OSS-02
+    enforcement: question bank + NOTICE (wave-3).
+    status: planned
+  - unit: rule.inscape.oss.r003
+    legacy_id: IS-OSS-03
+    enforcement: this repository.
+    status: implemented

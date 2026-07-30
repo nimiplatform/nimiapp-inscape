@@ -1,0 +1,34 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.ia
+units:
+  - id: rule.inscape.ia.r001
+    kind: rule
+    title: Three primary faces
+    modality: must
+    statement: The primary information architecture consists of Today, Relationship, and Self.
+    condition: Always.
+    failure: Fail navigation validation and block any additional primary face from activation.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.three-faces
+  - id: rule.inscape.ia.r002
+    kind: rule
+    title: Fixed-type hero text prohibited
+    modality: must_not
+    statement: A type view renders fixed-type hero text such as your type is INTJ instead of a distribution with confidence bands.
+    condition: Always.
+    failure: Block the fixed-type view from rendering until the distribution and confidence bands are present.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.posterior-distribution
+  - id: rule.inscape.ia.r003
+    kind: rule
+    title: AI read decision controls
+    modality: must
+    statement: Every AI read provides accept, reject, and see-evidence controls.
+    condition: When an AI read is displayed.
+    failure: Do not display the AI read until all three controls are available.
+    relations:
+      - type: applies_to
+        target: definition.inscape.runtime-ai.structured-modes

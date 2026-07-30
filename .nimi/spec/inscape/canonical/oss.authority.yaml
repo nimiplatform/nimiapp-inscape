@@ -1,0 +1,38 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.oss
+units:
+  - id: definition.inscape.oss.question-bank
+    kind: definition
+    title: Question bank
+    meaning: The question bank consists of IPIP-derived public-domain items plus Inscape-original items released into the same public domain.
+  - id: rule.inscape.oss.r001
+    kind: rule
+    title: Uniform MIT licensing
+    modality: must
+    statement: Apply the MIT license uniformly across code, specification, and content assets.
+    condition: Always.
+    failure: Block distribution of any code, specification, or content asset that is not covered by the MIT license.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.inscape-app
+  - id: rule.inscape.oss.r002
+    kind: rule
+    title: Public-domain question bank
+    modality: must
+    statement: Build the question bank from IPIP-derived public-domain items and Inscape-original items released into the same public domain.
+    condition: When an item enters the question bank.
+    failure: Reject any item without the required public-domain provenance or release.
+    relations:
+      - type: applies_to
+        target: definition.inscape.oss.question-bank
+  - id: rule.inscape.oss.r003
+    kind: rule
+    title: Standalone repository
+    modality: must
+    statement: Maintain Inscape in the standalone nimiapp-inscape repository.
+    condition: Always.
+    failure: Block a release sourced from any repository other than the standalone nimiapp-inscape repository.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.inscape-app

@@ -1,0 +1,46 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.typology
+units:
+  - id: definition.inscape.typology.function-stack
+    kind: definition
+    title: Function stack
+    meaning: The cognitive-function stack is the typology authority, with 4-letter codes as a parenthetical legibility aid only.
+  - id: definition.inscape.typology.beebe-archetypes
+    kind: definition
+    title: Beebe archetypes
+    meaning: The Beebe 8-position archetype model from hero to demon is the canonical archetype model.
+  - id: definition.inscape.typology.trademark-disclaimer
+    kind: definition
+    title: Trademark disclaimer
+    meaning: The single allowlisted disclaimer template accompanies the trademark hard-string ban in product UI and marketing copy.
+  - id: rule.inscape.typology.r001
+    kind: rule
+    title: Function-stack authority
+    modality: must
+    statement: Typology uses the cognitive-function stack as authority and presents 4-letter codes only as a parenthetical legibility aid.
+    condition: Whenever a type is represented.
+    failure: Reject any representation that treats a 4-letter code as the typology authority.
+    relations:
+      - type: applies_to
+        target: definition.inscape.typology.function-stack
+  - id: rule.inscape.typology.r002
+    kind: rule
+    title: Canonical Beebe model
+    modality: must
+    statement: Typology uses the Beebe 8-position archetype model from hero to demon as its canonical archetype model.
+    condition: Whenever function-stack archetypes are represented.
+    failure: Reject an archetype representation that does not conform to all eight canonical positions.
+    relations:
+      - type: applies_to
+        target: definition.inscape.typology.beebe-archetypes
+  - id: rule.inscape.typology.r003
+    kind: rule
+    title: Trademark claims prohibited
+    modality: must_not
+    statement: Product UI or marketing copy claims MBTI(R) authorization or contains a banned trademark hard string outside the single allowlisted disclaimer template.
+    condition: Always.
+    failure: Reject the UI or marketing copy before rendering or publication.
+    relations:
+      - type: applies_to
+        target: definition.inscape.typology.trademark-disclaimer

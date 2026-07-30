@@ -1,0 +1,66 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.privacy
+units:
+  - id: definition.inscape.privacy.adult-attestation
+    kind: definition
+    title: Adult attestation
+    meaning: The database-level 18+ attestation gate prevents a non-adult subject row from existing under CHECK attested_adult = 1.
+  - id: definition.inscape.privacy.token-custody
+    kind: definition
+    title: Token custody
+    meaning: Access and refresh token custody is runtime-owned with no app-held token surface.
+  - id: definition.inscape.privacy.rewrite-defence
+    kind: definition
+    title: Rewrite defence
+    meaning: The CommunicationRewrite four-layer anti-manipulation defence consists of a prompt-injection guard, keyword classifier, mandatory disclaimer, and history audit, with refusal of money, employment, sexual-consent, and decision-pressure contexts.
+  - id: rule.inscape.privacy.r001
+    kind: rule
+    title: Database adult gate
+    modality: must
+    statement: Gate every subject row at the database level with CHECK attested_adult = 1 so that a non-adult subject row cannot exist.
+    condition: When a subject row is inserted or updated.
+    failure: Reject the database write when adult attestation is not exactly 1.
+    relations:
+      - type: applies_to
+        target: definition.inscape.privacy.adult-attestation
+  - id: rule.inscape.privacy.r002
+    kind: rule
+    title: Runtime token custody
+    modality: must
+    statement: The runtime retains custody of access and refresh tokens and the app holds no token surface.
+    condition: Always.
+    failure: Reject any app-side token storage, exposure, or transfer before token material reaches the app.
+    relations:
+      - type: applies_to
+        target: definition.inscape.privacy.token-custody
+  - id: rule.inscape.privacy.r003
+    kind: rule
+    title: Under-18 quarantine
+    modality: must
+    statement: Quarantine the affected subject on actual knowledge that the person is under 18 and expose no guardian-facing UI or minor-mode surface.
+    condition: When the app gains actual knowledge that a person is under 18.
+    failure: Stop subject processing, prevent the subject row from persisting, and place the affected material in quarantine.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.quarantine
+  - id: rule.inscape.privacy.r004
+    kind: rule
+    title: Rewrite anti-manipulation defence
+    modality: must
+    statement: CommunicationRewrite applies a prompt-injection guard, keyword classifier, mandatory disclaimer, and history audit and refuses money, employment, sexual-consent, and decision-pressure contexts.
+    condition: When a communication rewrite is requested.
+    failure: Refuse a guarded or disallowed rewrite request before generation and record the refusal for history audit.
+    relations:
+      - type: applies_to
+        target: definition.inscape.privacy.rewrite-defence
+  - id: rule.inscape.privacy.r005
+    kind: rule
+    title: Restricted local persistence
+    modality: must
+    statement: Set SQLite file permissions to 0o600 and provide no telemetry sink.
+    condition: Always.
+    failure: Abort database access when file permissions are not 0o600 and reject any telemetry emission.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.persistence

@@ -1,0 +1,42 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.inference
+units:
+  - id: definition.inscape.inference.posterior-distribution
+    kind: definition
+    title: Posterior distribution
+    meaning: Type is a posterior distribution updated only by user-driven signals, with an explicitly anti-fixation long-term view.
+  - id: definition.inscape.inference.proposal-parser
+    kind: definition
+    title: Proposal parser
+    meaning: The fail-close parser for AI posterior-update proposals drops a proposal that fails JSON or schema validation whole, with no partial merge, fabricated value, or retry into success.
+  - id: rule.inscape.inference.r001
+    kind: rule
+    title: Distributional type inference
+    modality: must
+    statement: Represent type as a posterior distribution, update it only from user-driven signals, and keep the long-term view explicitly anti-fixation.
+    condition: Always.
+    failure: Reject any update not grounded in a user-driven signal and leave the posterior unchanged.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.posterior-distribution
+  - id: rule.inscape.inference.r002
+    kind: rule
+    title: Fail-close proposal parsing
+    modality: must
+    statement: Validate each complete AI posterior-update proposal as JSON and against its schema before applying any part of it.
+    condition: When an AI posterior-update proposal is received.
+    failure: Drop the whole invalid proposal with no partial merge, fabricated value, or retry into success.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.proposal-parser
+  - id: rule.inscape.inference.r003
+    kind: rule
+    title: Explicit update acceptance
+    modality: must
+    statement: Apply a posterior update only after explicit user acceptance; the default state is no update.
+    condition: When a posterior update is proposed.
+    failure: Leave the posterior unchanged unless the user explicitly accepts the proposal.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.posterior-distribution

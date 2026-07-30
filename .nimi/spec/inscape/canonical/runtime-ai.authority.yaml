@@ -1,0 +1,46 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.runtime-ai
+units:
+  - id: definition.inscape.runtime-ai.sdk-boundary
+    kind: definition
+    title: SDK boundary
+    meaning: AI access occurs exclusively through @nimiplatform/sdk with no direct provider SDKs, app-owned HTTP clients, or Tauri-side model binaries.
+  - id: definition.inscape.runtime-ai.local-route
+    kind: definition
+    title: Local AI route
+    meaning: The AI route is local-only with no cloud fallback rescue.
+  - id: definition.inscape.runtime-ai.structured-modes
+    kind: definition
+    title: Structured AI modes
+    meaning: The structured-purpose AI modes are today read, decision aid, communication rewrite, friction analysis, and reflection resonance.
+  - id: rule.inscape.runtime-ai.r001
+    kind: rule
+    title: SDK-only AI access
+    modality: must
+    statement: Access AI exclusively through @nimiplatform/sdk, with no direct provider SDK, app-owned HTTP client, or Tauri-side model binary.
+    condition: Whenever the app accesses AI.
+    failure: Reject the AI integration or request before provider or model access occurs.
+    relations:
+      - type: applies_to
+        target: definition.inscape.runtime-ai.sdk-boundary
+  - id: rule.inscape.runtime-ai.r002
+    kind: rule
+    title: Local-only AI routing
+    modality: must
+    statement: Route every AI request locally and require a valid local binding before dispatch, with no cloud fallback rescue.
+    condition: Before every AI dispatch.
+    failure: Abort dispatch when the local binding is missing or invalid and do not attempt a cloud route.
+    relations:
+      - type: applies_to
+        target: definition.inscape.runtime-ai.local-route
+  - id: rule.inscape.runtime-ai.r003
+    kind: rule
+    title: Five structured AI modes
+    modality: must
+    statement: "AI surfaces expose only these structured-purpose modes: today read, decision aid, communication rewrite, friction analysis, and reflection resonance."
+    condition: Always.
+    failure: Reject any AI surface or request outside the five structured-purpose modes before dispatch.
+    relations:
+      - type: applies_to
+        target: definition.inscape.runtime-ai.structured-modes

@@ -1,0 +1,80 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.data-model
+units:
+  - id: definition.inscape.data-model.inscape-space
+    kind: definition
+    title: InscapeSpace
+    meaning: InscapeSpace is the single local data root.
+  - id: definition.inscape.data-model.subject
+    kind: definition
+    title: Subject
+    meaning: A Subject is self or other_person; under-18 subjects are never stored as subjects.
+  - id: definition.inscape.data-model.signal
+    kind: definition
+    title: User-driven signal
+    meaning: A user-driven signal is a test answer, reflection text, an accept or reject decision on an AI read, or a pasted snippet.
+  - id: definition.inscape.data-model.quarantine
+    kind: definition
+    title: Quarantine
+    meaning: The dedicated quarantine region and table receives under-18 material.
+  - id: definition.inscape.data-model.persistence
+    kind: definition
+    title: Persistence
+    meaning: Persistence is relational SQLite with per-row CHECK constraints.
+  - id: rule.inscape.data-model.r001
+    kind: rule
+    title: Single local data root
+    modality: must
+    statement: All local product data belongs to one InscapeSpace root.
+    condition: Always.
+    failure: Reject any persistence operation that addresses product data outside the InscapeSpace root.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.inscape-space
+  - id: rule.inscape.data-model.r002
+    kind: rule
+    title: Subject kinds and quarantine
+    modality: must
+    statement: Store each adult Subject as self or other_person and route under-18 material to quarantine instead of storing it as a Subject.
+    condition: When subject material is submitted for persistence.
+    failure: Reject an invalid Subject row and store under-18 material only in the quarantine region.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.quarantine
+      - type: applies_to
+        target: definition.inscape.data-model.subject
+  - id: rule.inscape.data-model.r003
+    kind: rule
+    title: User-driven signals
+    modality: must
+    statement: Every signal originates from a user-driven test answer, reflection text, accept or reject decision on an AI read, or pasted snippet, with no passive or cross-app capture.
+    condition: When a signal is created.
+    failure: Reject the signal before persistence when no qualifying user action produced it.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.signal
+  - id: rule.inscape.data-model.r004
+    kind: rule
+    title: Validate every persistence operation
+    modality: must
+    statement: Every persistence read and write runs validateInscapeSpace.
+    condition: Before completing any persistence read or write.
+    failure: Return a typed validation error and produce no read result or write mutation when validation fails.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.inscape-space
+      - type: applies_to
+        target: definition.inscape.data-model.persistence
+  - id: rule.inscape.data-model.r005
+    kind: rule
+    title: Relational constrained persistence
+    modality: must
+    statement: Persist InscapeSpace in relational SQLite with per-row CHECK constraints and a dedicated quarantine table.
+    condition: Always.
+    failure: Refuse database initialization or migration when the relational constraints or quarantine table are absent.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.persistence
+      - type: applies_to
+        target: definition.inscape.data-model.quarantine

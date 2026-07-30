@@ -1,0 +1,86 @@
+format: nimicoding.authority/v2
+owner: team.inscape
+scope: inscape.product
+units:
+  - id: definition.inscape.product.inscape-app
+    kind: definition
+    title: Inscape app
+    meaning: Inscape (Xinxiang) is a fully local, open-source, adults-only Jungian-typology desktop app that turns the cognitive-function stack with Beebe archetypes into daily-life application and treats type as a moving probability distribution, never a fixed label.
+  - id: definition.inscape.product.three-faces
+    kind: definition
+    title: Three product faces
+    meaning: The three primary product faces are Today, Relationship, and Self.
+  - id: definition.inscape.product.anti-targets
+    kind: definition
+    title: Product anti-targets
+    meaning: The product anti-targets are dating or matching, HR or hiring or performance evaluation, clinical or diagnostic use, and open-ended chat companionship.
+  - id: rule.inscape.product.r001
+    kind: rule
+    title: Adults-only access
+    modality: must
+    statement: Inscape serves only adults aged 18 or older and provides no minor experience tier or carve-out for users aged 14 through 17.
+    condition: Always.
+    failure: Block app entry and do not create a subject for a user who is not attested as an adult.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.inscape-app
+  - id: rule.inscape.product.r002
+    kind: rule
+    title: Matching scores prohibited
+    modality: must_not
+    statement: The schema contains compatibility_score or any other-person matching score field.
+    condition: Always.
+    failure: Reject the schema definition or migration before it is applied.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.anti-targets
+  - id: rule.inscape.product.r003
+    kind: rule
+    title: Personnel use prohibited
+    modality: must_not
+    statement: The relationship graph is used for HR, hiring, or performance evaluation or records a personnel file instead of the user's own observations.
+    condition: Always.
+    failure: Reject the personnel-oriented record or operation before persistence.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.anti-targets
+  - id: rule.inscape.product.r004
+    kind: rule
+    title: Non-diagnostic posture
+    modality: must
+    statement: The product displays a permanent non-diagnostic disclaimer and all AI output remains non-pathologizing.
+    condition: Always.
+    failure: Suppress pathologizing AI output and fail release validation when the permanent disclaimer is absent.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.anti-targets
+  - id: rule.inscape.product.r005
+    kind: rule
+    title: Structured-purpose AI only
+    modality: must_not
+    statement: The product exposes an open-ended chat mode or AI output without a structured purpose.
+    condition: Always.
+    failure: Reject the unstructured AI surface or request before dispatch.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.anti-targets
+  - id: rule.inscape.product.r006
+    kind: rule
+    title: Fully local operation
+    modality: must
+    statement: Inscape operates fully locally with no cloud component, realm synchronization, or telemetry.
+    condition: Always.
+    failure: Block any cloud, realm-synchronization, or telemetry operation before data leaves the local app.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.inscape-app
+  - id: rule.inscape.product.r007
+    kind: rule
+    title: Three-face surface
+    modality: must
+    statement: Inscape exposes exactly the Today, Relationship, and Self faces and provides no agent capsule, notification bell, or background AI behavior.
+    condition: Always.
+    failure: Fail navigation validation and block any additional face, agent capsule, notification bell, or background AI behavior from activation.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.three-faces

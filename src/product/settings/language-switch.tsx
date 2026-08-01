@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SegmentedControl } from '@nimiplatform/kit/ui';
+import { SegmentedControl, nimiToast } from '@nimiplatform/kit/ui';
 import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_INSCAPE_LOCALE,
@@ -79,7 +79,10 @@ export function PersistedLanguageSwitch({ className }: { readonly className?: st
     setSaving(true);
     const saved = await setLocale(normalized, new Date().toISOString());
     setSaving(false);
-    if (!saved) return;
+    if (!saved) {
+      nimiToast.danger(t('Language.persistFailed'));
+      return;
+    }
     await i18n.changeLanguage(normalized);
   }
 

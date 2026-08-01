@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { analyzeSelf } from './self-analysis.ts';
@@ -17,7 +18,6 @@ export function SelfMirror({ profile }: { profile: TypeProfile }) {
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
   const [mirror, setMirror] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const analysis = analyzeSelf(profile);
   const core = functionCore(locale);
@@ -26,12 +26,13 @@ export function SelfMirror({ profile }: { profile: TypeProfile }) {
     if (!analysis || working) return;
     setWorking(true);
     setMirror(null);
-    setError(null);
     const result = await client.generate(buildSelfMirrorPrompt(analysis, locale));
     if (result.ok) {
       setMirror(result.text);
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
@@ -71,7 +72,6 @@ export function SelfMirror({ profile }: { profile: TypeProfile }) {
           {mirror}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

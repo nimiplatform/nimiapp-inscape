@@ -23,7 +23,7 @@ export type {
   JsonPrimitive,
 } from '@nimiplatform/kit/shell/renderer/bridge';
 
-import type { TauriOAuthBridge } from '@nimiplatform/kit/core/oauth';
+import type { ShellOAuthBridge } from '@nimiplatform/kit/core/oauth';
 import {
   focusMainWindow,
   hasTauriInvoke,
@@ -34,8 +34,8 @@ import {
 export const INSCAPE_TOKEN_EXCHANGE_FORBIDDEN =
   'Inscape does not expose OAuth token exchange; Runtime account service owns token custody.';
 
-export const inscapeTauriOAuthBridge: TauriOAuthBridge = {
-  hasTauriInvoke,
+export const inscapeTauriOAuthBridge: ShellOAuthBridge = {
+  hasShellHostInvoke: hasTauriInvoke,
   oauthListenForCode,
   openExternalUrl,
   focusMainWindow,

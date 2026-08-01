@@ -5,6 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import {
@@ -27,7 +28,6 @@ export function ReflectionJournal() {
   const [text, setText] = useState('');
   const [working, setWorking] = useState(false);
   const [resonance, setResonance] = useState<string | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
 
   async function onSave() {
@@ -36,7 +36,6 @@ export function ReflectionJournal() {
     const now = new Date().toISOString();
     setWorking(true);
     setResonance(null);
-    setAiError(null);
     setPending(null);
 
     const entryId = await addReflectionEntry(trimmed, now);
@@ -46,7 +45,11 @@ export function ReflectionJournal() {
     if (resonanceResult.ok) {
       setResonance(resonanceResult.text);
     } else {
-      setAiError(`${resonanceResult.failure.kind}: ${resonanceResult.failure.detail}`);
+      nimiToast.warning(
+        t('ReflectionJournal.aiUnavailableSaved', {
+          error: `${resonanceResult.failure.kind}: ${resonanceResult.failure.detail}`,
+        }),
+      );
     }
 
     if (profile) {
@@ -93,9 +96,6 @@ export function ReflectionJournal() {
 
       {resonance && (
         <div className="rounded border border-black/10 bg-black/[0.02] p-3 text-sm">{resonance}</div>
-      )}
-      {aiError && (
-        <p className="text-xs opacity-60">{t('ReflectionJournal.aiUnavailableSaved', { error: aiError })}</p>
       )}
 
       {pending && (

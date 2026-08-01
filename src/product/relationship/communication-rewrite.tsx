@@ -6,6 +6,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import {
@@ -34,7 +35,6 @@ export function CommunicationRewrite({
   const [working, setWorking] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const [rewrites, setRewrites] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<readonly string[]>([]);
 
   async function onRewrite() {
@@ -43,7 +43,6 @@ export function CommunicationRewrite({
     setWorking(true);
     setRefusal(null);
     setRewrites(null);
-    setError(null);
 
     // Layer 2: classify BEFORE any AI call. Refused contexts never reach the model.
     const classification = classifyRewriteContext(trimmed);
@@ -59,7 +58,9 @@ export function CommunicationRewrite({
       setRewrites(result.text);
       setHistory((h) => [trimmed, ...h].slice(0, 10)); // Layer 4 (session)
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
@@ -99,7 +100,6 @@ export function CommunicationRewrite({
           </p>
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
 
       {history.length > 0 && (
         <details className="text-xs opacity-70">

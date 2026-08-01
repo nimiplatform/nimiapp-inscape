@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildDecisionAidPrompt } from './today-prompts.ts';
@@ -20,19 +21,19 @@ export function DecisionAid() {
   const [decision, setDecision] = useState('');
   const [output, setOutput] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function onRun() {
     const trimmed = decision.trim();
     if (!trimmed || working || !profile) return;
     setWorking(true);
     setOutput(null);
-    setError(null);
     const result = await client.generate(buildDecisionAidPrompt(trimmed, profile, locale));
     if (result.ok) {
       setOutput(result.text);
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
@@ -62,7 +63,6 @@ export function DecisionAid() {
           {output}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

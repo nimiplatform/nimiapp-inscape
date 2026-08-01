@@ -5,7 +5,6 @@
 // and runs validateInscapeSpace on every read and write.
 
 import type { NimiClient } from '@nimiplatform/sdk';
-import { resolveNimiRuntimeAppStorageRoots } from '@nimiplatform/sdk/runtime';
 import {
   invoke,
   toShellBridgeNimiError,
@@ -171,12 +170,14 @@ export class RuntimeAppStoragePersistenceAdapter implements PersistenceClient {
   private async dataRoot(): Promise<string> {
     const client = this.getClient();
     await client.runtime.ready();
-    const roots = await resolveNimiRuntimeAppStorageRoots({
-      appLifecycle: client.runtime.appLifecycle,
-      appId: INSCAPE_APP_ID,
-      label: STORAGE_LABEL,
-    });
-    return roots.dataRoot;
+    const response = await client.runtime.generated.getAppStorage({ appId: INSCAPE_APP_ID });
+    const root = String(response.projection?.durableDataRoot || '').trim();
+    if (!root) {
+      throw new Error(
+        `Runtime app storage root unavailable for ${STORAGE_LABEL} (${INSCAPE_APP_ID}).`,
+      );
+    }
+    return root;
   }
 }
 

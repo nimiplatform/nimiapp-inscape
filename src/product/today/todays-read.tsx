@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildTodaysReadPrompt } from './today-prompts.ts';
@@ -19,28 +20,26 @@ export function TodaysRead() {
 
   const [read, setRead] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showEvidence, setShowEvidence] = useState(false);
-  const [feedback, setFeedback] = useState<'right' | 'wrong' | null>(null);
 
   async function onGenerate() {
     if (working) return;
     setWorking(true);
     setRead(null);
-    setError(null);
-    setFeedback(null);
     setShowEvidence(false);
     const result = await client.generate(buildTodaysReadPrompt(recent.map((r) => r.text), profile, locale));
     if (result.ok) {
       setRead(result.text);
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
 
   function onFeedback(kind: 'right' | 'wrong') {
-    setFeedback(kind);
+    nimiToast.success(t('TodaysRead.feedbackRecorded'));
     void addObservationEvent(`today-read feedback: ${kind}`, 'ai_read_feedback', new Date().toISOString());
   }
 
@@ -71,7 +70,6 @@ export function TodaysRead() {
             <button type="button" onClick={() => setShowEvidence((v) => !v)} className="opacity-70 hover:opacity-100">
               🔍 {t('TodaysRead.evidence')}
             </button>
-            {feedback && <span className="opacity-50">{t('TodaysRead.feedbackRecorded')}</span>}
           </div>
           {showEvidence && (
             <div className="text-xs opacity-70">
@@ -88,7 +86,6 @@ export function TodaysRead() {
           )}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

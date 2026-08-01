@@ -47,7 +47,8 @@
     "short": {
       "en": "EN",
       "zh": "中文"
-    }
+    },
+    "persistFailed": "语言偏好保存失败。请重试。"
   },
   "Status": {
     "loading": "加载中...",
@@ -160,6 +161,7 @@
     "analyze": "分析摩擦模式",
     "quarantineWarning": "确认此人未满 18 岁？该主体将立即从所有分析中移除并移入隔离区（IS-PRIV-03）。",
     "confirmQuarantine": "确认隔离",
+    "quarantined": "已从所有分析中移除并移入隔离区。",
     "cancel": "取消",
     "markUnder18": "标记此人未满 18 岁"
   },

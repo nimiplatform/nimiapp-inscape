@@ -61,12 +61,12 @@ test('Inscape AIConfig repair quarantines retired local target refs before SDK l
   assert.equal(result.quarantineKeys.length, 1);
   assert.match(result.quarantineKeys[0], new RegExp(`^${INSCAPE_AI_CONFIG_QUARANTINE_PREFIX}`));
   const quarantine = JSON.parse(storage.getItem(result.quarantineKeys[0]));
-  assert.match(quarantine.reason, /targetId is retired/);
+  assert.match(quarantine.reason, /AI_FIELD_RETIRED:config\.capabilities\.targetRefs\.text\.generate\.targetId/);
   assert.equal(quarantine.raw, raw);
 
   assert.deepEqual(createEmptyNimiAIConfig(scopeRef), {
     scopeRef,
-    capabilities: { targetRefs: {}, selectedParams: {} },
+    capabilities: { logicalModelIds: {}, targetRefs: {}, selectedComponents: {}, selectedParams: {} },
     profileOrigin: null,
   });
 });

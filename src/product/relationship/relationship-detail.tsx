@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildFrictionPrompt } from './relationship-prompts.ts';
@@ -30,7 +31,6 @@ export function RelationshipDetail({
   const [snippet, setSnippet] = useState('');
   const [friction, setFriction] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [confirmQuarantine, setConfirmQuarantine] = useState(false);
 
   function onAddSnippet() {
@@ -44,7 +44,6 @@ export function RelationshipDetail({
     if (working || relationship.communication_logs.length === 0) return;
     setWorking(true);
     setFriction(null);
-    setError(null);
     const result = await client.generate(
       buildFrictionPrompt(
         relationship.communication_logs.map((l) => l.snippet),
@@ -56,7 +55,9 @@ export function RelationshipDetail({
     if (result.ok) {
       setFriction(result.text);
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
@@ -106,7 +107,6 @@ export function RelationshipDetail({
           {friction}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
 
       <div className="border-t border-black/10 pt-3">
         <CommunicationRewrite
@@ -122,9 +122,11 @@ export function RelationshipDetail({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() =>
-                  void quarantineOtherSubject(relationship.other_subject_id, new Date().toISOString())
-                }
+                onClick={() => {
+                  void quarantineOtherSubject(relationship.other_subject_id, new Date().toISOString()).then(() => {
+                    nimiToast.success(t('RelationshipDetail.quarantined'));
+                  });
+                }}
                 className="rounded bg-amber-600 px-2 py-1 text-white"
               >
                 {t('RelationshipDetail.confirmQuarantine')}

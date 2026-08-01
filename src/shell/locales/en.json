@@ -47,7 +47,8 @@
     "short": {
       "en": "EN",
       "zh": "中文"
-    }
+    },
+    "persistFailed": "Could not save the language preference. Try again."
   },
   "Status": {
     "loading": "Loading...",
@@ -160,6 +161,7 @@
     "analyze": "Analyze friction pattern",
     "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine (IS-PRIV-03).",
     "confirmQuarantine": "Confirm quarantine",
+    "quarantined": "Removed from all analysis and moved into quarantine.",
     "cancel": "Cancel",
     "markUnder18": "Mark this person as under 18"
   },

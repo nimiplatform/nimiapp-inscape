@@ -5,6 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { nimiToast } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { analyzeDyad } from './dyad-analysis.ts';
@@ -36,10 +37,8 @@ export function DyadInsight({
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
   const [inferring, setInferring] = useState(false);
-  const [inferError, setInferError] = useState<string | null>(null);
   const [insight, setInsight] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const analysis = selfType && otherType ? analyzeDyad(selfType, otherType) : null;
 
@@ -47,12 +46,13 @@ export function DyadInsight({
     if (!analysis || working) return;
     setWorking(true);
     setInsight(null);
-    setError(null);
     const result = await client.generate(buildDyadInsightPrompt(analysis, locale));
     if (result.ok) {
       setInsight(result.text);
     } else {
-      setError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(
+        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+      );
     }
     setWorking(false);
   }
@@ -61,7 +61,6 @@ export function DyadInsight({
     const trimmed = description.trim();
     if (!trimmed || inferring) return;
     setInferring(true);
-    setInferError(null);
     const result = await client.generate(buildInferTypePrompt(trimmed, locale));
     if (result.ok) {
       const parsed = parseInferredType(result.text);
@@ -72,10 +71,10 @@ export function DyadInsight({
           new Date().toISOString(),
         );
       } else {
-        setInferError(t('DyadInsight.inferFailed'));
+        nimiToast.danger(t('DyadInsight.inferFailed'));
       }
     } else {
-      setInferError(`${result.failure.kind}: ${result.failure.detail}`);
+      nimiToast.danger(`${result.failure.kind}: ${result.failure.detail}`);
     }
     setInferring(false);
   }
@@ -136,7 +135,6 @@ export function DyadInsight({
           >
             {inferring ? t('DyadInsight.inferring') : t('DyadInsight.infer')}
           </button>
-          {inferError && <p className="text-xs opacity-60">{inferError}</p>}
         </div>
       </div>
     );
@@ -183,7 +181,6 @@ export function DyadInsight({
           {insight}
         </div>
       )}
-      {error && <p className="text-xs opacity-60">{t('Common.aiUnavailable', { error })}</p>}
     </div>
   );
 }

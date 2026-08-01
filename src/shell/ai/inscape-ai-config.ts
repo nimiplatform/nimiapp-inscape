@@ -9,6 +9,7 @@ import {
   createNimiAIConfigStore,
   createNimiAppAIScopeRef,
   encodeNimiAIScopeRef,
+  formatNimiAIValidationIssues,
   validateNimiAIConfig,
   type NimiAIConfig,
   type NimiAIHostStorage,
@@ -99,7 +100,7 @@ function storedAIConfigInvalidReason(raw: string, scopeRef: NimiAIScopeRef): str
   }
   const validation = validateNimiAIConfig(parsed);
   if (!validation.valid) {
-    return validation.errors.join('; ');
+    return formatNimiAIValidationIssues(validation.issues);
   }
   const config = parsed as NimiAIConfig;
   if (!areNimiAIScopeRefsEqual(config.scopeRef, scopeRef)) {
@@ -161,7 +162,7 @@ export function saveInscapeAIConfig(
   const normalized = { ...next, scopeRef };
   const validation = validateNimiAIConfig(normalized);
   if (!validation.valid) {
-    throw new Error(`AIConfig validation failed: ${validation.errors.join('; ')}`);
+    throw new Error(`AIConfig validation failed: ${formatNimiAIValidationIssues(validation.issues)}`);
   }
   return aiConfigStore.save(normalized);
 }

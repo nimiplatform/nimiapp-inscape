@@ -1,4 +1,4 @@
-import { hasTauriRuntime, invokeTauri } from '../bridge/index.js';
+import { hasElectronInvoke, invoke, type JsonValue } from '@nimiplatform/kit/shell/renderer/bridge';
 
 export type InscapeRendererLogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -75,17 +75,9 @@ export function logRendererEvent(payload: InscapeRendererLogPayload): void {
     ...payload,
     details: sanitize(payload.details),
   };
-  if (hasTauriRuntime()) {
-    void invokeTauri('log_renderer_event', { payload: sanitized }).catch(() => {});
+  if (hasElectronInvoke()) {
+    void invoke('inscape_log_renderer_event', sanitized as unknown as JsonValue).catch(() => {});
   }
-  const consoleFn = payload.level === 'error' ? 'error'
-    : payload.level === 'warn' ? 'warn'
-    : payload.level === 'info' ? 'info'
-    : 'debug';
-  (console as unknown as Record<string, (...args: unknown[]) => void>)[consoleFn](
-    `[inscape.${payload.area}] ${payload.message}`,
-    sanitized.details ?? '',
-  );
 }
 
 export function installInscapeGlobalErrorLogging(): void {

@@ -1,0 +1,118 @@
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { app, BrowserWindow, ipcMain, Menu, protocol, session, webContents } from 'electron';
+import {
+  isAllowedElectronRendererUrl,
+  registerNimiElectronAppAssetProtocolScheme,
+  registerNimiElectronAppBridge,
+} from '@nimiplatform/kit/shell/electron/main';
+import { clearInscapeSpace, loadInscapeSpace, saveInscapeSpace } from './persistence.js';
+
+const APP_ID = 'nimi.inscape';
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const appRoot = path.resolve(currentDir, '..');
+const preloadPath = path.join(currentDir, 'preload.cjs');
+const rendererDistUrl = pathToFileURL(path.join(appRoot, 'dist', 'index.html')).toString();
+const rendererUrl = readDevelopmentRendererUrl()
+  || normalizeText(process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL);
+
+app.setName('心相 Inscape');
+Menu.setApplicationMenu(null);
+app.commandLine.appendSwitch('disable-background-networking');
+registerNimiElectronAppAssetProtocolScheme(protocol);
+
+void app.whenReady().then(async () => {
+  registerNimiElectronAppBridge({
+    appId: APP_ID,
+    allowedRendererUrls: allowedRendererUrls(),
+    assetMediaPlatform: { protocol, webRequest: session.defaultSession.webRequest, webContents },
+    ipcMain,
+    appCommandHandlers: {
+      inscape_space_load: () => loadInscapeSpace(app.getPath('userData')),
+      inscape_space_save: ({ payload }) => {
+        saveInscapeSpace(
+          app.getPath('userData'),
+          requiredString(payload.snapshotJson, 'snapshotJson'),
+          payload.attestedAdult === true,
+        );
+      },
+      inscape_space_clear: () => clearInscapeSpace(app.getPath('userData')),
+      inscape_log_renderer_event: ({ payload }) => {
+        process.stdout.write(`${JSON.stringify({ source: 'inscape-renderer', ...payload })}\n`);
+      },
+    },
+  });
+  await createMainWindow();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) void createMainWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+async function createMainWindow(): Promise<BrowserWindow> {
+  const window = new BrowserWindow({
+    width: 1280,
+    height: 860,
+    minWidth: 360,
+    minHeight: 640,
+    title: '心相 Inscape',
+    backgroundColor: '#f7f3ec',
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  window.setMenuBarVisibility(false);
+  window.removeMenu();
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  window.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedElectronRendererUrl(url, allowedRendererUrls())) event.preventDefault();
+  });
+  await window.loadURL(rendererUrl || rendererDistUrl);
+  return window;
+}
+
+function allowedRendererUrls(): string[] {
+  const urls = new Set<string>([rendererUrl || rendererDistUrl]);
+  for (const value of normalizeText(process.env.NIMI_INSCAPE_ELECTRON_ALLOWED_RENDERER_URLS).split(',')) {
+    const normalized = normalizeText(value);
+    if (normalized) urls.add(normalized);
+  }
+  return [...urls];
+}
+
+function readDevelopmentRendererUrl(): string {
+  const prefix = '--nimi-dev-renderer-url=';
+  const values = process.argv.filter((value) => value.startsWith(prefix));
+  if (values.length === 0) return '';
+  if (values.length !== 1) throw new Error('Nimi development renderer URL must be singular.');
+  const parsed = new URL(values[0].slice(prefix.length));
+  if (
+    parsed.protocol !== 'http:'
+    || !['127.0.0.1', 'localhost', '[::1]', '::1'].includes(parsed.hostname.toLowerCase())
+    || !parsed.port
+    || parsed.username
+    || parsed.password
+    || (parsed.pathname !== '/' && parsed.pathname !== '')
+    || parsed.search
+    || parsed.hash
+  ) {
+    throw new Error('Nimi development renderer URL must be exact loopback.');
+  }
+  return parsed.origin;
+}
+
+function normalizeText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(`${field} is required`);
+  return value;
+}

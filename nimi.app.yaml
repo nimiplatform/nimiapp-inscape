@@ -1,13 +1,9 @@
 app_id: nimi.inscape
 display_name: Inscape
-profile: workspace-app
+profile: standalone
 manifest_role: submitted-input
-permissions:
-  # Provisional scope set — finalized in wave-1 Increment 3 (gate G3) when the
-  # AI consumption path is wired and verified against the live runtime
-  # (runtime.ai.text.generate / stream / embed). The single app identity is
-  # nimi.inscape across manifest, Runtime/SDK, storage, AIConfig, and Tauri.
-  declared_nimi_api_scopes:
-    - scope: app.local.drafts
-      qualifier: app-local-drafts
-      purpose: Store the local InscapeSpace (SQLite) owned by this app.
+app_access:
+  - runtime.consume
+local_development:
+  electron:
+    renderer_origin: http://127.0.0.1:1431

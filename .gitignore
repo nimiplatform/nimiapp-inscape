@@ -1,13 +1,10 @@
 node_modules/
 dist/
+dist-electron/
 artifacts/
 .codex-artifacts/
 .DS_Store
 *.log
-
-# Tauri
-src-tauri/target/
-src-tauri/gen/schemas/
 
 # Vite
 .vite/

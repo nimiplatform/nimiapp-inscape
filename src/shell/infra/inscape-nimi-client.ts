@@ -1,8 +1,8 @@
-import type { NimiClient } from '@nimiplatform/sdk';
+import type { NimiLocalAppClient } from '@nimiplatform/sdk/app';
 
-let inscapeClient: NimiClient | null = null;
+let inscapeClient: NimiLocalAppClient | null = null;
 
-export function setInscapeNimiClient(client: NimiClient | null): void {
+export function setInscapeNimiClient(client: NimiLocalAppClient | null): void {
   inscapeClient = client;
 }
 
@@ -10,9 +10,7 @@ export function hasInscapeNimiClient(): boolean {
   return inscapeClient !== null;
 }
 
-export function getInscapeNimiClient(): NimiClient {
-  if (!inscapeClient) {
-    throw new Error('Inscape Nimi client is not initialized. Run bootstrap before using Runtime surfaces.');
-  }
+export function getInscapeNimiClient(): NimiLocalAppClient {
+  if (!inscapeClient) throw new Error('Inscape Runtime access is unavailable.');
   return inscapeClient;
 }

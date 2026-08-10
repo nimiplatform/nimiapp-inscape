@@ -6,7 +6,7 @@ import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../app-shell/app-store.js';
 import { RuntimeAppStoragePersistenceAdapter } from '../persistence/runtime-app-storage-adapter.ts';
-import { InMemoryPersistenceAdapter } from '../../product/persistence/in-memory-adapter.ts';
+import { hasElectronInvoke } from '@nimiplatform/kit/shell/renderer/bridge';
 import type { PersistenceClient } from '../../product/persistence/persistence-client.ts';
 import {
   InscapeStoreProvider,
@@ -17,16 +17,19 @@ import { FirstRunGate } from '../../product/first-run/first-run-gate.tsx';
 import { usePersistedInscapeLocaleSync } from '../../product/settings/language-switch.tsx';
 
 function pickPersistenceClient(): PersistenceClient {
-  if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
-    return new RuntimeAppStoragePersistenceAdapter();
-  }
-  return new InMemoryPersistenceAdapter();
+  if (!hasElectronInvoke()) throw new Error('Inscape SQLite requires the Electron Host.');
+  return new RuntimeAppStoragePersistenceAdapter();
 }
 
 export function ProductArea() {
   const user = useAppStore((s) => s.auth.user);
-  const client = useMemo(() => pickPersistenceClient(), []);
   if (!user?.id) return null;
+  if (!hasElectronInvoke()) return <CenteredNote text="Inscape local data is unavailable outside the Electron Host." />;
+  return <ProductAreaWithPersistence />;
+}
+
+function ProductAreaWithPersistence() {
+  const client = useMemo(() => pickPersistenceClient(), []);
   return (
     <InscapeStoreProvider client={client}>
       <InscapeBootGate />

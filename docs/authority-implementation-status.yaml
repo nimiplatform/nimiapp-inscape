@@ -49,7 +49,7 @@ units:
     status: implemented
   - unit: rule.inscape.data-model.r005
     legacy_id: IS-DATA-05
-    enforcement: src-tauri/src/persistence.rs.
+    enforcement: src-electron/persistence.ts.
     status: implemented
   - unit: rule.inscape.typology.r001
     legacy_id: IS-TYPO-01
@@ -82,7 +82,7 @@ units:
     status: implemented
   - unit: rule.inscape.runtime-ai.r002
     legacy_id: IS-AI-02
-    enforcement: binding resolution fails closed before dispatch.
+    enforcement: App AIConfig local intent + protected ai.text.generateCandidate.
     status: implemented
   - unit: rule.inscape.runtime-ai.r003
     legacy_id: IS-AI-03
@@ -102,11 +102,11 @@ units:
     status: planned
   - unit: rule.inscape.privacy.r001
     legacy_id: IS-PRIV-01
-    enforcement: src-tauri/src/persistence.rs schema.
+    enforcement: src-electron/persistence.ts schema.
     status: implemented
   - unit: rule.inscape.privacy.r002
     legacy_id: IS-PRIV-02
-    enforcement: src/shell/features/auth/inscape-auth-adapter.ts.
+    enforcement: protected auth.status/currentUser.get; account actions remain Desktop-owned.
     status: implemented
   - unit: rule.inscape.privacy.r003
     legacy_id: IS-PRIV-03
@@ -119,7 +119,7 @@ units:
   # Legacy summary work-item anchor: T1-05.
   - unit: rule.inscape.privacy.r005
     legacy_id: IS-PRIV-05
-    enforcement: persistence.rs restrict_db_permissions; no analytics deps.
+    enforcement: src-electron/persistence.ts chmod 0o600; no analytics deps.
     status: implemented
   - unit: rule.inscape.oss.r001
     legacy_id: IS-OSS-01

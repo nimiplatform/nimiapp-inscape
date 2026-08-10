@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { InscapeRuntimeDefaults } from '../bridge/index.js';
+import type { NimiAppAuthProjection } from '@nimiplatform/sdk/app';
 
 // IS-PRIV: Nimi platform owns identity. The renderer-side app store
 // keeps only the runtime-projected account identity. Raw Realm access tokens
@@ -20,13 +20,13 @@ interface AppState {
   };
   bootstrapReady: boolean;
   bootstrapError: string | null;
-  runtimeDefaults: InscapeRuntimeDefaults | null;
+  runtimeStatus: NimiAppAuthProjection | null;
 
   setAuthSession: (user: AuthUser) => void;
   clearAuthSession: () => void;
   setBootstrapReady: (ready: boolean) => void;
   setBootstrapError: (error: string | null) => void;
-  setRuntimeDefaults: (defaults: InscapeRuntimeDefaults) => void;
+  setRuntimeStatus: (status: NimiAppAuthProjection) => void;
 }
 
 declare global {
@@ -45,7 +45,7 @@ export const useAppStore = create<AppState>((set) => ({
   },
   bootstrapReady: false,
   bootstrapError: null,
-  runtimeDefaults: null,
+  runtimeStatus: null,
 
   setAuthSession(user) {
     set({ auth: { status: 'authenticated', user } });
@@ -55,12 +55,5 @@ export const useAppStore = create<AppState>((set) => ({
   },
   setBootstrapReady: (ready) => set({ bootstrapReady: ready }),
   setBootstrapError: (error) => set({ bootstrapError: error }),
-  setRuntimeDefaults: (defaults) => set({ runtimeDefaults: defaults }),
+  setRuntimeStatus: (runtimeStatus) => set({ runtimeStatus }),
 }));
-
-// Expose the store under window during dev so we can drive the authenticated
-// state from a debug console without a real Runtime — never read this from
-// product source.
-if (typeof window !== 'undefined' && import.meta.env?.DEV) {
-  window.__INSCAPE_APP_STORE__ = useAppStore;
-}

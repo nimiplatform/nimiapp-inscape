@@ -8,7 +8,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const SOURCE_EXTS = new Set(['.ts', '.tsx', '.rs']);
+const SOURCE_EXTS = new Set(['.ts', '.tsx', '.cts']);
 
 function walk(dir) {
   const out = [];
@@ -35,6 +35,11 @@ const RULES = [
     id: 'T1-07 ai-boundary',
     re: /from\s+['"](openai|@anthropic-ai\/sdk|@google\/genai|@google\/generative-ai|cohere-ai|@nimiplatform\/sdk\/ai-provider)['"]/,
     hint: 'AI only via @nimiplatform/sdk + src/shell/ai; no direct provider SDK or ai-provider bypass',
+  },
+  {
+    id: 'IS-APP-ACCESS legacy-surface-forbidden',
+    re: /createNimiRuntimeFullAppRegistration|createNimiRuntimeAppSessionMetadataProvider|runtime\.account\.|getAppStorage\(|@nimiplatform\/sdk\/runtime\/generated/,
+    hint: 'Inscape must consume the protected local App Access surface only',
   },
   {
     id: 'no-telemetry',
@@ -91,7 +96,7 @@ const RULES = [
 const violations = [];
 const warnings = [];
 
-const files = [...walk('src'), ...walk(join('src-tauri', 'src'))];
+const files = [...walk('src'), ...walk('src-electron')];
 for (const file of files) {
   const code = stripComments(readFileSync(file, 'utf8'));
   for (const rule of RULES) {
@@ -102,21 +107,9 @@ for (const file of files) {
   }
 }
 
-// T1-06 CSP — warning only (value requires live verification).
-try {
-  const conf = JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8'));
-  const csp = conf?.app?.security?.csp;
-  if (!csp || typeof csp !== 'string') {
-    warnings.push(
-      "T1-06 CSP: src-tauri/tauri.conf.json has no app.security.csp. Set connect-src to 'self' + the local runtime and verify on `tauri dev` (a wrong CSP breaks IPC).",
-    );
-  } else if (/connect-src[^;]*\*/.test(csp)) {
-    violations.push(
-      "src-tauri/tauri.conf.json: [T1-06 CSP] connect-src contains a wildcard — tighten to 'self' + the local runtime origin",
-    );
-  }
-} catch (error) {
-  warnings.push(`T1-06 CSP: could not read src-tauri/tauri.conf.json (${error.message})`);
+const manifest = readFileSync('nimi.app.yaml', 'utf8');
+if (/^permissions\s*:/mu.test(manifest)) {
+  violations.push('nimi.app.yaml: [IS-APP-ACCESS legacy-permissions-forbidden] replace permissions with app_access');
 }
 
 for (const warning of warnings) {

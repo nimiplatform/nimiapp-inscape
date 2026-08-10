@@ -8,8 +8,7 @@ export default defineConfig([
   ...tseslint.configs.recommended,
   globalIgnores([
     'dist/**',
-    'src-tauri/target/**',
-    'src-tauri/gen/**',
+    'dist-electron/**',
     'node_modules/**',
     '*.config.ts',
     '*.config.mjs',
@@ -17,7 +16,7 @@ export default defineConfig([
     'scripts/**',
   ]),
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'src-electron/**/*.ts', 'src-electron/**/*.cts'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

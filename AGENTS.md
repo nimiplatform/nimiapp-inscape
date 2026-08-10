@@ -8,7 +8,7 @@
 - **App name (English)**: Inscape
 - **Canonical Nimi app_id**: `nimi.inscape`
 - **Product slug**: `inscape`
-- **Tauri identifier**: `nimi.inscape`
+- **Electron App Access id**: `nimi.inscape`
 - **Submitted manifest app_id**: `nimi.inscape`
 - **One-line**: A fully local, open-source, 18+ desktop app that turns Jungian
   typology (cognitive-function stack + Beebe archetypes) into daily-life
@@ -19,7 +19,7 @@
 ## Provenance
 
 Forked 2026-06-05 from `nimiapp-shijing`'s **non-product** consumption layer
-(`src/shell/**`, the `src-tauri` + `nimi-shell-tauri` wiring, the persistence
+(`src/shell/**`, the former Tauri shell wiring, the persistence
 interface, the test/build/governance scaffold). ShiJing's product layer
 (astrology pipeline, ShiJingSpace domain, product tabs) was **not** carried
 over. There must be **no** shijing / astrology / `SJG-*` remnants in this repo.
@@ -32,27 +32,26 @@ Product authority lives in the nimi-realm topic
 
 | Layer | Technology | Location |
 |-------|-----------|----------|
-| Desktop shell | Tauri 2 + `nimi-shell-tauri` crate | `src-tauri/` |
+| Desktop shell | Electron 42 + Desktop-supervised App Access carrier | `src-electron/` |
 | Frontend | React 19 + Vite 7 | `src/shell/renderer` (`src/main.tsx`) |
-| Consumption layer (reuse) | auth / bootstrap / runtime bridge | `src/shell/{app-shell,infra,bridge,features/auth,persistence}` |
-| Persistence | **Custom SQLite** (G1) | `src-tauri/src/main.rs` + `src/shell/persistence/runtime-app-storage-adapter.ts` |
-| AI wording | nimi runtime (`runtime.ai.text.*`) via `@nimiplatform/sdk` | `src/shell/ai/**` (wave-1 Increment 3) |
+| Consumption layer | protected local App Access bootstrap | `src/shell/{app-shell,infra,persistence}` |
+| Persistence | **Custom SQLite** (G1, `better-sqlite3`) | `src-electron/persistence.ts` + `src/shell/persistence/runtime-app-storage-adapter.ts` |
+| AI wording | `runtime.consume` via `ai.text.generateCandidate` | `src/shell/ai/**` |
 | UI components | `@nimiplatform/kit` | npm link |
 | Domain (product) | InscapeSpace + IS-* contracts | `src/domain`, `src/contracts` (wave-2) |
 
-`@nimiplatform/{sdk,kit}` are consumed via `link:` to the in-flight
-`nimi-realm/nimi/{sdk,kit}`. Re-adapt the thin `src/shell/ai` + `bridge` seam
-when the platform sdk/kit refactor lands (topic wave-5) — do not let the
-refactor block product work.
+`@nimiplatform/{sdk,kit,app-tools}` are consumed via `link:` to the in-flight
+`nimi-realm/nimi` packages and only through their built package exports. The
+Desktop repository must provide fresh SDK/Kit dist before this app is built.
 
 ## Hard boundaries
 
 - **18+ fail-close (G1 / T1-04 / T1-05)**: the SQLite layer opens
-  `<runtime-data-root>/inscape.db` with `0o600` and
+  `<electron-user-data>/inscape.db` with `0o600` and
   `CHECK (attested_adult = 1)`; the space is never persisted without an adult
   attestation. Keep this gate at the DB level.
 - **Runtime owns identity**: the app never custodies access/refresh tokens
-  (app-scoped `NimiClient` + `runtime.account.*`). No app-owned
+  (protected local App Access `auth.status` + `currentUser.get`). No app-owned
   token surface.
 - **Local only**: no cloud, no telemetry, no cross-app data hub.
 - **No astrology**: this is typology, not bazi/ganzhi. No ShiJing vocabulary.
@@ -61,7 +60,7 @@ refactor block product work.
 ## Verification
 
 ```bash
-pnpm build     # tsc --noEmit + vite build + (cd src-tauri && cargo check)
+pnpm build     # typecheck + Electron host/preload + Vite renderer
 pnpm test      # node --test test/*.test.mjs
 pnpm lint
 ```

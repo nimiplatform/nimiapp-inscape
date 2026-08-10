@@ -5,10 +5,8 @@
 
 @import 'tailwindcss';
 
-/* Tailwind 4 only scans `src/**` by default. The kit's auth + ui components
- * emit Tailwind utility classes; without explicit @source entries, those
- * classes are pruned from the bundle and the kit's intended sizing collapses. */
-@source "../../../nimi/kit/**/*.{ts,tsx}";
+/* Linked SDK/Kit packages are consumed only through their built exports. */
+@source "../node_modules/@nimiplatform/kit/dist/**/*.js";
 
 :root {
   color-scheme: light;

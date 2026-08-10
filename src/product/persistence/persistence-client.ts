@@ -5,7 +5,7 @@
 import type { InscapeSpace } from '../../domain/inscape-space.ts';
 import type { InscapeSpaceValidationError } from '../../contracts/inscape-space-validator.ts';
 
-export type PersistenceAdapterKind = 'in_memory' | 'indexeddb' | 'runtime_app_storage';
+export type PersistenceAdapterKind = 'in_memory' | 'indexeddb' | 'local_sqlite';
 
 export type PersistenceError =
   | { kind: 'load_unsupported_environment'; adapter: PersistenceAdapterKind; reason: string }

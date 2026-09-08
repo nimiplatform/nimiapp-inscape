@@ -1,0 +1,8 @@
+app_id: nimi.inscape
+display_name: Inscape
+version: 0.1.0
+npm_package_name: nimiapp-inscape
+cargo_package_name: nimiapp-inscape-shell
+tauri_identifier: ai.nimi.apps.nimi.inscape
+package_author: Nimi Team
+identity_role: scaffold-generated-authoring-input

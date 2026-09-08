@@ -79,11 +79,15 @@ async function bootstrap(): Promise<void> {
 
 async function ensureLocalAIConfig(client: NimiLocalAppClient): Promise<void> {
   const current = await client.aiConfig.get();
-  const localText = current.capabilities.find((entry) => entry.capabilityContract === 'text.generate');
+  const localText = current.config?.capabilities.find((entry) => entry.capabilityContract === 'text.generate');
   if (localText?.route.oneofKind === 'local') return;
-  await client.aiConfig.overwrite([{
-    capabilityContract: 'text.generate',
-    requiredFeatures: [],
-    route: { oneofKind: 'local', local: {} },
-  }]);
+  const result = await client.aiConfig.overwrite({
+    expectedRevision: current.revision,
+    capabilities: [{
+      capabilityContract: 'text.generate',
+      requiredFeatures: [],
+      route: { oneofKind: 'local', local: {} },
+    }],
+  });
+  if (result.outcome === 'conflict') throw new Error(result.reasonCode);
 }

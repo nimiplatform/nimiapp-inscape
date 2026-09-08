@@ -9,11 +9,11 @@ const electronMain = readFileSync(new URL('../src-electron/main.ts', import.meta
 const bootstrap = readFileSync(new URL('../src/shell/infra/inscape-bootstrap.ts', import.meta.url), 'utf8');
 const aiClient = readFileSync(new URL('../src/shell/ai/inscape-runtime-ai-client.ts', import.meta.url), 'utf8');
 
-test('toolchain consumes linked packages through dist exports and Electron', () => {
+test('toolchain consumes public packages through dist exports and Electron', () => {
   assert.equal(packageJson.scripts.dev, 'nimi-app dev --shell electron');
-  assert.match(packageJson.dependencies['@nimiplatform/sdk'], /^link:/);
-  assert.match(packageJson.dependencies['@nimiplatform/kit'], /^link:/);
-  assert.match(packageJson.devDependencies['@nimiplatform/app-tools'], /^link:/);
+  assert.match(packageJson.dependencies['@nimiplatform/sdk'], /^\^?\d+\.\d+\.\d+$/);
+  assert.match(packageJson.dependencies['@nimiplatform/kit'], /^\^?\d+\.\d+\.\d+$/);
+  assert.match(packageJson.devDependencies['@nimiplatform/app-tools'], /^\^?\d+\.\d+\.\d+$/);
   assert.doesNotMatch(vite, /nimiSdkSourceRoot|nimiKitSourceRoot|alias:/);
   assert.match(electronMain, /registerNimiElectronAppBridge/);
   assert.match(electronMain, /appCommandHandlers/);

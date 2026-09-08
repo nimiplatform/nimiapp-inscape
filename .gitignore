@@ -19,3 +19,7 @@ artifacts/
 .nimi/local/
 .nimi/cache/
 .nimi/topics/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/schemas/

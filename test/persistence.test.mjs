@@ -56,7 +56,10 @@ test('Electron SQLite round-trips relational state with DB fail-close gates', ()
   const space = createEmptyInscapeSpace('2026-06-05T00:00:00Z', true);
   saveInscapeSpace(root, JSON.stringify(space), true);
   assert.deepEqual(JSON.parse(loadInscapeSpace(root)), space);
-  assert.equal(statSync(path.join(root, 'inscape.db')).mode & 0o777, 0o600);
+  // Windows stat does not expose POSIX owner/group/other permission bits.
+  if (process.platform !== 'win32') {
+    assert.equal(statSync(path.join(root, 'inscape.db')).mode & 0o777, 0o600);
+  }
 
   const db = new Database(path.join(root, 'inscape.db'));
   assert.throws(() => db.prepare("INSERT INTO subjects (id, kind, display_name, type_profile_json, age_attested_adult, age_attested_at, age_attestation_method) VALUES ('x', 'other_person', 'x', NULL, 0, '2026-06-05T00:00:00Z', 'test')").run(), /CHECK constraint failed/);

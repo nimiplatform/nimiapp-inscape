@@ -23,3 +23,5 @@ artifacts/
 # Tauri
 src-tauri/target/
 src-tauri/gen/schemas/
+# Windows production package
+dist-electron-package/

@@ -7,10 +7,15 @@ cargo_package_name: nimiapp-inscape-shell
 tauri_identifier: ai.nimi.apps.nimi.inscape
 package_author: Nimi Team
 submission_role: developer-submitted-input
-capability_contract_refs: []
+capability_contract_refs:
+  - text.generate
 required_standardized_feature_refs: []
 storage_policy:
-  kind: nimi-mediated-default
+  kind: app-owned-os-storage
+  os_storage_disclosure:
+    - path_pattern: <Electron userData>/inscape.db
+      purpose: Local SQLite storage for adult attestation, profiles, observations and reflections. Retained after Nimi uninstall; cleared from Inscape settings.
+      expected_size_band: Starts at a few KiB and grows with saved records; no App-enforced storage cap.
 support_manifest:
   diagnostics_bundle_fields:
     - app_version
@@ -20,7 +25,7 @@ support_manifest:
   user_visible_issue_categories:
     - startup
     - runtime
-  escalation_path: README.md#support
+  escalation_path: https://github.com/nimiplatform/nimiapp-inscape/issues
   kill_switch_visibility: visible
   recovery_instructions: Restart the App from Nimi. If the problem persists, reinstall the current admitted release.
 review_inputs:

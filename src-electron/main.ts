@@ -9,12 +9,15 @@ import {
 import { clearInscapeSpace, loadInscapeSpace, saveInscapeSpace } from './persistence.js';
 
 const APP_ID = 'nimi.inscape';
+declare const __NIMI_ELECTRON_PRODUCTION__: boolean;
+const IS_PRODUCTION_BUNDLE = typeof __NIMI_ELECTRON_PRODUCTION__ !== 'undefined'
+  && __NIMI_ELECTRON_PRODUCTION__;
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(currentDir, '..');
 const preloadPath = path.join(currentDir, 'preload.cjs');
 const rendererDistUrl = pathToFileURL(path.join(appRoot, 'dist', 'index.html')).toString();
 const rendererUrl = readDevelopmentRendererUrl()
-  || normalizeText(process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL);
+  || (IS_PRODUCTION_BUNDLE ? '' : normalizeText(process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL));
 
 app.setName('心相 Inscape');
 Menu.setApplicationMenu(null);
@@ -79,6 +82,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
 }
 
 function allowedRendererUrls(): string[] {
+  if (IS_PRODUCTION_BUNDLE) return [rendererDistUrl];
   const urls = new Set<string>([rendererUrl || rendererDistUrl]);
   for (const value of normalizeText(process.env.NIMI_INSCAPE_ELECTRON_ALLOWED_RENDERER_URLS).split(',')) {
     const normalized = normalizeText(value);
@@ -90,6 +94,9 @@ function allowedRendererUrls(): string[] {
 function readDevelopmentRendererUrl(): string {
   const prefix = '--nimi-dev-renderer-url=';
   const values = process.argv.filter((value) => value.startsWith(prefix));
+  if (IS_PRODUCTION_BUNDLE && values.length > 0) {
+    throw new Error('Production Inscape does not accept development renderer arguments.');
+  }
   if (values.length === 0) return '';
   if (values.length !== 1) throw new Error('Nimi development renderer URL must be singular.');
   const parsed = new URL(values[0].slice(prefix.length));

@@ -31,7 +31,8 @@
     "spec:authority:check": "nimicoding authority check .nimi/spec",
     "spec:authority:compile": "nimicoding authority compile .nimi/spec",
     "sync": "nimi-app sync",
-    "pack": "nimi-app pack"
+    "pack": "nimi-app pack",
+    "build:electron:production": "node scripts/clean-electron-production.mjs && pnpm run build && node scripts/package-electron-production.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -44,6 +45,7 @@
     "@nimiplatform/kit": "^0.5.1"
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
     "@electron/rebuild": "^4.2.0",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.0",
@@ -61,9 +63,10 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.4",
     "vite": "^7.3.6",
-    "@nimiplatform/app-tools": "^0.2.8",
+    "@nimiplatform/app-tools": "^0.2.9",
     "@nimiplatform/nimi-coding": "0.6.1"
   },
   "author": "Nimi Team",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "dist-electron/main.js"
 }

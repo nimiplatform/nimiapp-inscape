@@ -1,5 +1,7 @@
 # nimiapp-inscape
 
+Inscape helps adults explore Jungian personality patterns through daily observations and reflections, with data stored locally.
+
 ## Windows package and release
 
 The production target is Windows x86_64 using Desktop-supervised Electron.

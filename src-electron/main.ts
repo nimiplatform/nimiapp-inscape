@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { app, BrowserWindow, ipcMain, Menu, protocol, session, webContents } from 'electron';
 import {
+  createNimiElectronStandardApplicationMenuTemplate,
   isAllowedElectronRendererUrl,
   registerNimiElectronAppAssetProtocolScheme,
   registerNimiElectronAppBridge,
@@ -20,7 +21,9 @@ const rendererUrl = readDevelopmentRendererUrl()
   || (IS_PRODUCTION_BUNDLE ? '' : normalizeText(process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL));
 
 app.setName('心相 Inscape');
-Menu.setApplicationMenu(null);
+Menu.setApplicationMenu(Menu.buildFromTemplate(
+  createNimiElectronStandardApplicationMenuTemplate({ appName: app.getName() }),
+));
 app.commandLine.appendSwitch('disable-background-networking');
 registerNimiElectronAppAssetProtocolScheme(protocol);
 
@@ -72,7 +75,6 @@ async function createMainWindow(): Promise<BrowserWindow> {
     },
   });
   window.setMenuBarVisibility(false);
-  window.removeMenu();
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event, url) => {
     if (!isAllowedElectronRendererUrl(url, allowedRendererUrls())) event.preventDefault();

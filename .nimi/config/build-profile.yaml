@@ -12,4 +12,10 @@ targets:
     build_command: pnpm run build:electron:production
     payload_path: dist-electron-package/nimiapp-inscape-shell-win32-x64
     runtime_entry: payload/nimiapp-inscape-shell.exe
+  macos-aarch64:
+    os: macos
+    arch: arm64
+    build_command: pnpm run build:electron:production
+    payload_path: dist-electron-package/nimiapp-inscape-shell-darwin-arm64
+    runtime_entry: payload/nimiapp-inscape-shell.app/Contents/MacOS/nimiapp-inscape-shell
 profile_role: developer-workflow-input

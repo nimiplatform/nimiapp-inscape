@@ -1,6 +1,6 @@
 app_id: nimi.inscape
 display_name: Inscape
-version: 0.1.1
+version: 0.1.2
 npm_package_name: nimiapp-inscape
 cargo_package_name: nimiapp-inscape-shell
 tauri_identifier: ai.nimi.apps.nimi.inscape

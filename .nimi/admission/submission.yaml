@@ -1,6 +1,6 @@
 app_id: nimi.inscape
 display_name: Inscape
-version: 0.1.5
+version: 0.1.6
 profile: standalone
 npm_package_name: nimiapp-inscape
 cargo_package_name: nimiapp-inscape-shell

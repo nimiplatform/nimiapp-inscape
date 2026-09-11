@@ -22,9 +22,13 @@ function accept(store, proposal, now, sourceId) {
   );
 }
 
-async function setup(t) {
+async function setup(t, beforeCleanup = () => {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'inscape-lifecycle-'));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  t.after(() => {
+    // Windows requires open SQLite connections to close before removing their files.
+    beforeCleanup();
+    rmSync(root, { recursive: true, force: true });
+  });
   const client = sqliteClient(root);
   const store = createInscapeStore(client);
   await store.getState().initialize();
@@ -36,11 +40,11 @@ test(
   'a real SQLite lock preserves the live store and retry completes one original save before queued changes',
   { timeout: 15000 },
   async (t) => {
-    const { root, client, store } = await setup(t);
-    const lock = new Database(path.join(root, 'inscape.db'));
-    t.after(() => {
-      if (lock.open) lock.close();
+    let lock;
+    const { root, client, store } = await setup(t, () => {
+      if (lock?.open) lock.close();
     });
+    lock = new Database(path.join(root, 'inscape.db'));
     lock.exec('BEGIN EXCLUSIVE');
     const pending = store.getState().addReflectionEntry('Retain this draft.', NOW);
     const queued = store.getState().setLocale('en', NOW);
@@ -64,11 +68,11 @@ test(
   'cancelling a real failed save returns no successful id and allows later saves',
   { timeout: 15000 },
   async (t) => {
-    const { root, store } = await setup(t);
-    const lock = new Database(path.join(root, 'inscape.db'));
-    t.after(() => {
-      if (lock.open) lock.close();
+    let lock;
+    const { root, store } = await setup(t, () => {
+      if (lock?.open) lock.close();
     });
+    lock = new Database(path.join(root, 'inscape.db'));
     lock.exec('BEGIN EXCLUSIVE');
     const pending = store.getState().addReflectionEntry('Unsaved only.', NOW);
     await setImmediate();

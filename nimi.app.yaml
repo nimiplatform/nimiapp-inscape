@@ -1,6 +1,6 @@
 app_id: nimi.inscape
 display_name: Inscape
-version: 0.1.5
+version: 0.1.6
 profile: standalone
 manifest_role: submitted-input
 app_access:

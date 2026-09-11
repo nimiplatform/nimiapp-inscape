@@ -1,115 +1,174 @@
-// IS-PRIV-04 / T1-10 — communication rewrite with the 4-layer anti-manipulation
-// defence: (1) prompt hard-injection, (2) keyword classifier refusing before
-// any AI call, (3) mandatory one-sided disclaimer on every output, (4) a
-// session rewrite history the user can review. Full RewriteHistoryCorpus
-// persistence is an Extended-layer addition.
-
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { nimiToast } from '@nimiplatform/kit/ui';
+import { Check, Copy, Sparkles } from 'lucide-react';
+import { AiError, LoadingRead, ReadFeedback } from '../components/primitives.tsx';
+import { ReadingHistory, useReadingHistory } from '../components/reading-history.tsx';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
-import {
-  classifyRewriteContext,
-  type RefusalCategory,
-} from './rewrite-classifier.ts';
+import { classifyRewriteContext } from './rewrite-classifier.ts';
 import { buildRewritePrompt } from './rewrite-prompts.ts';
+import { parseRewriteResult } from '../../domain/rewrite.ts';
 import type { RelationshipNature } from '../../domain/relationship.ts';
 
-type Refusal = { category: RefusalCategory; reason: string };
-
 export function CommunicationRewrite({
+  relationshipId,
   recipientName,
   nature,
+  onDirtyChange,
 }: {
+  relationshipId: string;
   recipientName: string;
   nature: RelationshipNature;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
-  const selfLeading = space?.self_subject.type_profile?.leading_type ?? null;
-  const locale = space?.settings.locale;
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
-
+  const history = useReadingHistory('communication-rewrite', relationshipId);
   const [draft, setDraft] = useState('');
+  const [savedInput, setSavedInput] = useState('');
   const [working, setWorking] = useState(false);
-  const [refusal, setRefusal] = useState<Refusal | null>(null);
-  const [rewrites, setRewrites] = useState<string | null>(null);
-  const [history, setHistory] = useState<readonly string[]>([]);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<number | null>(null);
+  const dirty = (!!draft.trim() && draft !== savedInput) || history.pending;
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
+  useEffect(() => {
+    setCopied(null);
+  }, [history.record?.id]);
+  const result =
+    history.record && !history.record.refusal ? parseRewriteResult(history.record.text) : null;
 
+  // @nimi-authority: rule.inscape.privacy.r004
   async function onRewrite() {
     const trimmed = draft.trim();
-    if (!trimmed || working) return;
+    if (!trimmed || working || history.pending) return;
     setWorking(true);
-    setRefusal(null);
-    setRewrites(null);
-
-    // Layer 2: classify BEFORE any AI call. Refused contexts never reach the model.
-    const classification = classifyRewriteContext(trimmed);
-    if (!classification.ok) {
-      setRefusal({ category: classification.category, reason: classification.reason });
-      setWorking(false);
-      return;
-    }
-
-    // Layer 1: hard-injected anti-manipulation prompt.
-    const result = await client.generate(buildRewritePrompt(trimmed, recipientName, nature, selfLeading, locale));
-    if (result.ok) {
-      setRewrites(result.text);
-      setHistory((h) => [trimmed, ...h].slice(0, 10)); // Layer 4 (session)
-    } else {
-      nimiToast.danger(
-        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+    setError(null);
+    setCopied(null);
+    const reference_type = space?.self_subject.type_profile?.leading_type ?? null;
+    try {
+      const classification = classifyRewriteContext(trimmed);
+      if (!classification.ok) {
+        if (
+          await history.save({
+            evidence: trimmed,
+            source_ids: [],
+            text: '',
+            reference_type: null,
+            other_reference_type: null,
+            refusal: classification.category,
+          })
+        )
+          setSavedInput(draft);
+        return;
+      }
+      setLoadingAi(true);
+      const generated = await client.generate(
+        buildRewritePrompt(trimmed, recipientName, nature, reference_type, space?.settings.locale),
       );
+      setLoadingAi(false);
+      if (!generated.ok) {
+        setError(generated.failure.detail);
+        return;
+      }
+      const parsed = parseRewriteResult(generated.text);
+      if (!parsed) {
+        setError(t('Experience.invalidRewrite'));
+        return;
+      }
+      if (
+        await history.save({
+          evidence: trimmed,
+          source_ids: [],
+          text: JSON.stringify(parsed),
+          reference_type,
+          other_reference_type: null,
+          refusal: null,
+        })
+      )
+        setSavedInput(draft);
+    } finally {
+      setWorking(false);
+      setLoadingAi(false);
     }
-    setWorking(false);
   }
-
   return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium">{t('CommunicationRewrite.title')}</h4>
+    <div className="rewrite-workshop">
+      <h4>{t('CommunicationRewrite.title')}</h4>
+      <p className="inline-note">{t('Experience.rewriteDescription')}</p>
       <textarea
+        aria-label={t('CommunicationRewrite.title')}
+        maxLength={2000}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        rows={3}
+        rows={4}
         placeholder={t('CommunicationRewrite.placeholder')}
-        className="w-full rounded border border-black/15 p-2 text-sm"
+        disabled={working}
       />
       <button
         type="button"
+        className="button button-primary"
+        disabled={working || history.pending || !draft.trim()}
         onClick={() => void onRewrite()}
-        disabled={working || !draft.trim()}
-        className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
       >
-        {working ? t('CommunicationRewrite.rewriting') : t('CommunicationRewrite.generate')}
+        <Sparkles size={15} />
+        {t(working ? 'CommunicationRewrite.rewriting' : 'CommunicationRewrite.generate')}
       </button>
-
-      {refusal && (
-        <div className="space-y-1 rounded border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
-          <p>{t(`CommunicationRewrite.refusal.${refusal.category}`)}</p>
-          <p className="opacity-70">{t('CommunicationRewrite.refusalFollowup')}</p>
-        </div>
+      {loadingAi && <LoadingRead />}
+      {error && <AiError detail={error} onRetry={() => void onRewrite()} />}
+      {history.record && (
+        <ReadFeedback
+          key={history.record.id}
+          record={history.record}
+          unsaved={history.pending}
+          onDiscard={history.discard}
+          onSave={() =>
+            void history.retry().then((id) => {
+              if (id) setSavedInput(draft);
+            })
+          }
+        >
+          {result && (
+            <>
+              <div className="rewrite-variants">
+                {result.variants.map((variant, index) => (
+                  <div className="rewrite-variant" key={variant.text}>
+                    <div className="variant-heading">
+                      <span className="variant-number">0{index + 1}</span>
+                      <h5>{variant.tone}</h5>
+                      <button
+                        className="text-link"
+                        onClick={() => {
+                          void navigator.clipboard
+                            .writeText(variant.text)
+                            .then(() => setCopied(index))
+                            .catch(() => nimiToast.warning(t('Experience.copyFailed')));
+                        }}
+                      >
+                        {copied === index ? <Check size={14} /> : <Copy size={14} />}
+                        {t(copied === index ? 'Experience.copied' : 'Experience.copyThisDraft')}
+                      </button>
+                    </div>
+                    <p>{variant.text}</p>
+                    <small>{variant.note}</small>
+                  </div>
+                ))}
+              </div>
+              <p className="rewrite-disclaimer">{t('CommunicationRewrite.disclaimer')}</p>
+            </>
+          )}
+        </ReadFeedback>
       )}
-
-      {rewrites && (
-        <div className="space-y-2 rounded border border-black/10 bg-black/[0.02] p-3 text-sm">
-          <p className="whitespace-pre-wrap">{rewrites}</p>
-          {/* Layer 3: mandatory disclaimer on every output. */}
-          <p className="border-t border-black/10 pt-2 text-xs opacity-70">
-            {t('CommunicationRewrite.disclaimer')}
-          </p>
-        </div>
-      )}
-
-      {history.length > 0 && (
-        <details className="text-xs opacity-70">
-          <summary>{t('CommunicationRewrite.historySummary', { count: history.length })}</summary>
-          <ul className="mt-1 space-y-0.5">
-            {history.map((draftText, index) => (
-              <li key={`${index}-${draftText.slice(0, 8)}`}>· {draftText}</li>
-            ))}
-          </ul>
-        </details>
+      {!history.pending && (
+        <ReadingHistory
+          readings={history.readings}
+          selectedId={history.record?.id}
+          onSelect={history.select}
+        />
       )}
     </div>
   );

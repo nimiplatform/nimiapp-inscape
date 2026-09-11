@@ -5,13 +5,11 @@
 // (IS-PRIV hard constraint).
 
 import type { TypeProfile } from './type-profile.ts';
+import type { SavedExploration } from './exploration.ts';
 
 export type SubjectKind = 'self' | 'other_person';
 
-export type AttestationMethod =
-  | 'first_run_checkbox'
-  | 'other_person_checkbox'
-  | 're_declaration';
+export type AttestationMethod = 'first_run_checkbox' | 'other_person_checkbox' | 're_declaration';
 
 /** 18+ attestation (IS-PRIV / T1-04). A subject is only analysed while adult-attested. */
 export interface AgeAttestation {
@@ -42,6 +40,7 @@ export interface ReflectionEntry {
   readonly id: string;
   readonly created_at: string;
   readonly text: string;
+  readonly exploration?: SavedExploration;
 }
 
 export interface Subject {
@@ -51,6 +50,8 @@ export interface Subject {
   readonly age_attestation: AgeAttestation;
   /** Null until the first TypingEpisode produces a posterior. */
   readonly type_profile: TypeProfile | null;
+  /** User-selected starting evidence, before the reversible reflection contributions. */
+  readonly profile_baseline: TypeProfile | null;
   readonly typing_episodes: readonly TypingEpisode[];
   readonly observation_events: readonly ObservationEvent[];
   readonly reflection_entries: readonly ReflectionEntry[];

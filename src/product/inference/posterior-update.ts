@@ -3,12 +3,9 @@
 // (not deltas); only the targeted functions / dichotomies are replaced. The
 // user must have accepted the proposal before this runs (Scenario 3).
 
-import type {
-  DichotomyValue,
-  FunctionStrength,
-  TypeProfile,
-} from '../../domain/type-profile.ts';
+import type { DichotomyValue, FunctionStrength, TypeProfile } from '../../domain/type-profile.ts';
 import type { PosteriorUpdateProposal } from './ai-proposal-parser.ts';
+import { deriveProfile } from './derive-profile.ts';
 
 export function applyPosteriorUpdate(
   profile: TypeProfile,
@@ -16,7 +13,10 @@ export function applyPosteriorUpdate(
   now: string,
   sourceId: string,
 ): TypeProfile {
-  const functionPosterior = { ...profile.function_stack_posterior } as Record<string, FunctionStrength>;
+  const functionPosterior = { ...profile.function_stack_posterior } as Record<
+    string,
+    FunctionStrength
+  >;
   for (const update of proposal.function_updates) {
     functionPosterior[update.function] = {
       strength: update.proposed_strength,
@@ -24,21 +24,24 @@ export function applyPosteriorUpdate(
     };
   }
 
-  const dichotomyDistribution = { ...profile.dichotomy_distribution } as Record<string, DichotomyValue>;
-  for (const update of proposal.dichotomy_updates) {
-    const previous = dichotomyDistribution[update.dichotomy];
+  const dichotomyDistribution = { ...profile.dichotomy_distribution } as Record<
+    string,
+    DichotomyValue
+  >;
+  for (const update of proposal.axis_updates) {
+    const previous = dichotomyDistribution[update.axis];
     const sources = previous ? [...previous.sources, sourceId] : [sourceId];
-    dichotomyDistribution[update.dichotomy] = {
+    dichotomyDistribution[update.axis] = {
       value: update.proposed_value,
       confidence: update.proposed_confidence,
       sources,
     };
   }
 
-  return {
+  return deriveProfile({
     ...profile,
     function_stack_posterior: functionPosterior as TypeProfile['function_stack_posterior'],
     dichotomy_distribution: dichotomyDistribution as TypeProfile['dichotomy_distribution'],
     updated_at: now,
-  };
+  });
 }

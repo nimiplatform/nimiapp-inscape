@@ -2,12 +2,7 @@
 // fixed label (the product's anti-fixation core). All values are posteriors
 // updated only by user-driven signals (test, reflection, accept/reject).
 
-import type {
-  BeebeArchetype,
-  CognitiveFunction,
-  Dichotomy,
-  FourLetterType,
-} from './typology.ts';
+import type { BeebeArchetype, CognitiveFunction, Dichotomy, FourLetterType } from './typology.ts';
 
 /** Confidence in [0, 1]. */
 export type Confidence = number;
@@ -38,7 +33,7 @@ export type BeebeArchetypeInference = Readonly<Record<BeebeArchetype, CognitiveF
 export interface TypeProfile {
   readonly dichotomy_distribution: DichotomyDistribution;
   readonly function_stack_posterior: FunctionStackPosterior;
-  readonly beebe_archetype_inference: BeebeArchetypeInference;
+  readonly beebe_archetype_inference: BeebeArchetypeInference | null;
   /**
    * Most-likely 4-letter code — a legibility label derived from the posterior,
    * NEVER rendered as "your type is X" hero text (IS-IA type-label suppression).

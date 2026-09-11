@@ -38,3 +38,22 @@ test('refuses a Chinese decision-pressure draft', () => {
   assert.equal(r.ok, false);
   assert.equal(r.category, 'decision_pressure');
 });
+
+test('ordinary scheduling and polite conditions are not decision pressure', () => {
+  for (const text of [
+    "If you don't mind, could we meet for coffee?",
+    'I will send you the photos by tomorrow.',
+    "If you don't have time, I can bring dinner.",
+    '如果你不方便，我们可以改天。',
+  ])
+    assert.equal(classifyRewriteContext(text).ok, true, text);
+});
+
+test('conditional threats remain guarded without treating every if-clause as a threat', () => {
+  for (const text of [
+    "If you don't agree, I'll expose your secrets.",
+    'You must decide tonight.',
+    '如果你不答应，我就曝光你的秘密。',
+  ])
+    assert.equal(classifyRewriteContext(text).category, 'decision_pressure', text);
+});

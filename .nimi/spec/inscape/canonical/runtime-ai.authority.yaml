@@ -13,7 +13,7 @@ units:
   - id: definition.inscape.runtime-ai.structured-modes
     kind: definition
     title: Structured AI modes
-    meaning: The structured-purpose AI modes are today read, decision aid, communication rewrite, friction analysis, and reflection resonance.
+    meaning: The structured-purpose AI modes are today read, self mirror, dyad insight, type suggestion, communication rewrite, friction analysis, reflection resonance, inner roundtable, and profile calibration.
   - id: rule.inscape.runtime-ai.r001
     kind: rule
     title: SDK-only AI access
@@ -36,11 +36,11 @@ units:
         target: definition.inscape.runtime-ai.local-route
   - id: rule.inscape.runtime-ai.r003
     kind: rule
-    title: Five structured AI modes
+    title: Structured-purpose AI dispatch
     modality: must
-    statement: "AI surfaces expose only these structured-purpose modes: today read, decision aid, communication rewrite, friction analysis, and reflection resonance."
+    statement: "AI surfaces expose only these structured-purpose modes: today read, self mirror, dyad insight, type suggestion, communication rewrite, friction analysis, reflection resonance, inner roundtable, and profile calibration."
     condition: Always.
-    failure: Reject any AI surface or request outside the five structured-purpose modes before dispatch.
+    failure: Reject any AI surface or request outside the declared structured-purpose modes before dispatch.
     relations:
       - type: applies_to
         target: definition.inscape.runtime-ai.structured-modes

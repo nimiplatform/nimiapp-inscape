@@ -20,7 +20,8 @@ test('seedTypeProfileFromType builds the Beebe stack posterior for INTJ', () => 
 test('T1-11 parser accepts a well-formed proposal', () => {
   const raw = JSON.stringify({
     function_updates: [{ function: 'Fe', proposed_strength: 0.24, proposed_confidence: 0.5 }],
-    rationale: 'Reflection suggests Fe-strain accumulating.',
+    axis_updates: [],
+    reason: 'Reflection suggests Fe-strain accumulating.',
   });
   const r = parsePosteriorUpdateProposal(raw);
   assert.equal(r.ok, true);
@@ -37,7 +38,7 @@ test('T1-11 parser drops invalid JSON (unclosed bracket)', () => {
 test('T1-11 parser drops an unknown function name', () => {
   const raw = JSON.stringify({
     function_updates: [{ function: 'Fii', proposed_strength: 0.3, proposed_confidence: 0.5 }],
-    rationale: 'x',
+    reason: 'x',
   });
   const r = parsePosteriorUpdateProposal(raw);
   assert.equal(r.ok, false);
@@ -47,13 +48,13 @@ test('T1-11 parser drops an unknown function name', () => {
 test('T1-11 parser drops out-of-range strength', () => {
   const raw = JSON.stringify({
     function_updates: [{ function: 'Ni', proposed_strength: 1.5, proposed_confidence: 0.5 }],
-    rationale: 'x',
+    reason: 'x',
   });
   assert.equal(parsePosteriorUpdateProposal(raw).ok, false);
 });
 
 test('T1-11 parser drops an empty proposal (no updates)', () => {
-  const raw = JSON.stringify({ function_updates: [], dichotomy_updates: [], rationale: 'x' });
+  const raw = JSON.stringify({ function_updates: [], axis_updates: [], reason: 'x' });
   assert.equal(parsePosteriorUpdateProposal(raw).ok, false);
 });
 
@@ -62,15 +63,53 @@ test('applyPosteriorUpdate replaces only the targeted entries', () => {
   const parsed = parsePosteriorUpdateProposal(
     JSON.stringify({
       function_updates: [{ function: 'Fe', proposed_strength: 0.24, proposed_confidence: 0.5 }],
-      dichotomy_updates: [{ dichotomy: 'T_F', proposed_value: 0.1, proposed_confidence: 0.6 }],
-      rationale: 'accepted by user',
+      axis_updates: [{ axis: 'T_F', proposed_value: 0.1, proposed_confidence: 0.6 }],
+      reason: 'accepted by user',
     }),
   );
   assert.equal(parsed.ok, true);
-  const next = applyPosteriorUpdate(seed, parsed.proposal, '2026-07-01T00:00:00Z', 'reflection:7842');
+  const next = applyPosteriorUpdate(
+    seed,
+    parsed.proposal,
+    '2026-07-01T00:00:00Z',
+    'reflection:7842',
+  );
   assert.equal(next.function_stack_posterior.Fe.strength, 0.24);
   assert.equal(next.function_stack_posterior.Ni.strength, 0.85); // untouched
   assert.equal(next.dichotomy_distribution.T_F.value, 0.1);
   assert.ok(next.dichotomy_distribution.T_F.sources.includes('reflection:7842'));
   assert.equal(next.updated_at, '2026-07-01T00:00:00Z');
+});
+
+test('proposal parser rejects duplicate targets and missing update arrays as a whole', () => {
+  const item = { function: 'Fe', proposed_strength: 0.3, proposed_confidence: 0.4 };
+  assert.equal(
+    parsePosteriorUpdateProposal(
+      JSON.stringify({
+        function_updates: [item, item],
+        axis_updates: [],
+        reason: 'duplicate',
+      }),
+    ).ok,
+    false,
+  );
+  assert.equal(
+    parsePosteriorUpdateProposal(
+      JSON.stringify({ function_updates: [item], reason: 'missing array' }),
+    ).ok,
+    false,
+  );
+});
+
+test('model field misspellings and retired proposal keys are rejected, never aliased', () => {
+  for (const key of ['dichotomie_updates', 'dichotomy_updates']) {
+    const result = parsePosteriorUpdateProposal(
+      JSON.stringify({
+        function_updates: [{ function: 'Fi', proposed_strength: 0.88, proposed_confidence: 0.45 }],
+        [key]: [],
+        reason: 'Observed model regression.',
+      }),
+    );
+    assert.equal(result.ok, false);
+  }
 });

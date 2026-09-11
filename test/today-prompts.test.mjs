@@ -1,9 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  buildTodaysReadPrompt,
-  buildDecisionAidPrompt,
-} from '../src/product/today/today-prompts.ts';
+import { buildTodaysReadPrompt } from '../src/product/today/today-prompts.ts';
 import { seedTypeProfileFromType } from '../src/product/inference/seed-profile.ts';
 
 test("today's read prompt forbids predictions/horoscopes and grounds in reflections", () => {
@@ -15,19 +12,11 @@ test("today's read prompt forbids predictions/horoscopes and grounds in reflecti
 test("today's read grounds in the function stack when a profile exists", () => {
   const prompt = buildTodaysReadPrompt([], seedTypeProfileFromType('INTP', '2026-06-05T00:00:00Z'));
   assert.match(prompt.user, /Hero Ti/);
-  assert.match(prompt.user, /inferior\/grip Fe/);
+  assert.doesNotMatch(prompt.user, /inferior\/grip/);
+  assert.match(prompt.system, /preference is not an impairment/);
 });
 
 test("today's read can explicitly request English output", () => {
   const prompt = buildTodaysReadPrompt(['busy meeting day'], null, 'en');
   assert.match(prompt.system, /Respond in clear, natural English/);
-});
-
-test('decision aid prompt walks the eight functions in Beebe order, no prescription', () => {
-  const profile = seedTypeProfileFromType('INTJ', '2026-06-05T00:00:00Z');
-  const prompt = buildDecisionAidPrompt('take the job?', profile);
-  assert.match(prompt.system, /eight Jungian cognitive functions/i);
-  assert.match(prompt.system, /do NOT\s+prescribe|not prescribe/i);
-  assert.match(prompt.user, /hero:Ni/); // INTJ hero is Ni
-  assert.match(prompt.user, /take the job\?/);
 });

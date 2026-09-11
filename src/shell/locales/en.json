@@ -24,8 +24,7 @@
     "persistFailed": "Could not save the language preference. Try again."
   },
   "Status": {
-    "loading": "Loading...",
-    "localDataLoadFailed": "Unable to load local data: {{error}}"
+    "loading": "Loading..."
   },
   "Common": {
     "unknown": "Unknown",
@@ -39,75 +38,27 @@
     "ariaLabel": "Product areas",
     "faces": {
       "today": "Today",
-      "relationship": "Relationships",
-      "self": "Self"
+      "relationship": "Between us",
+      "self": "About me"
     }
   },
   "FirstRun": {
     "adult": "I confirm that I am at least 18 years old.",
     "understood": "I understand that Inscape is not a psychological diagnostic tool; if I am in psychological distress, I will seek professional help.",
-    "continue": "Continue"
+    "continue": "Enter Inscape",
+    "localNote": "All data stays on this device. Nothing is uploaded."
   },
-  "Today": {
-    "title": "Today"
-  },
-  "TodaysRead": {
-    "title": "Today's read",
-    "right": "Accurate",
-    "wrong": "Off",
-    "evidence": "Evidence",
-    "feedbackRecorded": "Feedback recorded",
-    "noEvidence": "No recent reflections were available as evidence."
-  },
-  "DecisionAid": {
-    "title": "Decision aid · eight functions",
-    "needsProfile": "Set your type prior in Self first.",
-    "placeholder": "Describe the decision you are facing (500 characters max)...",
-    "running": "Walking through...",
-    "run": "Walk the eight functions"
-  },
-  "ReflectionJournal": {
-    "title": "Reflection journal",
-    "placeholder": "Write today's reflection...",
-    "processing": "Processing...",
-    "save": "Save",
-    "needsProfile": "Set your type prior in Self first, then reflections can propose posterior updates.",
-    "aiUnavailableSaved": "AI is temporarily unavailable ({{error}}). The reflection was saved.",
-    "posteriorTitle": "Posterior update suggestion",
-    "functionUpdate": "{{function}} -> {{strength}} (confidence {{confidence}})",
-    "dichotomyUpdate": "{{dichotomy}} -> {{value}}",
-    "accept": "Accept",
-    "reject": "Reject"
-  },
-  "Self": {
-    "title": "Self",
-    "archiveTitle": "Reflection archive",
-    "archiveEmpty": "No reflection entries yet. Reflections written in Today will appear here."
-  },
+  "Today": {},
+  "TodaysRead": {},
+  "DecisionAid": {},
+  "ReflectionJournal": {},
+  "Self": {},
   "InitialTyping": {
-    "title": "Set your type prior",
-    "description": "If you have taken a 16-type assessment and know your four-letter code, use it as a prior. Reflections will keep adjusting the distribution.",
-    "placeholder": "Choose a four-letter code...",
-    "create": "Set"
+    "title": "Set your type prior"
   },
-  "TypeProfile": {
-    "namedBefore": "This pattern is commonly described as ",
-    "namedAfter": ", but the function stack is the real signal.",
-    "unnamed": "The distribution is not yet clear enough to name a four-letter code.",
-    "posteriorTitle": "Function-stack posterior",
-    "dichotomyTitle": "Dichotomy distribution",
-    "footnote": "Type is a moving distribution, not a fixed label."
-  },
-  "SelfMirror": {
-    "title": "Self mirror",
-    "engine": "Engine: {{hero}} ({{heroCore}}) + {{parent}}",
-    "growthEdge": "Growth / stress edge: {{inferior}} ({{inferiorCore}})"
-  },
-  "Relationship": {
-    "title": "Relationships",
-    "empty": "No relationships yet. Add a person to start building your relationship map.",
-    "buttonLabel": "{{name}} · {{nature}}"
-  },
+  "TypeProfile": {},
+  "SelfMirror": {},
+  "Relationship": {},
   "RelationshipNature": {
     "partner": "Partner",
     "parent": "Parent",
@@ -130,30 +81,16 @@
     "addSnippet": "Add snippet",
     "collectedSnippets_one": "{{count}} snippet collected.",
     "collectedSnippets_other": "{{count}} snippets collected.",
-    "analyzing": "Analyzing...",
-    "analyze": "Analyze friction pattern",
-    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine (IS-PRIV-03).",
+    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine.",
     "confirmQuarantine": "Confirm quarantine",
-    "quarantined": "Removed from all analysis and moved into quarantine.",
     "cancel": "Cancel",
     "markUnder18": "Mark this person as under 18"
   },
   "DyadInsight": {
-    "needsSelfType": "Set your type in Self first to see interaction insight.",
-    "assignType": "Give {{name}} a type to unlock the \"You × Ta\" interaction insight:",
-    "otherFallback": "the other person",
-    "selectType": "Choose a four-letter code...",
-    "set": "Set",
-    "inferHint": "Do not know Ta's code? Describe them in a few sentences and let Inscape infer:",
-    "descriptionPlaceholder": "What are they like? Example: pushes fast decisions, strong logic, likes to lead.",
-    "inferring": "Inferring...",
+    "inferHint": "Describe a few adult-to-adult interactions you observed",
+    "descriptionPlaceholder": "For example: in meetings, they ask for a written plan and time to think before deciding.",
     "infer": "Infer from description",
     "inferFailed": "Could not infer a type reliably from the description. Choose the code directly.",
-    "headline": "You ({{selfType}}) × Ta ({{otherType}})",
-    "sharedDifferent": "Shared dichotomies: {{shared}}; differing dichotomies: {{different}}",
-    "dominant": "Dominant: you {{selfDominant}} / Ta {{otherDominant}} ({{relation}})",
-    "dynamic": "Dynamic: {{headline}}",
-    "sharedEgo": "Shared ego functions: {{functions}}",
     "generate": "Generate interaction insight"
   },
   "CommunicationRewrite": {
@@ -161,20 +98,394 @@
     "placeholder": "Paste the draft you plan to send...",
     "rewriting": "Rewriting...",
     "generate": "Generate rewrite",
-    "refusalFollowup": "Try the reflection journal in Today: what is this message trying to protect? Inscape can help you see the underlying read, but it will not help write pressure.",
     "disclaimer": "These rewrites are based only on your perspective; the other person did not participate in this framing. Treat them as drafts, not scripts.",
-    "historySummary": "Rewrite history in this session ({{count}})",
-    "refusal": {
-      "money": "This message involves a money context, so Inscape does not provide rewrites here.",
-      "employment": "This message involves employment or authority, so Inscape does not provide rewrites here.",
-      "sexual_consent": "This message involves sexual consent, so Inscape does not provide rewrites here.",
-      "decision_pressure": "This message reads like decision pressure or an ultimatum; rewriting it could make pressure easier to deliver, and that is not the purpose of this feature."
-    }
+    "refusal": {}
   },
   "Quarantine": {
     "title": "Quarantine",
     "description": "The subjects below were identified as under 18, removed from all analysis, and will never be processed. You can delete them permanently or leave them quarantined.",
     "quarantinedAt": "Quarantined at {{time}}",
     "delete": "Delete permanently"
+  },
+  "Experience": {
+    "brandLine": "A little further inward",
+    "mySpace": "My space",
+    "archive": "Field notes",
+    "sidebarThought": "Getting to know yourself is an adventure.",
+    "sidebarThoughtNote": "Take your time. Every step counts.",
+    "localSpace": "Your private, local space",
+    "explorer": "Inner explorer",
+    "stillBecoming": "Still growing. Still becoming.",
+    "patternLabel": "Current tendency · {{type}}",
+    "collapseNav": "Collapse navigation",
+    "expandNav": "Expand navigation",
+    "private": "Private · Saved locally",
+    "disclaimer": "Inscape helps you explore, not define yourself. Cognitive functions are a lens for reflection, not a psychological diagnosis.",
+    "savedLocally": "Saved on this device",
+    "back": "Back to your space",
+    "todayTitle": "A little closer to yourself.",
+    "todayDescription": "Begin with a small moment, a feeling, or someone you care about.",
+    "heroEyebrow": "THERE IS MORE TO YOUR INNER WORLD",
+    "heroTitle1": "Every feeling has",
+    "heroTitle2": "a story behind it.",
+    "heroDescription": "Bring the moment that has been on your mind.\nFind a fresh perspective with a little help from AI.",
+    "heroAction": "Start with a small moment",
+    "heroCaption": "A LITTLE FURTHER INWARD",
+    "pause": "A MOMENT TO PAUSE",
+    "moodQuestion": "What is your inner weather?",
+    "moods": {
+      "calm": "Calm",
+      "bright": "Bright",
+      "tangled": "Tangled",
+      "low": "Low",
+      "restless": "Restless"
+    },
+    "exploreMood": "Explore this feeling",
+    "exploreTitle": "Where shall we wander?",
+    "exploreSubtitle": "Another window. A different view of you.",
+    "madeForMoment": "FROM LIFE, BACK TO LIFE",
+    "withAI": "AI exploration",
+    "roundtableTitle": "Inner roundtable",
+    "roundtableDescription": "Feeling pulled in different directions? Let eight perspectives have a seat at the table.",
+    "roundtableMeta": "One choice · Eight voices",
+    "emotionTitle": "Behind the feeling",
+    "emotionDescription": "A feeling you cannot quite name may be speaking for a need that matters.",
+    "emotionMeta": "One moment · A fresh angle",
+    "relationshipTitle": "A little closer",
+    "relationshipDescription": "The same words can land so differently. Try looking through their window.",
+    "relationshipMeta": "A new perspective · Less friction",
+    "emotionStarter": "Something happened recently that left me with mixed feelings:\n\n",
+    "discoveryCard": "A CARD FOR YOUR CURIOSITY",
+    "shuffle": "Draw another card",
+    "turnCard": "Turn the card. Find another angle.",
+    "writeAboutIt": "Explore my answer",
+    "recentTitle": "Recent footprints",
+    "allEntries": "All notes",
+    "emptyTitle": "Your first landscape is waiting.",
+    "emptyDescription": "It need not be a complete story. A moment is enough.",
+    "firstEntry": "Leave a first footprint",
+    "explored": "Explored",
+    "connectDots": "Let AI connect your recent moments",
+    "listening": "Reading this moment from a few new angles…",
+    "listeningNote": "Your local AI is thinking. Take a little moment to pause.",
+    "aiError": "AI could not respond this time.",
+    "aiErrorNote": "Your words are still here. Check the available local text model in Nimi Desktop, then try again.",
+    "invalidRead": "The model did not return a complete exploration. This result was not saved.",
+    "oneMoment": "The moment you want to bring in",
+    "onlyYou": "Your words stay on this device",
+    "saveOnly": "Just save the moment",
+    "beginExplore": "Let’s look together",
+    "exploreSaved": "Explore this moment",
+    "savedWithoutAI": "This moment is safely saved. Come back whenever you want to explore it with AI.",
+    "aPerspective": "ONE POSSIBLE READING",
+    "voicesTitle": "Listen to different voices",
+    "voicesHint": "Choose a lens. Hear it out.",
+    "voiceSays": "{{name}} might say",
+    "anotherAngle": "ANOTHER WAY TO SEE IT",
+    "tinyExperiment": "A TINY EXPERIMENT TO TAKE INTO LIFE",
+    "experimentNote": "Try it today, if you like. It does not need to be perfect.",
+    "finishExperiment": "Mark experiment as tried",
+    "undoExperiment": "Mark experiment as not tried",
+    "resonates": "This feels like me",
+    "doesntResonate": "Not quite me",
+    "accepted": "Resonated",
+    "rejected": "Noted: not quite me",
+    "evidence": "Why this reading?",
+    "yourWords": "YOUR ORIGINAL WORDS",
+    "noEvidence": "No lived moments yet. This reading only uses the type leaning you selected.",
+    "evidenceNote": "These lenses draw on your words and the cognitive-function framework. They are possibilities, not established facts or someone else’s perspective.",
+    "calibrate": "Let this discovery help refine my map",
+    "noCalibration": "No usable adjustment was produced this time. Your map is unchanged.",
+    "calibrationSaved": "Your map now includes the adjustment you accepted.",
+    "calibrationTitle": "This discovery might gently move your map",
+    "calibrationNote": "This suggestion uses your original note. Your map only changes if you accept it.",
+    "acceptCalibration": "Accept this adjustment",
+    "keepAsIs": "Keep the current view",
+    "calibrationDeclined": "Your existing map is unchanged.",
+    "modes": {
+      "resonance": {
+        "eyebrow": "BEHIND THE FEELING · REFLECTION",
+        "title": "Let this moment unfold.",
+        "description": "No need to explain yourself yet. Start with what happened, then listen to what the feeling might hold.",
+        "placeholder": "For example: a friend cancelled our plans. I said “no worries,” but felt strangely disappointed all evening…"
+      },
+      "roundtable": {
+        "eyebrow": "INNER ROUNDTABLE · EIGHT PERSPECTIVES",
+        "title": "Give every part of you a voice.",
+        "description": "One part wants to jump in. Another wants to wait. Explore the tension through eight cognitive-function lenses.",
+        "placeholder": "For example: I want a quiet weekend, but friends invited me out. I am afraid of missing out and afraid of wearing myself out…"
+      }
+    },
+    "selfEyebrow": "LOOKING INWARD · YOUR INNER LANDSCAPE",
+    "selfTitle": "More than four letters.",
+    "selfDescription": "Notice your familiar paths. Leave room for the parts you have yet to meet.",
+    "selfViews": "Self exploration views",
+    "innerMap": "Inner map",
+    "growthTitle": "Your map can move. Keep exploring.",
+    "growthDescription": "Build understanding through lived moments and your own judgment. There is no ideal type to become.",
+    "keepExploring": "Keep exploring",
+    "searchJournal": "Find a moment…",
+    "filters": {
+      "all": "All",
+      "accepted": "Resonated",
+      "experiments": "With experiments"
+    },
+    "noMatches": "That moment has not turned up yet.",
+    "trySearch": "Try a different word or switch back to All.",
+    "journalMoment": "A lived moment",
+    "experimentFinished": "Experiment tried",
+    "startingPoint": "A STARTING POINT, NOT A DESTINATION",
+    "typeIntro": "Start with the you you know.",
+    "typeIntroNote": "If a 16-type code already feels familiar, bring it here. Inscape will treat it as a tentative starting point.",
+    "typeIsOptional": "Not sure? You can begin exploring everyday moments without a type.",
+    "createMap": "Unfold my map",
+    "notSureYet": "Not sure yet. Explore first.",
+    "functionMap": "EIGHT COGNITIVE LENSES",
+    "mapTitle": "Which windows feel familiar?",
+    "confidence": "Confidence",
+    "confidenceNote": "Bars show relative leaning in the current model. Confidence describes the support behind it, not test accuracy or type probability.",
+    "lensNote": "This is a perspective anyone can try, not a rating of your ability.",
+    "preferenceTitle": "Notice where you lean across four preferences",
+    "relationshipEyebrow": "OUR RELATIONSHIPS · BETWEEN US",
+    "relationshipPageTitle": "One world. Different windows.",
+    "relationshipPageDescription": "Use real moments to understand your differences and practice saying what you mean.",
+    "addConnection": "Add someone you care about",
+    "connectionEmptyTitle": "Who would you like to understand better?",
+    "connectionEmptyDescription": "A friend, a family member, or a partner. Start with your own observations of a specific interaction.",
+    "connectionHint": "Your perspective. Room for theirs.",
+    "myConnections": "People I care about",
+    "close": "Close",
+    "connectionViews": "Relationship exploration modes",
+    "understand": "Understanding us",
+    "conversation": "Finding the words",
+    "relationshipGrounding": "We only have your side of the story. Test these possibilities through real conversation.",
+    "welcomeEyebrow": "A SPACE TO MEET YOURSELF",
+    "welcomeTitle1": "Wander inward.",
+    "welcomeTitle2": "Meet more of you.",
+    "welcomeDescription": "Your feelings, choices, and relationships hold little clues about you. Take a breath and discover them with Inscape.",
+    "welcomeSmall": "A quiet place for a curious mind.",
+    "welcomeStart": "Before we begin",
+    "welcomeGateNote": "This is a private exploration space for adults.",
+    "selfMirrorTitle": "Find a thread in your own words",
+    "selfMirrorDescription": "Explore a possible thread in your recent notes, with room for another interpretation.",
+    "mirrorAction": "Reflect on my recent notes",
+    "todayReadAction": "Reflect on my recent days",
+    "todayReadNote": "A gentle reading grounded in your three most recent notes.",
+    "sharedMoment": "A SHARED MOMENT",
+    "frictionTitle": "Where did you miss each other?",
+    "frictionDescription": "Write what each of you said and how you heard it. Explore possible misunderstandings and alternative explanations.",
+    "yourObservation": "The interaction as you remember it",
+    "readInteraction": "Revisit this interaction",
+    "dyadNoSelf": "To compare function patterns, first choose a tentative type in About me. You can also go straight to Finding the words and start with a real interaction.",
+    "aTentativeLens": "A TENTATIVE LENS",
+    "otherTypeNote": "This is a leaning from your observations. A code never replaces getting to know the person.",
+    "otherSuggestion": "{{type}} could be a tentative lens",
+    "otherSuggestionNote": "This comes from your description, not an assessment of the other person. It is used only if you accept it.",
+    "acceptTentatively": "Try this lens for now",
+    "you": "YOUR LENS",
+    "rewriteDescription": "Keep what you mean. Try a way of saying it that may be easier to hear.",
+    "copied": "Copied",
+    "copyFailed": "Could not copy. Please select the text manually.",
+    "addYourMoment": "Add your own experience or answer after the question before exploring.",
+    "invalidRewrite": "Three complete drafts were not returned. Your original message is still here.",
+    "copyThisDraft": "Copy this draft",
+    "connectionCount_one": "{{count}} shared moment",
+    "connectionCount_other": "{{count}} shared moments"
+  },
+  "Functions": {
+    "Ni": {
+      "name": "The visionary",
+      "label": "Introverted intuition",
+      "description": "You look for a thread running through the noise and wonder where this moment might lead.",
+      "practice": "Write your hunch in one sentence. Find one fact that could challenge it."
+    },
+    "Ne": {
+      "name": "The explorer",
+      "label": "Extraverted intuition",
+      "description": "You notice what else might be possible, letting one idea open a door to another.",
+      "practice": "Find three different explanations for one thing that feels stuck."
+    },
+    "Si": {
+      "name": "The keeper",
+      "label": "Introverted sensing",
+      "description": "Familiar experiences, details, and rhythms give you a reference for what has worked before.",
+      "practice": "Recall a similar moment. What is different this time?"
+    },
+    "Se": {
+      "name": "The experiencer",
+      "label": "Extraverted sensing",
+      "description": "You return to what is here: direct experience, real feedback, and the small step available now.",
+      "practice": "Pause for a minute. Notice three details you normally miss."
+    },
+    "Ti": {
+      "name": "The analyst",
+      "label": "Introverted thinking",
+      "description": "You want to understand how something holds together rather than simply accept the given answer.",
+      "practice": "Choose one assumption you take for granted. Does it have to be true?"
+    },
+    "Te": {
+      "name": "The organizer",
+      "label": "Extraverted thinking",
+      "description": "You turn a vague idea into workable steps, asking what can move forward and how to notice progress.",
+      "practice": "Shrink a large task into a first step that takes ten minutes."
+    },
+    "Fi": {
+      "name": "The guardian",
+      "label": "Introverted feeling",
+      "description": "You notice whether something fits what matters to you and want your choices to feel internally honest.",
+      "practice": "Finish this sentence: this matters to me because I value…"
+    },
+    "Fe": {
+      "name": "The connector",
+      "label": "Extraverted feeling",
+      "description": "You notice the feeling between people and care that words land with understanding and respect.",
+      "practice": "While caring for someone else’s feelings, leave one sentence for your own need."
+    }
+  },
+  "Discovery": {
+    "0": {
+      "question": "When you say “it is fine,” is it?",
+      "hint": "Write the sentence you said and the one you kept inside. What is each trying to protect?"
+    },
+    "1": {
+      "question": "What would you choose if no explanation were needed?",
+      "hint": "Set the shoulds aside for a moment. Notice what you want to move toward, then invite reality back in."
+    },
+    "2": {
+      "question": "When did you last lose track of time?",
+      "hint": "What were you doing, and with whom? Look for the conditions that absorbed you, not just the name of a hobby."
+    },
+    "3": {
+      "question": "Is your worry a fact or a possibility?",
+      "hint": "Separate what has happened from what you fear may happen. Might they need different responses?"
+    },
+    "4": {
+      "question": "What does someone you admire allow themselves to do?",
+      "hint": "Envy can hold an unacknowledged wish. Find a tiny way to offer yourself the same permission."
+    },
+    "5": {
+      "question": "When plans change, what do you lose first?",
+      "hint": "Maybe certainty, rest, or feeling considered. Name the specific loss before judging your reaction."
+    },
+    "6": {
+      "question": "What else could their words have meant?",
+      "hint": "Do not choose the right interpretation yet. Find a version that makes neither of you the villain."
+    },
+    "7": {
+      "question": "Where would you like to return a little energy today?",
+      "hint": "Not another to-do list. Just one small thing that makes you think: this is part of me, too."
+    }
+  },
+  "Dimensions": {
+    "E_I": {
+      "left": "Outward E",
+      "right": "Inward I"
+    },
+    "S_N": {
+      "left": "Concrete S",
+      "right": "Possibility N"
+    },
+    "T_F": {
+      "left": "Logic T",
+      "right": "Values F"
+    },
+    "J_P": {
+      "left": "Structure J",
+      "right": "Flexibility P"
+    }
+  },
+  "PrivacySettings": {
+    "title": "Settings & local data",
+    "description": "Your notes, map and connections are stored on this device. Uninstalling the app does not automatically remove them. You can clear this local Inscape space here.",
+    "clear": "Clear local data…",
+    "confirmTitle": "Clear this device’s Inscape space?",
+    "confirmBody": "All notes, AI readings, your map, connections and adult attestation will be deleted. This cannot be undone in the app; the next visit will start fresh.",
+    "confirm": "Confirm clearing all local data",
+    "clearing": "Clearing…",
+    "failed": "The data could not be cleared and is still here. Please try again later.",
+    "notes_one": "{{count}} note",
+    "notes_other": "{{count}} notes",
+    "connections_one": "{{count}} connection",
+    "connections_other": "{{count}} connections"
+  },
+  "Repair": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "saveFailureTitle": "This change has not been saved",
+    "saveFailureBody": "Your content is still here. Retry to finish this same save, or return to your work.",
+    "backToEditing": "Return to my work",
+    "retrySave": "Retry saving",
+    "loadFailure": "Your local space could not be opened. You can retry; your saved content has not been cleared.",
+    "leaveTitle": "You have unsaved content",
+    "leaveBody": "This content is not saved yet. Keep editing, save before leaving, or discard this draft.",
+    "keepWriting": "Keep writing",
+    "discardDraft": "Discard and leave",
+    "saveAndLeave": "Save and leave",
+    "readNotSaved": "This reading is not saved yet. Its content is still here.",
+    "saveReading": "Save this reading",
+    "readReference": "Reference when generated: {{type}}",
+    "deleteReading": "Delete reading",
+    "deleteReadingBody": "This reading and its resonance feedback will be permanently deleted. Your original notes will remain.",
+    "deletePermanently": "Delete permanently",
+    "feedbackUndoHint": "You can change your response anytime. Select it again to withdraw it.",
+    "feedbackCalibrationHint": "Changing or withdrawing this response also withdraws this note’s accepted profile adjustment.",
+    "calibrationApplied": "This note has contributed to your profile",
+    "revokeCalibration": "Withdraw this adjustment",
+    "projectedType": "Current tendency after accepting: {{before}} → {{after}}",
+    "readingHistory_one": "{{count}} reading and its feedback",
+    "readingHistory_other": "{{count}} readings and their feedback",
+    "refusedLabel": "Not rewritten",
+    "refusalFollowup": "This may be a mistaken classification. Your original stays in local history; you can revise it and try again, or delete this record.",
+    "originalText": "Original text",
+    "saveChanges": "Save changes",
+    "changeStartingType": "Revisit your starting type",
+    "changeStartingTypeBody": "You can revisit this choice. Your notes and readings stay; accepted profile adjustments are withdrawn so exploration can continue from the new starting point. Leaving the type unset is also fine.",
+    "changeOtherType": "Revisit their type reference",
+    "changeOtherTypeBody": "This is a tentative lens you can change or remove. It does not establish the other person’s type. Existing readings retain their original context.",
+    "currentReference": "Currently using this lens",
+    "name": "Name",
+    "typeReference": "Type reference",
+    "noType": "No type for now",
+    "filterNotes": "Filter notes",
+    "relationshipKind": "Relationship kind",
+    "editNote": "Edit original",
+    "deleteNote": "Delete note",
+    "editNoteBody": "Changing the original removes its previous reading, feedback, and profile adjustment. You can explore the revised note after saving.",
+    "deleteNoteBody": "This note and its associated readings and feedback will be permanently deleted. Its profile adjustment will also be withdrawn.",
+    "noMood": "Leave unset",
+    "deleteQuarantineBody": "This quarantined record will be permanently deleted and cannot be recovered.",
+    "editConnection": "Edit relationship",
+    "deleteConnection": "Delete relationship",
+    "editConnectionBody": "Names and relationships can change. You can update them whenever you need.",
+    "deleteConnectionBody": "Permanently delete this relationship with {{name}} and its shared moments, readings, and feedback. This cannot be undone.",
+    "ageSafety": "About adult attestation",
+    "editInteraction": "Edit this moment",
+    "deleteInteraction": "Delete this moment",
+    "editInteractionBody": "Editing this moment removes readings and feedback based on it. You can explore it again afterward.",
+    "deleteInteractionBody": "This shared moment and readings and feedback based on it will be permanently deleted.",
+    "uncertainType": "These preferences are still taking shape, so there is no type label for now. You can continue using notes, the roundtable, and moment exploration.",
+    "dyadNeedsClarity": "Your type tendency is not clear yet. Explore shared moments and communication drafts while the type comparison remains open.",
+    "typeDerivationNote": "The current type comes from these four preference dimensions. A near-center or uncertain dimension leaves the type open. Function activity above is a separate observation and does not directly determine the four-letter type.",
+    "observationFits": "Fits my observations",
+    "observationDiffers": "Differs from my observations",
+    "refusal": {
+      "money": "This may involve a financial arrangement. Inscape does not rewrite messages in this context.",
+      "employment": "This may involve employment or authority. Inscape does not rewrite messages in this context.",
+      "sexual_consent": "This may involve sexual consent. Inscape does not rewrite messages in this context.",
+      "decision_pressure": "This may contain an ultimatum or pressure to commit. Inscape does not polish this kind of message."
+    },
+    "sourceChanged": "The original has changed. Please explore the revised version.",
+    "calibrationChanged": "Your profile or this note has changed. Request a new adjustment using the current information.",
+    "leaveUnsavedBody": "This content is not saved yet. Keep editing, or discard it before leaving.",
+    "saving": "Saving…",
+    "discardReading": "Discard this reading",
+    "meaningFits": "Fits what I mean",
+    "meaningDiffers": "Not quite what I mean",
+    "deleteRecord": "Delete this record",
+    "referenceContext": "Reference for this reading",
+    "selfReference": "Your selected reference: {{type}}. Its dominant lens: {{hero}}. Most active function at the time: {{active}}. These are exploration clues, not verified personality facts.",
+    "pairReference": "Your reference lens: {{self}}. Their reference lens: {{other}}. These are the types you selected or accepted, not traits confirmed by the other person.",
+    "readPairReference": "Lenses when generated: you {{self}} · them {{other}}",
+    "mirrorNeedsNotes": "Save a moment in your own words, then return to explore a thread in it."
   }
 }

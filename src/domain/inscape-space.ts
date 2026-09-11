@@ -4,8 +4,9 @@
 import type { AgeAttestation, Subject } from './subject.ts';
 import type { Relationship } from './relationship.ts';
 import { DEFAULT_INSCAPE_LOCALE, type InscapeLocale } from './locale.ts';
+import type { SavedReading } from './reading.ts';
 
-export const INSCAPE_SPACE_SCHEMA_VERSION = 1;
+export const INSCAPE_SPACE_SCHEMA_VERSION = 2;
 
 export interface InscapeSettings {
   /** Opt-in local-only debug log (Scenario 12). Never network telemetry. */
@@ -33,6 +34,7 @@ export interface InscapeSpace {
   readonly self_subject: Subject;
   readonly other_subjects: readonly Subject[];
   readonly relationships: readonly Relationship[];
+  readonly readings: readonly SavedReading[];
   readonly quarantine: readonly QuarantineRecord[];
   readonly settings: InscapeSettings;
   readonly created_at: string;
@@ -51,6 +53,7 @@ function emptySelfSubject(now: string, attestedAdult: boolean): Subject {
     display_name: '',
     age_attestation,
     type_profile: null,
+    profile_baseline: null,
     typing_episodes: [],
     observation_events: [],
     reflection_entries: [],
@@ -68,6 +71,7 @@ export function createEmptyInscapeSpace(
     self_subject: emptySelfSubject(now, attestedAdult),
     other_subjects: [],
     relationships: [],
+    readings: [],
     quarantine: [],
     settings: { local_debug_logging: false, locale },
     created_at: now,

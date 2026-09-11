@@ -24,8 +24,7 @@
     "persistFailed": "语言偏好保存失败。请重试。"
   },
   "Status": {
-    "loading": "加载中...",
-    "localDataLoadFailed": "无法加载本地数据：{{error}}"
+    "loading": "加载中..."
   },
   "Common": {
     "unknown": "未知",
@@ -38,76 +37,28 @@
   "Navigation": {
     "ariaLabel": "产品区域",
     "faces": {
-      "today": "今日",
-      "relationship": "关系",
-      "self": "自我"
+      "today": "今日探索",
+      "relationship": "关系之间",
+      "self": "关于自己"
     }
   },
   "FirstRun": {
     "adult": "我已年满 18 周岁。",
     "understood": "我理解 Inscape 不是心理诊断工具；如有心理困扰我会寻求专业帮助。",
-    "continue": "继续"
+    "continue": "进入心相",
+    "localNote": "所有数据仅保存在本机，不会上传。"
   },
-  "Today": {
-    "title": "今日"
-  },
-  "TodaysRead": {
-    "title": "今日解读",
-    "right": "准",
-    "wrong": "不准",
-    "evidence": "证据",
-    "feedbackRecorded": "已记录反馈",
-    "noEvidence": "无近期反思作为依据。"
-  },
-  "DecisionAid": {
-    "title": "决策辅助 · 八功能",
-    "needsProfile": "先在「自我」建立类型先验。",
-    "placeholder": "描述你面临的决策（≤500 字）...",
-    "running": "走查中...",
-    "run": "走查八功能"
-  },
-  "ReflectionJournal": {
-    "title": "反思日记",
-    "placeholder": "写下今天的反思...",
-    "processing": "处理中...",
-    "save": "保存",
-    "needsProfile": "先在「自我」建立类型先验，反思才能提出后验更新建议。",
-    "aiUnavailableSaved": "AI 暂不可用（{{error}}）。反思已保存。",
-    "posteriorTitle": "后验更新建议",
-    "functionUpdate": "{{function}} → {{strength}}（置信 {{confidence}}）",
-    "dichotomyUpdate": "{{dichotomy}} → {{value}}",
-    "accept": "接受",
-    "reject": "拒绝"
-  },
-  "Self": {
-    "title": "自我",
-    "archiveTitle": "反思归档",
-    "archiveEmpty": "还没有反思条目。在「今日」写下反思后会出现在这里。"
-  },
+  "Today": {},
+  "TodaysRead": {},
+  "DecisionAid": {},
+  "ReflectionJournal": {},
+  "Self": {},
   "InitialTyping": {
-    "title": "建立你的类型先验",
-    "description": "如果你已经测过 16 型并知道自己的 4 字母代码，先填它作为先验；反思会持续修正分布。",
-    "placeholder": "选择 4 字母代码...",
-    "create": "建立"
+    "title": "建立你的类型先验"
   },
-  "TypeProfile": {
-    "namedBefore": "这一模式常被描述为 ",
-    "namedAfter": "，但功能栈才是真正的信息。",
-    "unnamed": "分布尚未足够明确以命名一个 4 字母代码。",
-    "posteriorTitle": "功能栈后验",
-    "dichotomyTitle": "维度分布",
-    "footnote": "类型是会移动的分布，不是固定标签。"
-  },
-  "SelfMirror": {
-    "title": "自我镜子",
-    "engine": "引擎：{{hero}}（{{heroCore}}）+ {{parent}}",
-    "growthEdge": "成长 / 压力边：{{inferior}}（{{inferiorCore}}）"
-  },
-  "Relationship": {
-    "title": "关系",
-    "empty": "还没有关系。添加一个人，开始建立你的关系图谱。",
-    "buttonLabel": "{{name}} · {{nature}}"
-  },
+  "TypeProfile": {},
+  "SelfMirror": {},
+  "Relationship": {},
   "RelationshipNature": {
     "partner": "伴侣",
     "parent": "父母",
@@ -126,55 +77,415 @@
     "add": "添加"
   },
   "RelationshipDetail": {
-    "snippetPlaceholder": "粘贴一段对话片段...",
+    "snippetPlaceholder": "比如：我说「今天有点累」，他开始帮我分析时间安排。但我其实只是想被安慰一下。",
     "addSnippet": "添加片段",
     "collectedSnippets_one": "已收集 {{count}} 段片段。",
     "collectedSnippets_other": "已收集 {{count}} 段片段。",
-    "analyzing": "分析中...",
-    "analyze": "分析摩擦模式",
-    "quarantineWarning": "确认此人未满 18 岁？该主体将立即从所有分析中移除并移入隔离区（IS-PRIV-03）。",
-    "confirmQuarantine": "确认隔离",
-    "quarantined": "已从所有分析中移除并移入隔离区。",
+    "quarantineWarning": "确认此人未满 18 岁？记录会退出所有分析，并保留在隔离区。",
+    "confirmQuarantine": "移入隔离区",
     "cancel": "取消",
     "markUnder18": "标记此人未满 18 岁"
   },
   "DyadInsight": {
-    "needsSelfType": "先在「自我」建立你的类型，才能看你们的相处洞察。",
-    "assignType": "给 {{name}} 一个类型，解锁「你 × Ta」相处洞察：",
-    "otherFallback": "对方",
-    "selectType": "选择 4 字母代码...",
-    "set": "设定",
-    "inferHint": "不知道 ta 的代码？用几句话描述，让 Inscape 推断：",
-    "descriptionPlaceholder": "ta 是个什么样的人？例如：常推动快速决策，逻辑强，喜欢主导。",
-    "inferring": "推断中...",
-    "infer": "用描述推断",
+    "inferHint": "描述几次你亲身经历的成人之间的互动",
+    "descriptionPlaceholder": "比如：开会时，对方会先问有没有书面计划，也喜欢在做决定前留一点思考时间。",
+    "infer": "看看可能的倾向",
     "inferFailed": "未能从描述中可靠推断类型，请直接选择代码。",
-    "headline": "你（{{selfType}}）× Ta（{{otherType}}）",
-    "sharedDifferent": "共享维度：{{shared}}；差异维度：{{different}}",
-    "dominant": "主导：你 {{selfDominant}} / ta {{otherDominant}}（{{relation}}）",
-    "dynamic": "动态：{{headline}}",
-    "sharedEgo": "共享自我功能：{{functions}}",
-    "generate": "生成相处洞察"
+    "generate": "读一读我们的相处"
   },
   "CommunicationRewrite": {
-    "title": "沟通改写",
-    "placeholder": "粘贴你打算发送的草稿...",
+    "title": "换一种说法，还是你的意思。",
+    "placeholder": "比如：你每次都临时改计划，我不想再和你约了。\n\n你真正想表达的需要是什么？",
     "rewriting": "改写中...",
-    "generate": "生成改写",
-    "refusalFollowup": "试试「今日」的反思日记：这条信息想要保护的是什么？Inscape 可以帮你看清底层的读法，但不会帮你写施压信息。",
+    "generate": "找一种更清楚的表达",
     "disclaimer": "这些改写仅基于你的视角——对方没有参与此框定。请当作草稿，而非脚本。",
-    "historySummary": "本次会话的改写历史（{{count}}）",
-    "refusal": {
-      "money": "这条信息涉及金钱情境，Inscape 不在此类情境下提供改写。",
-      "employment": "这条信息涉及雇佣 / 职权情境，Inscape 不在此类情境下提供改写。",
-      "sexual_consent": "这条信息涉及性同意情境，Inscape 不在此类情境下提供改写。",
-      "decision_pressure": "这条信息读起来像在施加决策压力或下最后通牒；改写它可能让施压更容易传达，而这不是这个功能的用途。"
-    }
+    "refusal": {}
   },
   "Quarantine": {
     "title": "隔离区",
     "description": "以下主体被判定为未满 18 岁，已从所有分析中移除并永不处理。你可以永久删除，或保留隔离。",
     "quarantinedAt": "隔离于 {{time}}",
     "delete": "永久删除"
+  },
+  "Experience": {
+    "brandLine": "心相 · 向内探索",
+    "mySpace": "我的空间",
+    "archive": "探索手记",
+    "sidebarThought": "认识自己，是一段有趣的旅程。",
+    "sidebarThoughtNote": "慢慢来，每一步都算数。",
+    "localSpace": "只属于你的本地空间",
+    "explorer": "内心探索者",
+    "stillBecoming": "持续生长，不急着定义",
+    "patternLabel": "当前倾向 · {{type}}",
+    "collapseNav": "收起导航",
+    "expandNav": "展开导航",
+    "private": "私密 · 本地保存",
+    "disclaimer": "心相陪你探索，不定义你。认知功能是一种理解视角，本应用不提供心理诊断。",
+    "savedLocally": "已保存在这台设备",
+    "back": "回到探索空间",
+    "todayTitle": "今天，也靠近自己一点。",
+    "todayDescription": "从一件小事、一种感受，或一个你在意的人开始。",
+    "heroEyebrow": "你的内心，还有值得发现的风景",
+    "heroTitle1": "每一种感受，",
+    "heroTitle2": "都有它的来处。",
+    "heroDescription": "把脑海里盘旋的那件事放在这里。\n和 AI 一起，看看习惯之外的另一种可能。",
+    "heroAction": "从一件小事开始",
+    "heroCaption": "A LITTLE FURTHER INWARD",
+    "pause": "先停一小会儿",
+    "moodQuestion": "此刻，你的内心天气是？",
+    "moods": {
+      "calm": "平静",
+      "bright": "明朗",
+      "tangled": "有点纠结",
+      "low": "低落",
+      "restless": "坐立不安"
+    },
+    "exploreMood": "探索此刻的感受",
+    "exploreTitle": "今天，想探索什么？",
+    "exploreSubtitle": "换一扇窗，看同一个自己。",
+    "madeForMoment": "从生活出发 · 带着发现回去",
+    "withAI": "AI 探索",
+    "roundtableTitle": "内心圆桌",
+    "roundtableDescription": "当你左右为难，让内心的八种视角坐下来聊一聊。",
+    "roundtableMeta": "一个选择 · 八种声音",
+    "emotionTitle": "感受的背面",
+    "emotionDescription": "那些说不清的情绪，也许在替某个重要的需要说话。",
+    "emotionMeta": "一件小事 · 一个新角度",
+    "relationshipTitle": "靠近彼此",
+    "relationshipDescription": "同一句话，为什么听起来不一样？走到对方的窗前看一看。",
+    "relationshipMeta": "一次换位 · 少一点误会",
+    "emotionStarter": "最近有一件事，让我的感受有些复杂：\n\n",
+    "discoveryCard": "一张探索卡",
+    "shuffle": "换一张探索卡",
+    "turnCard": "翻过来，换个角度",
+    "writeAboutIt": "写写我的答案",
+    "recentTitle": "最近的足迹",
+    "allEntries": "全部手记",
+    "emptyTitle": "你的第一片风景，等你留下。",
+    "emptyDescription": "不用写得完整。一个瞬间，也值得被看见。",
+    "firstEntry": "留下第一个瞬间",
+    "explored": "已探索",
+    "connectDots": "让 AI 串起最近的片段",
+    "listening": "正在换几个角度，读懂这件事…",
+    "listeningNote": "本地 AI 正在思考，你可以先停一小会儿。",
+    "aiError": "这次，AI 暂时没能回应。",
+    "aiErrorNote": "你的文字仍然在本地。请在 Nimi Desktop 检查可用的本地文字模型，再回来重试。",
+    "invalidRead": "模型没有返回完整的探索内容，本次结果未保存。",
+    "oneMoment": "想带进来的那件事",
+    "onlyYou": "文字只留在这台设备",
+    "saveOnly": "先记下来",
+    "beginExplore": "一起看看",
+    "exploreSaved": "继续探索这一刻",
+    "savedWithoutAI": "这一刻已收好。你可以随时回来，请 AI 一起看看。",
+    "aPerspective": "一种可能的理解",
+    "voicesTitle": "听听不同的声音",
+    "voicesHint": "点一个视角，听它把话说完",
+    "voiceSays": "如果让「{{name}}」开口",
+    "anotherAngle": "也可以这样理解",
+    "tinyExperiment": "带回生活的一个小实验",
+    "experimentNote": "愿意的话，今天试试。不用完成得很完美。",
+    "finishExperiment": "标记小实验已尝试",
+    "undoExperiment": "取消已尝试标记",
+    "resonates": "这很像我",
+    "doesntResonate": "不太像我",
+    "accepted": "有共鸣",
+    "rejected": "已记下：不太像",
+    "evidence": "为什么这样说",
+    "yourWords": "你写下的原话",
+    "noEvidence": "尚无生活片段，当前解读仅依据你选择的类型倾向。",
+    "evidenceNote": "这些视角来自你的描述与认知功能框架，不代表已经证实的事实，也不能替别人说话。",
+    "calibrate": "让这次发现，帮助我校准画像",
+    "noCalibration": "这次没有形成可用的调整建议。你的画像保持原样。",
+    "calibrationSaved": "画像已按你接受的建议更新。",
+    "calibrationTitle": "这次发现，可能让画像轻轻移动",
+    "calibrationNote": "这是基于本条原始记录的建议，只有你接受后才会改变画像。",
+    "acceptCalibration": "接受这次调整",
+    "keepAsIs": "先保持原样",
+    "calibrationDeclined": "已保留原来的画像。",
+    "modes": {
+      "resonance": {
+        "eyebrow": "感受的背面 · REFLECTION",
+        "title": "把这一刻，慢慢展开。",
+        "description": "不急着解释自己。先说发生了什么，再看看感受想告诉你什么。",
+        "placeholder": "比如：朋友临时取消了约定。我说了「没关系」，但回家以后，却一直觉得失落……"
+      },
+      "roundtable": {
+        "eyebrow": "内心圆桌 · INNER ROUNDTABLE",
+        "title": "让不同的你，都说说看。",
+        "description": "一个想抓住机会，一个想再等等。借助八种认知功能的视角，把纠结听清楚。",
+        "placeholder": "比如：周末我想一个人休息，但朋友邀请我参加聚会。我怕错过，也怕把自己耗空……"
+      }
+    },
+    "selfEyebrow": "向内看 · YOUR INNER LANDSCAPE",
+    "selfTitle": "你比四个字母，更丰富。",
+    "selfDescription": "看见习惯的路径，也给尚未发现的自己留一点空间。",
+    "selfViews": "自我探索视图",
+    "innerMap": "内在地图",
+    "growthTitle": "画像会变，探索也会继续。",
+    "growthDescription": "用真实经历积累理解，用你的判断校准方向。这里没有要成为的「标准类型」。",
+    "keepExploring": "继续探索",
+    "searchJournal": "找找某个瞬间…",
+    "filters": {
+      "all": "全部",
+      "accepted": "有共鸣",
+      "experiments": "有小实验"
+    },
+    "noMatches": "还没找到这个瞬间。",
+    "trySearch": "试试别的关键词，或者切回「全部」。",
+    "journalMoment": "生活片段",
+    "experimentFinished": "小实验已尝试",
+    "startingPoint": "一个起点，不是终点",
+    "typeIntro": "从你熟悉的那个自己开始。",
+    "typeIntroNote": "如果你已有一个常用的 16 型代码，可以把它放在这里。心相会用它作为暂时的起点。",
+    "typeIsOptional": "不知道也没关系。你可以先从生活里的小事开始探索。",
+    "createMap": "展开我的地图",
+    "notSureYet": "还不确定，先去探索",
+    "functionMap": "八种认知视角",
+    "mapTitle": "你习惯从哪些窗口看世界？",
+    "confidence": "依据置信度",
+    "confidenceNote": "刻度表示当前模型中的相对倾向；置信度表示依据的充分程度，不是测试准确率或类型概率。",
+    "lensNote": "这是一种人人都可以尝试的视角，不是对你的能力评价。",
+    "preferenceTitle": "在四种偏好之间，看看此刻的倾向",
+    "relationshipEyebrow": "关系里的我们 · BETWEEN US",
+    "relationshipPageTitle": "同一个世界，不同的窗口。",
+    "relationshipPageDescription": "从你的真实经历出发，理解彼此的不同，也练习把话说得更清楚。",
+    "addConnection": "加入一个在意的人",
+    "connectionEmptyTitle": "你最想读懂的，是和谁的相处？",
+    "connectionEmptyDescription": "一个朋友、一位家人，或亲密的伴侣。只记录你的观察，从一次具体的互动开始。",
+    "connectionHint": "从你的视角出发，不替对方下结论。",
+    "myConnections": "我在意的人",
+    "close": "关闭",
+    "connectionViews": "关系探索方式",
+    "understand": "相处的视角",
+    "conversation": "把话说开",
+    "relationshipGrounding": "我们只知道你这一侧的故事。把可能的解释带回真实对话中验证。",
+    "welcomeEyebrow": "A SPACE TO MEET YOURSELF",
+    "welcomeTitle1": "向内走，",
+    "welcomeTitle2": "遇见更多的自己。",
+    "welcomeDescription": "你的感受、选择和关系里，藏着关于自己的线索。给自己一点时间，和心相一起慢慢发现。",
+    "welcomeSmall": "为好奇的你，留一处安静的地方。",
+    "welcomeStart": "在开始之前",
+    "welcomeGateNote": "这是一个面向成年人的私密探索空间。",
+    "selfMirrorTitle": "从手记里，看见正在变化的你",
+    "selfMirrorDescription": "以最近的手记为线索，看看哪些需要反复出现，也给不同的解释留出空间。",
+    "mirrorAction": "读一读最近的自己",
+    "todayReadAction": "看看最近的我",
+    "todayReadNote": "只根据最近三条生活记录，看看有什么值得你留意。",
+    "sharedMoment": "一次共同经历",
+    "frictionTitle": "你们在哪一句话错过了彼此？",
+    "frictionDescription": "写下双方说了什么、你怎么理解。让 AI 帮你寻找可能的误会和另一种解释。",
+    "yourObservation": "你记得的那段互动",
+    "readInteraction": "换个角度看这次互动",
+    "dyadNoSelf": "认知功能的对照需要你先在「关于自己」选择一个暂时的类型。也可以直接进入「把话说开」，从具体互动开始。",
+    "aTentativeLens": "先借一个暂时的视角",
+    "otherTypeNote": "这只是你观察中的倾向。一个代码无法替代对这个人的了解。",
+    "otherSuggestion": "暂时可以试试 {{type}} 这个视角",
+    "otherSuggestionNote": "这来自你的描述，不是对对方的测定。只有你确认后，才会用于相处探索。",
+    "acceptTentatively": "先用这个视角探索",
+    "you": "你的视角",
+    "rewriteDescription": "把真正想说的话留住，试试更容易被听见的表达。",
+    "copied": "已复制",
+    "copyFailed": "没有复制成功，请手动选取文字。",
+    "addYourMoment": "在问题后面，补上你自己的经历或答案，再开始探索。",
+    "invalidRewrite": "这次没有返回三条完整草稿，你的原文仍然保留。",
+    "copyThisDraft": "复制这一条",
+    "connectionCount_one": "{{count}} 段共同经历",
+    "connectionCount_other": "{{count}} 段共同经历"
+  },
+  "Functions": {
+    "Ni": {
+      "name": "远见者",
+      "label": "内倾直觉",
+      "description": "你试着在纷杂的信息里，看见一条贯穿的线索；在做决定之前，想知道这件事会通向哪里。",
+      "practice": "把直觉写成一句话，再找一条可能推翻它的事实。"
+    },
+    "Ne": {
+      "name": "可能性探险家",
+      "label": "外倾直觉",
+      "description": "你容易看见「还可以怎样」，从一个想法走向另一个，愿意让偶然的联想打开新路径。",
+      "practice": "为一件卡住的小事，想出三个不一样的解释。"
+    },
+    "Si": {
+      "name": "经验收藏家",
+      "label": "内倾感觉",
+      "description": "熟悉的经验、细节和节奏为你提供参照。你会回到过去，寻找什么曾经真正有效。",
+      "practice": "想起一次类似经历：这次有什么已经不一样了？"
+    },
+    "Se": {
+      "name": "此刻体验家",
+      "label": "外倾感觉",
+      "description": "你把注意力带回眼前的世界，相信亲身接触、真实反馈，以及此刻能做的一小步。",
+      "practice": "停一分钟，留意周围三个平时没有注意到的细节。"
+    },
+    "Ti": {
+      "name": "逻辑解构者",
+      "label": "内倾思考",
+      "description": "你想弄清楚一件事内部是否说得通。与其接受现成答案，你更愿意拆开来理解它。",
+      "practice": "挑出一个「理所当然」的前提，问问它一定成立吗。"
+    },
+    "Te": {
+      "name": "行动组织者",
+      "label": "外倾思考",
+      "description": "你会把模糊的想法变成清晰的步骤，关心有哪些资源、如何推进、怎样知道事情有了进展。",
+      "practice": "把眼前的大任务，缩成十分钟能完成的第一步。"
+    },
+    "Fi": {
+      "name": "内在守护者",
+      "label": "内倾情感",
+      "description": "你留意一件事是否符合自己在乎的东西。即使说不清理由，也希望选择能忠于内心。",
+      "practice": "补完这句话：这件事让我在意，是因为我珍惜……"
+    },
+    "Fe": {
+      "name": "关系连接者",
+      "label": "外倾情感",
+      "description": "你容易注意到人与人之间的气氛，希望表达能被接住，也在意大家是否感到被尊重。",
+      "practice": "在照顾别人感受时，也给自己的需要留下一句话。"
+    }
+  },
+  "Discovery": {
+    "0": {
+      "question": "你说「没关系」的时候，真的没关系吗？",
+      "hint": "试着把对外说的那句话，和内心没说出的那句话并排写下来。它们各自在保护什么？"
+    },
+    "1": {
+      "question": "如果不需要向任何人解释，你会怎么选？",
+      "hint": "暂时放下「应该」，看看你真正想靠近的是什么。之后再把现实条件请回来。"
+    },
+    "2": {
+      "question": "最近哪一刻，让你忘记看时间？",
+      "hint": "那一刻的你在做什么、和谁在一起？找到让你投入的具体条件，而不只是一个爱好名称。"
+    },
+    "3": {
+      "question": "你在担心的，是事实，还是一种可能？",
+      "hint": "把「已经发生」和「我担心会发生」分开列出来。看看它们是否需要不同的回应。"
+    },
+    "4": {
+      "question": "你最羡慕的那种人，允许自己做什么？",
+      "hint": "羡慕有时是未被照顾的愿望。找一个很小的方式，给自己相同的许可。"
+    },
+    "5": {
+      "question": "当计划突然改变，你最先失去的是什么？",
+      "hint": "可能是掌控感、休息时间，或被重视的感觉。试着说出具体的损失，而不是批评自己的反应。"
+    },
+    "6": {
+      "question": "对方的那句话，还有什么别的读法？",
+      "hint": "先不决定哪个解释正确。试着找一个不把你或对方当作坏人的版本。"
+    },
+    "7": {
+      "question": "今天，你想把一点点精力还给什么？",
+      "hint": "不是一张新的任务清单。只是选一件会让你觉得「这也是我」的小事。"
+    }
+  },
+  "Dimensions": {
+    "E_I": {
+      "left": "向外连接 E",
+      "right": "向内充电 I"
+    },
+    "S_N": {
+      "left": "具体细节 S",
+      "right": "可能意义 N"
+    },
+    "T_F": {
+      "left": "逻辑原则 T",
+      "right": "价值感受 F"
+    },
+    "J_P": {
+      "left": "计划确定 J",
+      "right": "灵活开放 P"
+    }
+  },
+  "PrivacySettings": {
+    "title": "设置与本机数据",
+    "description": "手记、画像和关系记录保存在这台设备上。卸载应用不会自动删除这些记录。你可以在这里清除心相的本机空间。",
+    "clear": "清除本机数据…",
+    "confirmTitle": "清除这台设备上的心相空间？",
+    "confirmBody": "所有手记、AI 解读、画像、关系记录和成人确认都会删除。此操作无法在应用内撤销；下次进入需要重新开始。",
+    "confirm": "确认清除全部本机数据",
+    "clearing": "正在清除…",
+    "failed": "这次没有清除成功，数据仍保留。请稍后重试。",
+    "notes_one": "{{count}} 条手记",
+    "notes_other": "{{count}} 条手记",
+    "connections_one": "{{count}} 段关系",
+    "connections_other": "{{count}} 段关系"
+  },
+  "Repair": {
+    "close": "关闭",
+    "cancel": "取消",
+    "saveFailureTitle": "这次更改还没保存",
+    "saveFailureBody": "内容仍留在当前页面。重试会继续完成这次保存；返回后也可以继续编辑。",
+    "backToEditing": "返回当前页面",
+    "retrySave": "重试保存",
+    "loadFailure": "暂时无法打开本地空间。你可以重试，已有内容不会因此被清除。",
+    "leaveTitle": "还有未保存的内容",
+    "leaveBody": "这段内容还没保存。可以继续编辑、保存后离开，或舍弃这份草稿。",
+    "keepWriting": "继续写",
+    "discardDraft": "舍弃并离开",
+    "saveAndLeave": "保存后离开",
+    "readNotSaved": "这次解读尚未保存，内容仍保留在这里。",
+    "saveReading": "保存这次解读",
+    "readReference": "生成时的参考：{{type}}",
+    "deleteReading": "删除这次解读",
+    "deleteReadingBody": "这次解读及其共鸣反馈会被永久删除，原始记录仍会保留。",
+    "deletePermanently": "永久删除",
+    "feedbackUndoHint": "可以随时改选；再点一次已选的反馈即可撤回。",
+    "feedbackCalibrationHint": "改选或撤回反馈，也会撤回这条手记已采纳的画像调整。",
+    "calibrationApplied": "这条手记已为画像添上一笔",
+    "revokeCalibration": "撤回这次画像调整",
+    "projectedType": "采纳后的当前倾向：{{before}} → {{after}}",
+    "readingHistory_one": "{{count}} 次解读与反馈",
+    "readingHistory_other": "{{count}} 次解读与反馈",
+    "refusedLabel": "这次未改写",
+    "refusalFollowup": "这可能是识别偏差。原文会留在本地记录中；你可以修改表达再试，也可以删除这次记录。",
+    "originalText": "原文",
+    "saveChanges": "保存修改",
+    "changeStartingType": "重新选择起始视角",
+    "changeStartingTypeBody": "选错了也可以重新开始。已有手记与解读会保留，已采纳的画像调整会撤回，之后从新的起点继续探索。也可以暂时不设类型。",
+    "changeOtherType": "调整对方的类型视角",
+    "changeOtherTypeBody": "这是你暂时采用的理解视角，可以更换或移除。它不代表对方被确定为某种类型；已有解读会保留生成时的参考。",
+    "currentReference": "正在采用这个视角",
+    "name": "称呼",
+    "typeReference": "类型视角",
+    "noType": "暂不设类型",
+    "filterNotes": "筛选手记",
+    "relationshipKind": "关系类型",
+    "editNote": "编辑原文",
+    "deleteNote": "删除手记",
+    "editNoteBody": "更改原文后，旧解读及其共鸣反馈、画像调整会移除。保存后可以重新探索。",
+    "deleteNoteBody": "这条手记、相关解读与反馈将永久删除，它对画像的调整也会撤回。",
+    "noMood": "先不标记",
+    "deleteQuarantineBody": "这份隔离记录会被永久删除，无法恢复。",
+    "editConnection": "编辑关系",
+    "deleteConnection": "删除关系",
+    "editConnectionBody": "称呼和关系会随生活变化，你可以随时修改。",
+    "deleteConnectionBody": "将永久删除与「{{name}}」的这段关系及其共同经历、解读与反馈，无法恢复。",
+    "ageSafety": "关于成年确认",
+    "editInteraction": "编辑这段经历",
+    "deleteInteraction": "删除这段经历",
+    "editInteractionBody": "修改后，基于这段经历的旧解读与反馈会移除，你可以重新探索。",
+    "deleteInteractionBody": "这段共同经历及基于它的解读与反馈会永久删除。",
+    "uncertainType": "这些偏好还在变化，现在先不归为一种类型。你仍可以记录经历、使用圆桌和感受探索。",
+    "dyadNeedsClarity": "你的类型倾向还不清晰。可以先从共同经历和沟通草稿探索这段关系；类型对照暂时留白。",
+    "typeDerivationNote": "当前类型来自下面四个维度的倾向；接近中间或把握不足时会暂时留白。上方的功能活跃度是另一种观察，不会直接决定四字母类型。",
+    "observationFits": "符合我的观察",
+    "observationDiffers": "与我的观察不同",
+    "refusal": {
+      "money": "这段话可能涉及金钱安排，心相暂不在这类情境下提供改写。",
+      "employment": "这段话可能涉及雇佣或职权安排，心相暂不在这类情境下提供改写。",
+      "sexual_consent": "这段话可能涉及性同意，心相暂不在这类情境下提供改写。",
+      "decision_pressure": "这段话可能包含最后通牒或要求对方立刻表态，心相暂不替这类表达润色。"
+    },
+    "sourceChanged": "原文已经修改，先基于新版重新探索吧。",
+    "calibrationChanged": "画像或这条手记已经变化，请基于当前信息重新请求微调。",
+    "leaveUnsavedBody": "这段内容还没保存。继续编辑，或明确舍弃后离开。",
+    "saving": "正在保存…",
+    "discardReading": "舍弃这次解读",
+    "meaningFits": "接近我想表达的",
+    "meaningDiffers": "还不是我想表达的",
+    "deleteRecord": "删除这条记录",
+    "referenceContext": "这次使用的参考",
+    "selfReference": "你选择的参考类型：{{type}}；该参考的主导视角：{{hero}}；当时较活跃的功能：{{active}}。这些是探索线索，不是已被证实的性格事实。",
+    "pairReference": "你的参考视角：{{self}}；对方的参考视角：{{other}}。它们来自你选择或采纳的类型，并不代表对方确认了这些特征。",
+    "readPairReference": "生成时的视角：你 {{self}} · 对方 {{other}}",
+    "mirrorNeedsNotes": "先留下一段自己的经历，再回来看看其中的线索。"
   }
 }

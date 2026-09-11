@@ -78,3 +78,25 @@ units:
         target: definition.inscape.data-model.persistence
       - type: applies_to
         target: definition.inscape.data-model.quarantine
+  - id: rule.inscape.data-model.r006
+    kind: rule
+    title: Recoverable local writes
+    modality: must
+    statement: Commit product state only after a successful validated write. A failed save retains the current screen and pending action, offers retry or cancellation, and never masquerades as a load failure. A load failure offers an explicit reload action.
+    condition: When loading or saving local product data fails.
+    failure: Leave committed state unchanged and show the unsaved state until the actual write succeeds or the user cancels it.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.persistence
+  - id: rule.inscape.data-model.r007
+    kind: rule
+    title: User-controlled records and reading history
+    modality: must
+    statement: Provide individual editing or deletion of user-authored notes, interactions, and relationship details, revisable type choices, reversible resonance feedback, and persistent AI readings with source context and local refusal history. Confirm irreversible deletion. Editing or deleting source material removes associated derived readings and its calibration contribution; under-18 quarantine also removes associated readings from active processing. Keep unsaved drafts available until saved or explicitly discarded.
+    condition: When a user manages their local material or leaves an unsaved draft.
+    failure: Do not silently discard drafts, retain orphaned derived records, or use under-18 quarantine as ordinary relationship deletion.
+    relations:
+      - type: applies_to
+        target: definition.inscape.data-model.inscape-space
+      - type: applies_to
+        target: definition.inscape.data-model.signal

@@ -3,7 +3,8 @@
 // sexual-consent, or decision-pressure contexts. Heuristic and safety-first:
 // it errs toward refusal. Pure + unit-testable.
 
-export type RefusalCategory = 'money' | 'employment' | 'sexual_consent' | 'decision_pressure';
+import type { RefusalCategory } from '../../domain/reading.ts';
+export type { RefusalCategory } from '../../domain/reading.ts';
 
 export type RewriteClassification =
   | { readonly ok: true }
@@ -23,11 +24,15 @@ const PATTERNS: Record<RefusalCategory, readonly RegExp[]> = {
     /性行为|性同意|发生关系|上床|约炮/,
   ],
   decision_pressure: [
-    /\bif you don'?t\b/i,
     /\bor else\b/i,
-    /\bby (tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i,
-    /\b(ultimatum|deadline)\b/i,
-    /如果你不|要不然|否则|不然就|最后通牒|必须在|限你/,
+    /\bif you (?:don'?t|do not)\b[\s\S]{0,100}\bby (?:tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)[\s\S]{0,60}\b(?:I(?:'m| am) not|I won'?t)\b/i,
+    /如果你不.{0,60}否则.{0,40}(?:就不|后果|分手|曝光)/,
+    /\bultimatum\b/i,
+    /\b(?:you must|you have to|you need to) (?:decide|choose|agree|say yes)\b/i,
+    /\byou (?:have|have got|got) until\b/i,
+    /\bif you (?:don'?t|do not)\b[\s\S]{0,180}\b(?:I(?:'ll| will) (?:leave|break up|expose|block)|you(?:'ll| will) (?:regret|lose)|tell everyone)\b/i,
+    /最后通牒|限你|必须(?:在.{0,20})?(?:答应|决定|同意|选择)|不然就(?:分手|离开|曝光|断绝)|否则.{0,20}(?:分手|离开|曝光|后果|断绝)/,
+    /如果你不.{0,60}(?:我就|我们就).{0,20}(?:分手|离开|曝光|断绝)/,
   ],
 };
 

@@ -1,6 +1,6 @@
 app_id: nimi.inscape
 display_name: Inscape
-version: 0.1.4
+version: 0.1.5
 profile: standalone
 manifest_role: submitted-input
 app_access:
@@ -8,3 +8,20 @@ app_access:
 local_development:
   electron:
     renderer_origin: http://127.0.0.1:1431
+metadata:
+  summary: 面向成年人的本地性格探索与日常反思工具，用认知功能视角理解自己和关系。
+  icon: assets/app-icon.png
+  readme: APP_GUIDE.md
+  release_notes: RELEASE_NOTES.md
+  author: Nimi Team
+  homepage_url: https://github.com/nimiplatform/nimiapp-inscape
+  support_url: https://github.com/nimiplatform/nimiapp-inscape/issues
+capability_contract_refs:
+  - text.generate
+required_standardized_feature_refs: []
+storage_policy:
+  kind: app-owned-os-storage
+  os_storage_disclosure:
+    - path_pattern: <Electron userData>/inscape.db
+      purpose: Local SQLite storage for adult attestation, profiles, observations and reflections. Retained after Nimi uninstall; cleared from Inscape settings.
+      expected_size_band: Starts at a few KiB and grows with saved records; no App-enforced storage cap.

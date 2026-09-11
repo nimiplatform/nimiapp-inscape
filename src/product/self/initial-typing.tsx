@@ -1,52 +1,65 @@
-// Wave-3.2 — establish the type prior. Inscape's target user already knows
-// their 4-letter code from an online test; entering it seeds the posterior
-// (a prior, not a verdict). A full in-app item test is a later alternative.
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  FOUR_LETTER_TYPES,
-  isFourLetterType,
-  type FourLetterType,
-} from '../../domain/typology.ts';
+import { ArrowRight, Check, Fingerprint } from 'lucide-react';
+import { FOUR_LETTER_TYPES, type FourLetterType } from '../../domain/typology.ts';
+import { ChoiceGroup } from '../components/interaction.tsx';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 
-export function InitialTyping() {
+export function InitialTyping({ onExplore }: { onExplore?: () => void }) {
   const { t } = useTranslation();
   const setInitialType = useInscapeStore((s) => s.setInitialType);
-  const [code, setCode] = useState('');
-  const valid = isFourLetterType(code);
-
-  function onCreate() {
-    if (!valid) return;
-    void setInitialType(code as FourLetterType, new Date().toISOString());
+  const [code, setCode] = useState<FourLetterType | null>(null);
+  const [saving, setSaving] = useState(false);
+  async function create() {
+    if (!code || saving) return;
+    setSaving(true);
+    await setInitialType(code, new Date().toISOString());
+    setSaving(false);
   }
-
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium">{t('InitialTyping.title')}</h3>
-      <p className="text-sm opacity-70">{t('InitialTyping.description')}</p>
-      <div className="flex items-center gap-2">
-        <select
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className="rounded border border-black/15 px-2 py-1 text-sm"
-        >
-          <option value="">{t('InitialTyping.placeholder')}</option>
-          {FOUR_LETTER_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          disabled={!valid}
-          onClick={onCreate}
-          className="rounded bg-black/80 px-3 py-1 text-sm text-white disabled:opacity-40"
-        >
-          {t('InitialTyping.create')}
-        </button>
+    <div className="initial-profile">
+      <div className="initial-copy">
+        <span className="round-icon">
+          <Fingerprint size={29} strokeWidth={1.4} />
+        </span>
+        <span className="eyebrow">{t('Experience.startingPoint')}</span>
+        <h2>{t('Experience.typeIntro')}</h2>
+        <p>{t('Experience.typeIntroNote')}</p>
+        <small>{t('Experience.typeIsOptional')}</small>
+      </div>
+      <div className="type-picker">
+        <ChoiceGroup
+          className="type-grid"
+          label={t('InitialTyping.title')}
+          value={code ?? ''}
+          onChange={(value) => setCode(value as FourLetterType)}
+          disabled={saving}
+          items={FOUR_LETTER_TYPES.map((type) => ({
+            value: type,
+            label: (
+              <>
+                <span>{type}</span>
+                {code === type && <Check size={13} />}
+              </>
+            ),
+            className: 'type-choice type-group-' + (type[1] === 'N' ? type[2] : type[3]),
+          }))}
+        />
+        <div className="type-actions">
+          <button
+            className="button button-primary"
+            disabled={!code || saving}
+            onClick={() => void create()}
+          >
+            {t('Experience.createMap')}
+            <ArrowRight size={15} />
+          </button>
+          {onExplore && (
+            <button className="button button-quiet" onClick={onExplore}>
+              {t('Experience.notSureYet')}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

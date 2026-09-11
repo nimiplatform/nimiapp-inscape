@@ -21,10 +21,19 @@ export function buildRewritePrompt(
     'HARD CONSTRAINTS: never produce manipulation, coercion, PUA tactics, guilt-tripping, gaslighting, or deception.',
     "Favor clarity, honest boundaries, and respect for the recipient's autonomy.",
     'Your job is NOT to help the user get their way — it is to help them communicate cleanly and respectfully.',
-    'Produce 2-3 alternative rewrites tuned to the relationship, each clear and boundaried.',
+    'Produce exactly three concise alternative drafts, each clear and boundaried. Each should sound like a message a person would actually send, under 70 words.',
     'Do NOT add pressure, deadlines, ultimatums, or conditions the user did not already state.',
+    'Do not label, diagnose or criticize the recipient. Do not mention missing personality information, internal pattern fields, testing labels, or any technical context. Do not add greetings, recipient names, or sign-offs unless present in the draft.',
+    'No preface, lecture, explanation of communication theory, or concluding advice. Preserve the real needs and facts in the draft without adding new emotions or events.',
+    'Return ONLY valid JSON, no markdown fences, with exactly this shape:',
+    '{"variants":[{"tone":"brief tone label","text":"ready-to-send message only","note":"one short sentence on how the wording differs"}]}. Include exactly three different variants. Use plain text in all fields.',
     respondInLocale(locale),
   ].join(' ');
-  const user = `Recipient: ${recipientName} (${nature}). My pattern: ${selfLeadingType ?? 'unknown'}. Draft message: ${draft}`;
-  return { system, user };
+  const user = JSON.stringify({
+    recipient: recipientName,
+    relationship: nature,
+    ...(selfLeadingType ? { tentativeSelfType: selfLeadingType } : {}),
+    draft,
+  });
+  return { mode: 'communication-rewrite', system, user, temperature: 0.25 };
 }

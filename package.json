@@ -1,6 +1,6 @@
 {
   "name": "nimiapp-inscape",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.5",
@@ -37,9 +37,11 @@
   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "i18next": "^25.10.10",
+    "lucide-react": "^1.44.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^16.6.6",
+    "react-markdown": "^10.1.0",
     "zustand": "^5.0.13",
     "@nimiplatform/sdk": "^0.10.0",
     "@nimiplatform/kit": "^0.6.0"
@@ -63,7 +65,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.4",
     "vite": "^7.3.6",
-    "@nimiplatform/app-tools": "^0.3.0",
+    "@nimiplatform/app-tools": "^0.4.0",
     "@nimiplatform/nimi-coding": "0.6.2"
   },
   "author": "Nimi Team",

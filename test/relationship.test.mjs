@@ -39,13 +39,24 @@ test('addCommunicationLog appends a user-pasted snippet to the relationship', as
 });
 
 test('friction prompt is two-sided and blames neither party', () => {
-  const prompt = buildFrictionPrompt(['a', 'b'], 'INTJ', 'partner');
+  const prompt = buildFrictionPrompt({
+    snippets: ['a', 'b'],
+    selfType: 'INTJ',
+    otherType: null,
+    nature: 'partner',
+  });
   assert.match(prompt.system, /two-sided|blame neither/i);
   assert.match(prompt.user, /partner/);
 });
 
 test('friction prompt can explicitly request English output', () => {
-  const prompt = buildFrictionPrompt(['a', 'b'], 'INTJ', 'partner', 'en');
+  const prompt = buildFrictionPrompt({
+    snippets: ['a', 'b'],
+    selfType: 'INTJ',
+    otherType: null,
+    nature: 'partner',
+    locale: 'en',
+  });
   assert.match(prompt.system, /Respond in clear, natural English/);
 });
 
@@ -69,4 +80,42 @@ test('deleteQuarantineRecord permanently removes the record', async () => {
   const recordId = store.getState().space.quarantine[0].id;
   await store.getState().deleteQuarantineRecord(recordId, NOW);
   assert.equal(store.getState().space.quarantine.length, 0);
+});
+
+test('friction avoids assigning function codes when either person is untyped', () => {
+  const prompt = buildFrictionPrompt({
+    snippets: ['I wanted comfort and received advice.'],
+    selfType: null,
+    otherType: null,
+    nature: 'friend',
+  });
+  assert.match(prompt.system, /Do not use type or function codes in the output/);
+  assert.match(prompt.system, /One incident does not establish a recurring pattern/);
+  assert.match(prompt.system, /Practical advice is not evidence of Fe/);
+  assert.equal(JSON.parse(prompt.user).self, null);
+  assert.equal(JSON.parse(prompt.user).other, null);
+});
+
+test('typed friction anchors both people in their supplied dominant-function facts', () => {
+  const prompt = buildFrictionPrompt({
+    snippets: ['We disagreed.'],
+    selfType: 'INFP',
+    otherType: 'ENTJ',
+    nature: 'friend',
+  });
+  const data = JSON.parse(prompt.user);
+  assert.equal(data.self.dominantFunction, 'Fi');
+  assert.equal(data.other.dominantFunction, 'Te');
+  assert.match(prompt.system, /tentative user-chosen lenses/);
+});
+
+test('pair exploration uses lived observations and reference lenses without projecting cognitive ranks onto people', async () => {
+  const { buildDyadInsightPrompt } = await import('../src/product/relationship/dyad-prompts.ts');
+  const { analyzeDyad } = await import('../src/product/relationship/dyad-analysis.ts');
+  const observation = 'I wanted listening, and received practical advice.';
+  const prompt = buildDyadInsightPrompt(analyzeDyad('INFP', 'ENTJ'), 'en', [observation]);
+  assert.deepEqual(JSON.parse(prompt.user).observations, [observation]);
+  assert.doesNotMatch(prompt.user, /inferior|demon|4th|vulnerable|less capable/);
+  assert.match(prompt.system, /not a personality assessment/);
+  assert.match(prompt.system, /not facts about these people/);
 });

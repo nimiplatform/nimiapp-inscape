@@ -40,3 +40,23 @@ units:
     relations:
       - type: applies_to
         target: definition.inscape.inference.posterior-distribution
+  - id: rule.inscape.inference.r004
+    kind: rule
+    title: Bounded reflection calibration
+    modality: must
+    statement: Supply the complete current strengths, signed dichotomy values, confidences, and polarity meanings to the reflection proposer; validate the complete proposal before display and again before acceptance, allowing an absolute change of at most 0.10 in each strength, dichotomy value, or confidence per reflection; persist at most one accepted contribution per reflection and remove it when its feedback is withdrawn or its source is edited or deleted.
+    condition: When a reflection proposes a profile calibration.
+    failure: Reject the whole out-of-bounds proposal without clamping or partially applying values, and leave the current profile unchanged.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.posterior-distribution
+  - id: rule.inscape.inference.r005
+    kind: rule
+    title: Coherent and revisable profile derivation
+    modality: must
+    statement: Derive the leading four-letter type from the signs of E_I, S_N, T_F, and J_P only when each magnitude is at least 0.20 and confidence at least 0.25; otherwise leave the leading type and Beebe inference null. Derive Beebe positions from the current leading type. Display function activity separately and never infer a four-letter type by sorting function strengths. Rebuild the current profile from the user-selected baseline and the remaining accepted reflection contributions; saturate rebuilt totals to their domain bounds without repairing invalid proposals. Replacing the baseline withdraws previous contributions while preserving notes and readings.
+    condition: When profile evidence, an accepted reflection contribution, or the user-selected baseline changes.
+    failure: Reject invalid proposals whole and never retain stale type or Beebe labels as current inference.
+    relations:
+      - type: applies_to
+        target: definition.inscape.inference.posterior-distribution

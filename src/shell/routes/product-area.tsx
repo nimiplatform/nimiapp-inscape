@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SaveRecovery } from '../../product/components/interaction.tsx';
 import { useAppStore } from '../app-shell/app-store.js';
 import { RuntimeAppStoragePersistenceAdapter } from '../persistence/runtime-app-storage-adapter.ts';
 import { hasElectronInvoke } from '@nimiplatform/kit/shell/renderer/bridge';
@@ -24,7 +25,8 @@ function pickPersistenceClient(): PersistenceClient {
 export function ProductArea() {
   const user = useAppStore((s) => s.auth.user);
   if (!user?.id) return null;
-  if (!hasElectronInvoke()) return <CenteredNote text="Inscape local data is unavailable outside the Electron Host." />;
+  if (!hasElectronInvoke())
+    return <CenteredNote text="Inscape local data is unavailable outside the Electron Host." />;
   return <ProductAreaWithPersistence />;
 }
 
@@ -33,6 +35,7 @@ function ProductAreaWithPersistence() {
   return (
     <InscapeStoreProvider client={client}>
       <InscapeBootGate />
+      <SaveRecovery />
     </InscapeStoreProvider>
   );
 }
@@ -52,7 +55,18 @@ function InscapeBootGate() {
     return <CenteredNote text={t('Status.loading')} />;
   }
   if (status === 'error') {
-    return <CenteredNote text={t('Status.localDataLoadFailed', { error: error ?? 'unknown' })} />;
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
+        <p role="alert">{t('Repair.loadFailure')}</p>
+        <button className="button button-primary" onClick={() => void initialize()}>
+          {t('Runtime.retry')}
+        </button>
+        <details className="technical-note">
+          <summary>{t('Runtime.technicalDetails')}</summary>
+          <p>{error}</p>
+        </details>
+      </div>
+    );
   }
   if (status === 'first-run') {
     return <FirstRunGate />;

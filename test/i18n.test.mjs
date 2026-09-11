@@ -19,12 +19,7 @@ const RELATIONSHIP_NATURES = [
   'other',
 ];
 
-const REFUSAL_CATEGORIES = [
-  'money',
-  'employment',
-  'sexual_consent',
-  'decision_pressure',
-];
+const REFUSAL_CATEGORIES = ['money', 'employment', 'sexual_consent', 'decision_pressure'];
 
 function loadLocale(locale) {
   return JSON.parse(readFileSync(path.join(ROOT, `src/shell/locales/${locale}.json`), 'utf8'));
@@ -32,7 +27,9 @@ function loadLocale(locale) {
 
 function leafShape(value, prefix = '') {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return Object.entries(value).flatMap(([key, child]) => leafShape(child, prefix ? `${prefix}.${key}` : key));
+    return Object.entries(value).flatMap(([key, child]) =>
+      leafShape(child, prefix ? `${prefix}.${key}` : key),
+    );
   }
   return [`${prefix}:${typeof value}`];
 }
@@ -60,7 +57,7 @@ test('locale resources cover all dynamic product keys', () => {
       assert.equal(typeof getPath(copy, `RelationshipNature.${nature}`), 'string');
     }
     for (const category of REFUSAL_CATEGORIES) {
-      assert.equal(typeof getPath(copy, `CommunicationRewrite.refusal.${category}`), 'string');
+      assert.equal(typeof getPath(copy, `Repair.refusal.${category}`), 'string');
     }
   }
 });

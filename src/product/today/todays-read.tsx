@@ -1,90 +1,78 @@
-// IS-IA / IS-AI — Today's read (Mode B). Grounded current-state read +
-// what-you-can-do suggestions; ✓/✗ feedback records an ObservationEvent
-// (a user-driven signal), 🔍 shows the reflections it was grounded in.
-
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { nimiToast } from '@nimiplatform/kit/ui';
+import { Sparkles } from 'lucide-react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
 import { buildTodaysReadPrompt } from './today-prompts.ts';
+import { AiError, LoadingRead, ReadFeedback } from '../components/primitives.tsx';
+import { ReadingHistory, useReadingHistory } from '../components/reading-history.tsx';
 
 export function TodaysRead() {
   const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
-  const addObservationEvent = useInscapeStore((s) => s.addObservationEvent);
   const client = useMemo(() => createInscapeRuntimeAiClient(), []);
-  const profile = space?.self_subject.type_profile ?? null;
-  const locale = space?.settings.locale;
-  const recent = (space?.self_subject.reflection_entries ?? []).slice(-3);
-
-  const [read, setRead] = useState<string | null>(null);
+  const history = useReadingHistory('today-read');
   const [working, setWorking] = useState(false);
-  const [showEvidence, setShowEvidence] = useState(false);
-
-  async function onGenerate() {
-    if (working) return;
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const recent = (space?.self_subject.reflection_entries ?? []).slice(-3);
+  async function generate() {
+    if (working || history.pending || !recent.length) return;
     setWorking(true);
-    setRead(null);
-    setShowEvidence(false);
-    const result = await client.generate(buildTodaysReadPrompt(recent.map((r) => r.text), profile, locale));
-    if (result.ok) {
-      setRead(result.text);
-    } else {
-      nimiToast.danger(
-        t('Common.aiUnavailable', { error: `${result.failure.kind}: ${result.failure.detail}` }),
+    setError(null);
+    try {
+      setLoadingAi(true);
+      const result = await client.generate(
+        buildTodaysReadPrompt(
+          recent.map((r) => r.text),
+          space?.self_subject.type_profile ?? null,
+          space?.settings.locale,
+        ),
       );
+      setLoadingAi(false);
+      if (result.ok)
+        await history.save({
+          text: result.text,
+          evidence: recent.map((r) => r.text).join('\n\n'),
+          source_ids: recent.map((r) => r.id),
+          reference_type: space?.self_subject.type_profile?.leading_type ?? null,
+          refusal: null,
+          other_reference_type: null,
+        });
+      else setError(result.failure.detail);
+    } finally {
+      setWorking(false);
+      setLoadingAi(false);
     }
-    setWorking(false);
   }
-
-  function onFeedback(kind: 'right' | 'wrong') {
-    nimiToast.success(t('TodaysRead.feedbackRecorded'));
-    void addObservationEvent(`today-read feedback: ${kind}`, 'ai_read_feedback', new Date().toISOString());
-  }
-
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <h3 className="text-sm font-medium">{t('TodaysRead.title')}</h3>
-        <button
-          type="button"
-          onClick={() => void onGenerate()}
-          disabled={working}
-          className="rounded bg-black/80 px-3 py-1 text-xs text-white disabled:opacity-40"
-        >
-          {working ? t('Common.generating') : t('Common.generate')}
-        </button>
-      </div>
-
-      {read && (
-        <div className="space-y-2 rounded border border-black/10 bg-black/[0.02] p-3 text-sm">
-          <p className="whitespace-pre-wrap">{read}</p>
-          <div className="flex items-center gap-3 text-xs">
-            <button type="button" onClick={() => onFeedback('right')} className="opacity-70 hover:opacity-100">
-              ✓ {t('TodaysRead.right')}
-            </button>
-            <button type="button" onClick={() => onFeedback('wrong')} className="opacity-70 hover:opacity-100">
-              ✗ {t('TodaysRead.wrong')}
-            </button>
-            <button type="button" onClick={() => setShowEvidence((v) => !v)} className="opacity-70 hover:opacity-100">
-              🔍 {t('TodaysRead.evidence')}
-            </button>
-          </div>
-          {showEvidence && (
-            <div className="text-xs opacity-70">
-              {recent.length ? (
-                <ul className="space-y-0.5">
-                  {recent.map((r) => (
-                    <li key={r.id}>· {r.text}</li>
-                  ))}
-                </ul>
-              ) : (
-                <span>{t('TodaysRead.noEvidence')}</span>
-              )}
-            </div>
-          )}
-        </div>
+    <div className="today-read">
+      <p className="inline-note">{t('Experience.todayReadNote')}</p>
+      <button
+        className="button button-secondary"
+        onClick={() => void generate()}
+        disabled={working || history.pending || !recent.length}
+      >
+        <Sparkles size={15} />
+        {t('Experience.todayReadAction')}
+      </button>
+      {loadingAi && <LoadingRead />}
+      {error && <AiError detail={error} onRetry={() => void generate()} />}
+      {history.record && (
+        <ReadFeedback
+          key={history.record.id}
+          record={history.record}
+          unsaved={history.pending}
+          onDiscard={history.discard}
+          onSave={() => void history.retry()}
+        />
+      )}
+      {!history.pending && (
+        <ReadingHistory
+          readings={history.readings}
+          selectedId={history.record?.id}
+          onSelect={history.select}
+        />
       )}
     </div>
   );

@@ -16,6 +16,7 @@ function otherSubject(id, attested = true) {
       attestation_method: 'other_person_checkbox',
     },
     type_profile: null,
+    profile_baseline: null,
     typing_episodes: [],
     observation_events: [],
     reflection_entries: [],
@@ -67,7 +68,10 @@ test('rejects an adult-attested space whose self is not adult-attested', () => {
 
 test('rejects an other_subject declared with kind "self"', () => {
   const s = createEmptyInscapeSpace(NOW, true);
-  const r = validateInscapeSpace({ ...s, other_subjects: [{ ...otherSubject('x'), kind: 'self' }] });
+  const r = validateInscapeSpace({
+    ...s,
+    other_subjects: [{ ...otherSubject('x'), kind: 'self' }],
+  });
   assert.equal(r.ok, false);
 });
 

@@ -14,10 +14,10 @@ export function respondInLocale(locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE
 }
 
 export const USE_EXACT_LABELS =
-  '严格使用所给事实中的类型代码与功能标签（例如 INTP、Fe），不得替换为其它类型或功能，也不要自行重新推导。';
+  '只使用本次所给事实中的类型代码与功能标签，不得新增、替换或自行重新推导。类型和功能栈是用户选择的参考，不代表已经被证实的人格、能力或当前状态。';
 
 export function useExactLabelsDirective(locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE): string {
   return locale === 'zh'
     ? USE_EXACT_LABELS
-    : 'Use exactly the type codes and function labels in the provided facts (for example INTP, Fe); do not substitute other types or functions, and do not re-infer them.';
+    : 'Use exactly the supplied type codes and function labels; do not introduce, substitute, or re-infer them. Types and stacks are user-chosen reference maps, not verified personal traits, abilities, or current states.';
 }

@@ -3,7 +3,6 @@
 // Decision aid = the eight cognitive functions walked through a decision in
 // the user's Beebe stack order, revealing blind spots (not prescription).
 
-import { BEEBE_ARCHETYPES } from '../../domain/typology.ts';
 import type { InscapeLocale } from '../../domain/locale.ts';
 import { functionCore } from '../insight/function-knowledge.ts';
 import {
@@ -25,6 +24,7 @@ export function buildTodaysReadPrompt(
     'You are Inscape, a Jungian cognitive-function reflection tool — not a fortune teller and not a horoscope.',
     "Give a short read of the user's current state, grounded ONLY in their recent reflections and function-stack pattern.",
     'Then give 2-3 concrete "what you can do" suggestions. No predictions, no horoscopes, no pathologizing.',
+    'Use warm everyday language and describe a possible connecting need, not a personality diagnosis. Do not use function codes in the response, infer hidden motives, or describe any function or ability as missing, deficient, depleted, or lacking. A preference is not an impairment.',
     'End with a one-line confidence note reflecting how much recent input there is.',
     'Under 120 words.',
     respondInLocale(locale),
@@ -35,26 +35,7 @@ export function buildTodaysReadPrompt(
     : '(no recent reflections)';
   const analysis = profile ? analyzeSelf(profile) : null;
   const pattern = analysis
-    ? `Pattern commonly described as ${analysis.leadingType}. Hero ${analysis.hero} = ${core[analysis.hero]}; auxiliary ${analysis.parent} = ${core[analysis.parent]}; inferior/grip ${analysis.inferior} = ${core[analysis.inferior]}.`
+    ? `Optional reference perspectives: Hero ${analysis.hero} = ${core[analysis.hero]}; auxiliary ${analysis.parent} = ${core[analysis.parent]}. These references are not evidence of the user's current state or ability. Ground the read in the actual notes.`
     : 'No type prior yet.';
-  return { system, user: `${pattern} Recent reflections: ${reflections}` };
-}
-
-export function buildDecisionAidPrompt(
-  decision: string,
-  profile: TypeProfile,
-  locale: InscapeLocale = DEFAULT_AI_OUTPUT_LOCALE,
-): AiPrompt {
-  const stackOrder = BEEBE_ARCHETYPES.map(
-    (archetype) => `${archetype}:${profile.beebe_archetype_inference[archetype]}`,
-  ).join(', ');
-  const system = [
-    "You are Inscape. Walk the eight Jungian cognitive functions through the user's decision,",
-    'each giving its short voice. Use the Beebe stack order: hero, parent, child, inferior (anima),',
-    'then the shadow — opposing, senex, trickster, demon. Reveal blind spots; be two-sided; do NOT',
-    'prescribe a choice. One short line per function.',
-    respondInLocale(locale),
-    useExactLabelsDirective(locale),
-  ].join(' ');
-  return { system, user: `My Beebe stack: ${stackOrder}. Decision: ${decision}` };
+  return { mode: 'today-read', system, user: `${pattern} Recent reflections: ${reflections}` };
 }

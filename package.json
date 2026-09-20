@@ -1,6 +1,6 @@
 {
   "name": "nimiapp-inscape",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.5",
@@ -65,8 +65,9 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.4",
     "vite": "^7.3.6",
-    "@nimiplatform/app-tools": "^0.5.1",
-    "@nimiplatform/nimi-coding": "0.6.2"
+    "yaml": "^2.9.0",
+    "@nimiplatform/app-tools": "^0.7.5",
+    "@nimiplatform/nimi-coding": "0.6.3"
   },
   "author": "Nimi Team",
   "license": "MIT",

@@ -1,6 +1,6 @@
 app_id: nimi.inscape
 display_name: Inscape
-version: 0.1.6
+version: 0.1.7
 profile: standalone
 npm_package_name: nimiapp-inscape
 cargo_package_name: nimiapp-inscape-shell
@@ -16,6 +16,29 @@ storage_policy:
     - path_pattern: <Electron userData>/inscape.db
       purpose: Local SQLite storage for adult attestation, profiles, observations and reflections. Retained after Nimi uninstall; cleared from Inscape settings.
       expected_size_band: Starts at a few KiB and grows with saved records; no App-enforced storage cap.
+safety_profile:
+  ai:
+    direct_interaction: true
+    interaction_notice: absent
+    outputs:
+      - export_visible_marking: absent
+        exposure: exportable
+        in_product_notice: absent
+        machine_readable_marking: absent
+        modality: text
+        publication_control: not-applicable
+    risk_features: []
+    subject_notice: not-applicable
+  content_descriptors: []
+  data_practices:
+    commercial_features: []
+    publisher_direct_external_network: false
+    sensitive_data_categories: []
+    telemetry: []
+    third_party_account: none
+    user_content_sharing: none
+  high_impact_decision_uses: []
+  intended_audience: adult
 support_manifest:
   diagnostics_bundle_fields:
     - app_version

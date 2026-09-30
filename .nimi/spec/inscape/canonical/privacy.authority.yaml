@@ -38,7 +38,7 @@ units:
     kind: rule
     title: Under-18 quarantine
     modality: must
-    statement: Quarantine the affected subject on actual knowledge that the person is under 18 and expose no guardian-facing UI or minor-mode surface.
+    statement: "Quarantine affected subjects on actual knowledge that they are under 18. Treat lexical age matches only as candidates: pause the related AI request and ask the user to confirm the person and current age before quarantine. Let the user correct quoted, historical or hypothetical context; bind each stored correction to its exact source and invalidate it on editing. Support manual re-declaration. Confirmed self quarantine closes all space analysis without restoring the confirmed minor to active use; expose deletion but no guardian-facing UI or minor-mode surface."
     condition: When the app gains actual knowledge that a person is under 18.
     failure: Stop subject processing, prevent the subject row from persisting, and place the affected material in quarantine.
     relations:
@@ -64,3 +64,13 @@ units:
     relations:
       - type: applies_to
         target: definition.inscape.data-model.persistence
+  - id: rule.inscape.privacy.r006
+    kind: rule
+    title: Restricted renderer resources
+    modality: must
+    statement: Enforce a production renderer Content Security Policy that denies external connections, inline scripts, objects and frames; retain only resources needed by the local UI. Development exceptions permit the Vite refresh preamble and exact loopback HMR only. Validate every used development renderer URL, whether supplied by argument or environment, and prohibit production development-renderer arguments.
+    condition: When creating the renderer or building its document.
+    failure: Reject invalid renderer origins and block resources outside the declared policy; never relax the production policy to make a journey pass.
+    relations:
+      - type: applies_to
+        target: definition.inscape.product.inscape-app

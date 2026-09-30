@@ -6,6 +6,7 @@
 
 import type { TypeProfile } from './type-profile.ts';
 import type { SavedExploration } from './exploration.ts';
+import type { AgeContextCorrection } from './age-context.ts';
 
 export type SubjectKind = 'self' | 'other_person';
 
@@ -27,19 +28,11 @@ export interface TypingEpisode {
   readonly summary: string;
 }
 
-export type ObservationSource = 'self_report' | 'reflection' | 'ai_read_feedback';
-
-export interface ObservationEvent {
-  readonly id: string;
-  readonly source: ObservationSource;
-  readonly created_at: string;
-  readonly note: string;
-}
-
 export interface ReflectionEntry {
   readonly id: string;
   readonly created_at: string;
   readonly text: string;
+  readonly age_context?: AgeContextCorrection;
   readonly exploration?: SavedExploration;
 }
 
@@ -53,6 +46,5 @@ export interface Subject {
   /** User-selected starting evidence, before the reversible reflection contributions. */
   readonly profile_baseline: TypeProfile | null;
   readonly typing_episodes: readonly TypingEpisode[];
-  readonly observation_events: readonly ObservationEvent[];
   readonly reflection_entries: readonly ReflectionEntry[];
 }

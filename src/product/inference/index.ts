@@ -1,5 +1,5 @@
 // IS-INFER — inference engine barrel.
 
 export * from './ai-proposal-parser.ts';
-export * from './posterior-update.ts';
+export { projectReflectionCalibration } from './derive-profile.ts';
 export * from './seed-profile.ts';

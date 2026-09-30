@@ -1,5 +1,5 @@
 import {
-  loadInscapeSpace,
+  loadInscapeSpaceReply,
   saveInscapeSpace,
   clearInscapeSpace,
 } from '../../src-electron/persistence.ts';
@@ -9,12 +9,14 @@ export function sqliteClient(root) {
     adapter_kind: 'local_sqlite',
     async load() {
       try {
-        const raw = loadInscapeSpace(root);
+        const reply = loadInscapeSpaceReply(root);
+        if (reply.kind === 'schema_incompatible') return { ok: false, error: { kind: 'load_incompatible_version', adapter: 'local_sqlite', storedVersion: reply.storedVersion, expectedVersion: reply.expectedVersion } };
+        const raw = reply.snapshotJson;
         if (raw === null) return { ok: true, snapshot: null };
         const snapshot = JSON.parse(raw);
         const validation = validateInscapeSpace(snapshot);
         return validation.ok
-          ? { ok: true, snapshot }
+          ? (reply.kind === 'quarantine_pending' ? { ok: true, snapshot: null, pendingQuarantine: snapshot } : { ok: true, snapshot })
           : {
               ok: false,
               error: {
@@ -30,7 +32,7 @@ export function sqliteClient(root) {
         };
       }
     },
-    async save(snapshot) {
+    async save(snapshot, options = {}) {
       const validation = validateInscapeSpace(snapshot);
       if (!validation.ok)
         return {
@@ -42,7 +44,7 @@ export function sqliteClient(root) {
           },
         };
       try {
-        saveInscapeSpace(root, JSON.stringify(snapshot), snapshot.attested_adult);
+        saveInscapeSpace(root, JSON.stringify(snapshot), snapshot.attested_adult, options);
         return { ok: true };
       } catch (cause) {
         return {

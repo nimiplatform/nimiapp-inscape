@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
@@ -21,11 +21,10 @@ import {
 } from '../../domain/exploration.ts';
 import type { FourLetterType } from '../../domain/typology.ts';
 import { DEFAULT_INSCAPE_LOCALE } from '../../domain/locale.ts';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { ConfirmDialog, Tabs, ChoiceGroup, useLeaveGuard } from '../components/interaction.tsx';
 import { TextEditorDialog } from '../components/record-editors.tsx';
-import { applyPosteriorUpdate } from '../inference/posterior-update.ts';
+import { projectReflectionCalibration } from '../inference/derive-profile.ts';
 import { AiError, LoadingRead, SavedNote } from '../components/primitives.tsx';
 import { buildExplorationPrompt } from './exploration-prompts.ts';
 import { buildPosteriorProposalPrompt } from '../today/reflection-prompts.ts';
@@ -69,7 +68,7 @@ export function ExplorationSession({
   const voiceId = useId();
   const composerId = useId();
   const applyUpdate = useInscapeStore((s) => s.applyAcceptedPosteriorUpdate);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const client = useInscapeAiClient();
   const [entryId, setEntryId] = useState(existingId);
   const entry = space?.self_subject.reflection_entries.find((item) => item.id === entryId);
   const [text, setText] = useState(entry?.text ?? initialText);
@@ -115,13 +114,17 @@ export function ExplorationSession({
   const profile = space?.self_subject.type_profile ?? null;
   const baseline = space?.self_subject.profile_baseline ?? null;
   const locale = space?.settings.locale ?? DEFAULT_INSCAPE_LOCALE;
-  const proposalCurrent =
+  const sourceCurrent =
     candidate !== null &&
     candidate.context.profile === profile &&
     candidate.context.baseline === baseline &&
     candidate.source === entry?.text &&
     data?.feedback === 'accepted' &&
     !data.calibration;
+  const projection = sourceCurrent && profile && baseline && entryId && space
+    ? projectReflectionCalibration(profile, baseline, space.self_subject.reflection_entries,
+        entryId, candidate.proposal, new Date().toISOString()) : null;
+  const proposalCurrent = sourceCurrent && projection !== null;
   const proposal = proposalCurrent ? candidate.proposal : null;
   const canSubmit =
     Boolean(text.trim()) && (Boolean(entryId) || text.trim() !== initialText.trim());
@@ -161,10 +164,7 @@ export function ExplorationSession({
       setCalibrationNote('Repair.calibrationChanged');
     }
   }, [candidate, proposalCurrent, t]);
-  const projected =
-    proposal && profile
-      ? applyPosteriorUpdate(profile, proposal, new Date().toISOString(), 'preview')
-      : null;
+  const projected = projection?.profile ?? null;
 
   // @nimi-authority: rule.inscape.runtime-ai.r003
   async function run(withAi: boolean) {
@@ -185,7 +185,7 @@ export function ExplorationSession({
       );
       setLoadingAi(false);
       if (!result.ok) {
-        setError(result.failure.detail);
+        if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
         return;
       }
       const parsed = parseExplorationRead(result.text, mode);
@@ -244,11 +244,13 @@ export function ExplorationSession({
       );
       setLoadingAi(false);
       if (!result.ok) {
-        setError(result.failure.detail);
+        if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
         return;
       }
       const parsed = parsePosteriorUpdateProposal(result.text);
-      if (parsed.ok && isBoundedReflectionProposal(parsed.proposal, profile)) {
+      if (parsed.ok && isBoundedReflectionProposal(parsed.proposal, profile) && space &&
+          projectReflectionCalibration(profile, baseline, space.self_subject.reflection_entries,
+            entry.id, parsed.proposal, new Date().toISOString())) {
         setCandidate({
           proposal: parsed.proposal,
           source: entry.text,
@@ -277,7 +279,7 @@ export function ExplorationSession({
       if (saved) {
         setCandidate(null);
         setCalibrationNote('Experience.calibrationSaved');
-      }
+      } else { setCandidate(null); setCalibrationNote('Repair.calibrationChanged'); }
     } finally {
       running.current = false;
       setWorking(false);

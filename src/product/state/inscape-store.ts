@@ -1,27 +1,41 @@
 import { createStore } from 'zustand/vanilla';
-import { createEmptyInscapeSpace, type InscapeSpace } from '../../domain/inscape-space.ts';
+import { createEmptyInscapeSpace, type ActiveInscapeSpace, type InscapeSpace, type QuarantinedInscapeSpace } from '../../domain/inscape-space.ts';
 import type { InscapeLocale } from '../../domain/locale.ts';
 import { isFourLetterType, type FourLetterType } from '../../domain/typology.ts';
 import type { SavedExploration } from '../../domain/exploration.ts';
-import type { ObservationSource, ReflectionEntry, Subject } from '../../domain/subject.ts';
+import type { ReflectionEntry, Subject } from '../../domain/subject.ts';
 import type { RelationshipNature } from '../../domain/relationship.ts';
+import type { AgeReviewSource } from '../../domain/age-context.ts';
 import { parseInferredType } from '../../domain/type-suggestion.ts';
 import type { NewReading, ResonanceFeedback } from '../../domain/reading.ts';
 import { seedTypeProfileFromType } from '../inference/seed-profile.ts';
-import { calibrationContribution, rebuildProfile } from '../inference/derive-profile.ts';
+import { projectReflectionCalibration, withReflections } from '../inference/derive-profile.ts';
 import {
-  isBoundedReflectionProposal,
-  parsePosteriorUpdateProposal,
   type PosteriorUpdateProposal,
   type ReflectionProposalContext,
 } from '../inference/ai-proposal-parser.ts';
 import { newUlid } from '../ids/index.ts';
-import type { PersistenceClient } from '../persistence/persistence-client.ts';
+import { ageReviewCandidate, quarantineOther, quarantineSelf } from '../privacy/quarantine.ts';
+import type { PersistenceError, PersistenceClient } from '../persistence/persistence-client.ts';
 
-export type InscapeStoreStatus = 'loading' | 'first-run' | 'ready' | 'error';
+export type AgeReviewDecision = { kind: 'cancel' } | { kind: 'not_current_age' } | { kind: 'confirmed_minor'; subjectId: string };
+export interface PendingAgeReview {
+  readonly id: string;
+  readonly text: string;
+  readonly candidateSubjectId: string;
+}
+
+export type InscapeStoreStatus = 'loading' | 'first-run' | 'ready' | 'error' | 'quarantined';
 export interface InscapeStoreState {
   readonly status: InscapeStoreStatus;
-  readonly space: InscapeSpace | null;
+  readonly space: ActiveInscapeSpace | null;
+  readonly quarantinedSpace: QuarantinedInscapeSpace | null;
+  readonly pendingQuarantine: InscapeSpace | null;
+  readonly processingBlocked: boolean;
+  readonly ageReview: PendingAgeReview | null;
+  readonly correctedInput: { text: string; otherSubjectId?: string } | null;
+  readonly loadError: PersistenceError | null;
+  readonly saveCanCancel: boolean;
   readonly error: string | null;
   readonly saveError: string | null;
   readonly retrying: boolean;
@@ -53,7 +67,9 @@ export interface InscapeStoreState {
     context: ReflectionProposalContext,
   ) => Promise<boolean>;
   revokeCalibration: (entryId: string, now: string) => Promise<boolean>;
-  addObservationEvent: (note: string, source: ObservationSource, now: string) => Promise<boolean>;
+  checkAgeDisclosure: (text: string, now: string, otherSubjectId?: string, source?: AgeReviewSource) => Promise<boolean>;
+  resolveAgeReview: (reviewId: string, decision: AgeReviewDecision) => boolean;
+  quarantineSelf: (now: string) => Promise<boolean>;
   addPerson: (name: string, nature: RelationshipNature, now: string) => Promise<string>;
   editPerson: (
     relationshipId: string,
@@ -88,28 +104,6 @@ function withoutCalibration(data: SavedExploration): SavedExploration {
   delete next.calibration;
   return next;
 }
-function withReflections(
-  space: InscapeSpace,
-  entries: readonly ReflectionEntry[],
-  now: string,
-): InscapeSpace {
-  const rebuilt = rebuildProfile(space.self_subject.profile_baseline, entries, now);
-  const previous = space.self_subject.type_profile;
-  const same =
-    JSON.stringify(rebuilt ? { ...rebuilt, updated_at: '' } : null) ===
-    JSON.stringify(previous ? { ...previous, updated_at: '' } : null);
-  const profile = same ? previous : rebuilt;
-  return {
-    ...space,
-    self_subject: { ...space.self_subject, reflection_entries: entries, type_profile: profile },
-    relationships: space.relationships.map((r) => ({
-      ...r,
-      type_dyad: { ...r.type_dyad, self_type: profile?.leading_type ?? null },
-    })),
-    updated_at: now,
-  };
-}
-
 export function createInscapeStore(client: PersistenceClient) {
   return createStore<InscapeStoreState>((set, get) => {
     let mutationQueue: Promise<unknown> = Promise.resolve();
@@ -120,16 +114,70 @@ export function createInscapeStore(client: PersistenceClient) {
         mutationQueue = pending.catch(() => undefined);
         return pending;
       };
-    let pendingSave: { snapshot: InscapeSpace; resolve: (saved: boolean) => void } | null = null;
+    let pendingSave: { snapshot: InscapeSpace; resolve: (saved: boolean) => void; cancellable: boolean } | null = null;
     const id = (now: string) => newUlid({ now: new Date(now) });
-    async function write(snapshot: InscapeSpace): Promise<boolean> {
+    const activeSpace = () => get().processingBlocked ? null : get().space;
+    async function restrict(snapshot: InscapeSpace): Promise<boolean> {
+      set({ processingBlocked: true, pendingQuarantine: snapshot });
+      return persist(snapshot, false);
+    }
+    let pendingAgeReview: { id: string; resolve: (decision: AgeReviewDecision) => void } | null = null;
+    async function reviewDisclosure(current: ActiveInscapeSpace, text: string, now: string, otherId?: string, source?: AgeReviewSource): Promise<boolean> {
+      const entry = source?.kind === 'reflection'
+        ? current.self_subject.reflection_entries.find((e) => e.id === source.id)
+        : source?.kind === 'communication'
+          ? current.relationships.flatMap((r) => r.communication_logs).find((log) => log.id === source.id) : null;
+      if (source && (!entry || ('text' in entry ? entry.text : entry.snippet) !== text)) return false;
+      if (entry?.age_context?.text === text) return true;
+      const candidateSubjectId = ageReviewCandidate(current, text, otherId);
+      if (!candidateSubjectId) return true;
+      const reviewId = id(now);
+      const decision = await new Promise<AgeReviewDecision>((resolve) => {
+        pendingAgeReview = { id: reviewId, resolve };
+        set({ ageReview: { id: reviewId, text, candidateSubjectId } });
+      });
+      const latest = activeSpace();
+      if (!latest || decision.kind === 'cancel') return false;
+      const decisionAt = new Date().toISOString();
+      if (decision.kind === 'not_current_age') {
+        set({ correctedInput: { text, otherSubjectId: otherId } });
+        if (!source) return true;
+        const age_context = { reason: 'not_current_age' as const, text, reviewed_at: decisionAt };
+        if (source.kind === 'reflection') {
+          return persist(withReflections(latest, latest.self_subject.reflection_entries.map((e) =>
+            e.id === source.id ? { ...e, age_context } : e), decisionAt));
+        }
+        return persist({ ...latest, relationships: latest.relationships.map((r) => ({ ...r,
+          communication_logs: r.communication_logs.map((log) => log.id === source.id ? { ...log, age_context } : log),
+        })), updated_at: decisionAt });
+      }
+      if (decision.subjectId === latest.self_subject.id)
+        await restrict(quarantineSelf(latest, decisionAt, id(decisionAt), text));
+      else if (latest.other_subjects.some((other) => other.id === decision.subjectId))
+        await restrict(quarantineOther(latest, decision.subjectId, decisionAt, id(decisionAt), text, source));
+      return false;
+    }
+    async function clear(): Promise<boolean> {
+      const result = await client.clear();
+      if (!result.ok) return false;
+      const pending = pendingSave;
+      pendingSave = null;
+      set({ status: 'first-run', space: null, quarantinedSpace: null, processingBlocked: false,
+        loadError: null, ageReview: null, correctedInput: null, pendingQuarantine: null, error: null, saveError: null });
+      pending?.resolve(false);
+      return true;
+    }
+    const queuedClear = queued(clear);
+    async function write(snapshot: InscapeSpace, quarantine = false): Promise<boolean> {
       try {
-        const result = await client.save(snapshot);
+        const result = await client.save(snapshot, { confirmedQuarantine: quarantine });
         if (!result.ok) {
           set({ saveError: 'persistence_' + result.error.kind });
           return false;
         }
-        set({ space: snapshot, saveError: null });
+        set(snapshot.self_subject === null
+          ? { space: null, quarantinedSpace: snapshot, processingBlocked: true, pendingQuarantine: null, status: 'quarantined', saveError: null }
+          : { space: snapshot, quarantinedSpace: null, processingBlocked: false, pendingQuarantine: null, saveError: null });
         return true;
       } catch (error) {
         set({ saveError: error instanceof Error ? error.message : String(error) });
@@ -137,30 +185,50 @@ export function createInscapeStore(client: PersistenceClient) {
       }
     }
     // @nimi-authority: rule.inscape.data-model.r006
-    async function persist(snapshot: InscapeSpace): Promise<boolean> {
-      if (await write(snapshot)) return true;
+    async function persist(snapshot: InscapeSpace, cancellable = true): Promise<boolean> {
+      set({ saveCanCancel: cancellable });
+      if (await write(snapshot, !cancellable)) return true;
       // Keep the originating action alive. A successful retry completes that same
       // action (including its new id), so the composer cannot create a duplicate.
       return new Promise<boolean>((resolve) => {
-        pendingSave = { snapshot, resolve };
+        pendingSave = { snapshot, resolve, cancellable };
       });
     }
     return {
       status: 'loading',
       space: null,
+      quarantinedSpace: null,
+      pendingQuarantine: null,
+      processingBlocked: false,
+      ageReview: null,
+      correctedInput: null,
+      loadError: null,
+      saveCanCancel: true,
       error: null,
       saveError: null,
       retrying: false,
       async initialize() {
         if (pendingSave) return;
-        set({ status: 'loading', error: null });
+        set({ status: 'loading', error: null, loadError: null });
         try {
           const result = await client.load();
           if (!result.ok) {
-            set({ status: 'error', error: 'persistence_' + result.error.kind });
+            set({ status: 'error', loadError: result.error, error: 'persistence_' + result.error.kind + ('cause' in result.error ? ': ' + result.error.cause : '') });
             return;
           }
-          set({ status: result.snapshot ? 'ready' : 'first-run', space: result.snapshot });
+          if (result.pendingQuarantine) {
+            set({ processingBlocked: true, pendingQuarantine: result.pendingQuarantine });
+            if (await persist(result.pendingQuarantine, false))
+              set({ status: result.pendingQuarantine.self_subject === null ? 'quarantined' : 'ready' });
+            return;
+          }
+          const snapshot = result.snapshot;
+          if (snapshot?.self_subject === null) {
+            set({ status: 'quarantined', space: null, quarantinedSpace: snapshot, processingBlocked: true });
+            return;
+          }
+          set({ status: snapshot ? 'ready' : 'first-run', space: snapshot, quarantinedSpace: null, processingBlocked: false });
+
         } catch (error) {
           set({ status: 'error', error: error instanceof Error ? error.message : String(error) });
         }
@@ -169,7 +237,7 @@ export function createInscapeStore(client: PersistenceClient) {
         const pending = pendingSave;
         if (!pending || get().retrying) return false;
         set({ retrying: true });
-        const saved = await write(pending.snapshot);
+        const saved = await write(pending.snapshot, !pending.cancellable);
         if (saved) {
           pendingSave = null;
           pending.resolve(true);
@@ -178,32 +246,28 @@ export function createInscapeStore(client: PersistenceClient) {
         return saved;
       },
       cancelSave() {
-        if (get().retrying) return;
+        if (get().retrying || pendingSave?.cancellable === false) return;
         const pending = pendingSave;
         pendingSave = null;
         set({ saveError: null });
         pending?.resolve(false);
       },
       completeFirstRun: queued(async (now: string, locale?: InscapeLocale) => {
+        if (get().status !== 'first-run' || get().processingBlocked) return false;
         const saved = await persist(createEmptyInscapeSpace(now, true, locale));
         if (saved) set({ status: 'ready' });
         return saved;
       }),
       setLocale: queued(async (locale: InscapeLocale, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current) return false;
         if (current.settings.locale === locale) return true;
         return persist({ ...current, settings: { ...current.settings, locale }, updated_at: now });
       }),
-      clearLocalData: queued(async () => {
-        const result = await client.clear();
-        if (!result.ok) return false;
-        set({ status: 'first-run', space: null, error: null, saveError: null });
-        return true;
-      }),
+      clearLocalData: () => pendingSave?.cancellable === false ? clear() : queuedClear(),
       // @nimi-authority: rule.inscape.inference.r005
       setInitialType: queued(async (type: FourLetterType | null, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current || (type !== null && !isFourLetterType(type))) return false;
         const baseline = type ? seedTypeProfileFromType(type, now) : null;
         const entries = current.self_subject.reflection_entries.map((entry) =>
@@ -236,7 +300,7 @@ export function createInscapeStore(client: PersistenceClient) {
       // @nimi-authority: rule.inscape.data-model.r003
       addReflectionEntry: queued(
         async (text: string, now: string, exploration?: SavedExploration) => {
-          const current = get().space;
+          const current = activeSpace();
           if (!current || !text.trim()) return '';
           const entry: ReflectionEntry = {
             id: id(now),
@@ -257,7 +321,7 @@ export function createInscapeStore(client: PersistenceClient) {
         },
       ),
       editReflectionEntry: queued(async (entryId: string, text: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (
           !current ||
           !text.trim() ||
@@ -282,7 +346,7 @@ export function createInscapeStore(client: PersistenceClient) {
         });
       }),
       deleteReflectionEntry: queued(async (entryId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current) return false;
         return persist({
           ...withReflections(
@@ -300,7 +364,7 @@ export function createInscapeStore(client: PersistenceClient) {
           now: string,
           expectedText?: string,
         ) => {
-          const current = get().space;
+          const current = activeSpace();
           const previous = current?.self_subject.reflection_entries.find(
             (entry) => entry.id === entryId,
           );
@@ -333,7 +397,7 @@ export function createInscapeStore(client: PersistenceClient) {
           expectedText: string,
           context: ReflectionProposalContext,
         ) => {
-          const current = get().space;
+          const current = activeSpace();
           const profile = current?.self_subject.type_profile;
           const entryId = sourceId.startsWith('reflection:')
             ? sourceId.slice('reflection:'.length)
@@ -350,12 +414,10 @@ export function createInscapeStore(client: PersistenceClient) {
             entry.text !== expectedText
           )
             return false;
-          if (
-            !parsePosteriorUpdateProposal(JSON.stringify(proposal)).ok ||
-            !isBoundedReflectionProposal(proposal, profile)
-          )
-            return false;
-          const calibration = calibrationContribution(proposal, profile, now);
+          const projected = projectReflectionCalibration(profile, context.baseline,
+            current.self_subject.reflection_entries, entryId, proposal, now);
+          if (!projected) return false;
+          const { calibration } = projected;
           const entries = current.self_subject.reflection_entries.map((e) =>
             e.id === entryId ? { ...e, exploration: { ...entry.exploration!, calibration } } : e,
           );
@@ -363,7 +425,7 @@ export function createInscapeStore(client: PersistenceClient) {
         },
       ),
       revokeCalibration: queued(async (entryId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current) return false;
         return persist(
           withReflections(
@@ -377,23 +439,29 @@ export function createInscapeStore(client: PersistenceClient) {
           ),
         );
       }),
-      addObservationEvent: queued(async (note: string, source: ObservationSource, now: string) => {
-        const current = get().space;
-        if (!current) return false;
-        return persist({
-          ...current,
-          self_subject: {
-            ...current.self_subject,
-            observation_events: [
-              ...current.self_subject.observation_events,
-              { id: id(now), source, note, created_at: now },
-            ],
-          },
-          updated_at: now,
-        });
+      // @nimi-authority: rule.inscape.privacy.r003
+      checkAgeDisclosure: queued(async (text: string, now: string, otherSubjectId?: string, source?: AgeReviewSource) => {
+        const current = activeSpace();
+        if (!current || (otherSubjectId && !current.other_subjects.some((s) => s.id === otherSubjectId))) return false;
+        return reviewDisclosure(current, text, now, otherSubjectId, source);
+      }),
+      resolveAgeReview(reviewId: string, decision: AgeReviewDecision) {
+        const pending = pendingAgeReview;
+        if (!pending || pending.id !== reviewId) return false;
+        const current = activeSpace();
+        if (decision.kind === 'confirmed_minor' && (!current ||
+            (decision.subjectId !== current.self_subject.id && !current.other_subjects.some((s) => s.id === decision.subjectId)))) return false;
+        pendingAgeReview = null;
+        set({ ageReview: null });
+        pending.resolve(decision);
+        return true;
+      },
+      quarantineSelf: queued(async (now: string) => {
+        const current = activeSpace();
+        return !!current && restrict(quarantineSelf(current, now, id(now)));
       }),
       addPerson: queued(async (name: string, nature: RelationshipNature, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current || !name.trim()) return '';
         const subject: Subject = {
           id: id(now),
@@ -407,7 +475,6 @@ export function createInscapeStore(client: PersistenceClient) {
           type_profile: null,
           profile_baseline: null,
           typing_episodes: [],
-          observation_events: [],
           reflection_entries: [],
         };
         const relationshipId = id(now);
@@ -425,7 +492,6 @@ export function createInscapeStore(client: PersistenceClient) {
                 other_type: null,
               },
               communication_logs: [],
-              friction_patterns: [],
               observation_attested: true,
             },
           ],
@@ -436,7 +502,7 @@ export function createInscapeStore(client: PersistenceClient) {
       }),
       editPerson: queued(
         async (relationshipId: string, name: string, nature: RelationshipNature, now: string) => {
-          const current = get().space;
+          const current = activeSpace();
           const relation = current?.relationships.find((r) => r.id === relationshipId);
           if (!current || !relation || !name.trim()) return false;
           return persist({
@@ -452,7 +518,7 @@ export function createInscapeStore(client: PersistenceClient) {
         },
       ),
       deletePerson: queued(async (relationshipId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         const relation = current?.relationships.find((r) => r.id === relationshipId);
         if (!current || !relation) return false;
         const removed = new Set(
@@ -471,7 +537,7 @@ export function createInscapeStore(client: PersistenceClient) {
         });
       }),
       addCommunicationLog: queued(async (relationshipId: string, snippet: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (
           !current ||
           !snippet.trim() ||
@@ -496,8 +562,9 @@ export function createInscapeStore(client: PersistenceClient) {
       }),
       editCommunicationLog: queued(
         async (relationshipId: string, logId: string, snippet: string, now: string) => {
-          const current = get().space;
-          if (!current || !snippet.trim()) return false;
+          const current = activeSpace();
+          const relationship = current?.relationships.find((r) => r.id === relationshipId);
+          if (!current || !snippet.trim() || !relationship) return false;
           return persist({
             ...current,
             relationships: current.relationships.map((r) =>
@@ -505,7 +572,7 @@ export function createInscapeStore(client: PersistenceClient) {
                 ? {
                     ...r,
                     communication_logs: r.communication_logs.map((log) =>
-                      log.id === logId ? { ...log, snippet: snippet.trim() } : log,
+                      log.id === logId ? { id: log.id, created_at: log.created_at, snippet: snippet.trim() } : log,
                     ),
                   }
                 : r,
@@ -516,7 +583,7 @@ export function createInscapeStore(client: PersistenceClient) {
         },
       ),
       deleteCommunicationLog: queued(async (relationshipId: string, logId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (!current) return false;
         return persist({
           ...current,
@@ -531,33 +598,12 @@ export function createInscapeStore(client: PersistenceClient) {
       }),
       // @nimi-authority: rule.inscape.privacy.r003
       quarantineOtherSubject: queued(async (subjectId: string, now: string) => {
-        const current = get().space;
-        const subject = current?.other_subjects.find((s) => s.id === subjectId);
-        if (!current || !subject) return false;
-        const relationships = current.relationships.filter((r) => r.other_subject_id === subjectId);
-        const ids = new Set(relationships.map((r) => r.id));
-        const readings = current.readings.filter(
-          (r) => r.relationship_id && ids.has(r.relationship_id),
-        );
-        return persist({
-          ...current,
-          other_subjects: current.other_subjects.filter((s) => s.id !== subjectId),
-          relationships: current.relationships.filter((r) => !ids.has(r.id)),
-          readings: current.readings.filter((r) => !readings.includes(r)),
-          quarantine: [
-            ...current.quarantine,
-            {
-              id: id(now),
-              quarantined_at: now,
-              reason: 'under_18_actual_knowledge',
-              payload_json: JSON.stringify({ subject, relationships, readings }),
-            },
-          ],
-          updated_at: now,
-        });
+        const current = activeSpace();
+        if (!current?.other_subjects.some((s) => s.id === subjectId)) return false;
+        return restrict(quarantineOther(current, subjectId, now, id(now)));
       }),
       deleteQuarantineRecord: queued(async (recordId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         return current
           ? persist({
               ...current,
@@ -568,7 +614,7 @@ export function createInscapeStore(client: PersistenceClient) {
       }),
       setOtherSubjectType: queued(
         async (subjectId: string, type: FourLetterType | null, now: string, readingId?: string) => {
-          const current = get().space;
+          const current = activeSpace();
           if (!current || (type !== null && !isFourLetterType(type))) return false;
           if (readingId) {
             const reading = current.readings.find(
@@ -611,7 +657,7 @@ export function createInscapeStore(client: PersistenceClient) {
       ),
       // @nimi-authority: rule.inscape.data-model.r007
       addReading: queued(async (reading: NewReading, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         if (
           !current ||
           (reading.relationship_id &&
@@ -645,7 +691,7 @@ export function createInscapeStore(client: PersistenceClient) {
       }),
       setReadingFeedback: queued(
         async (readingId: string, feedback: ResonanceFeedback, now: string) => {
-          const current = get().space;
+          const current = activeSpace();
           if (!current) return false;
           return persist({
             ...current,
@@ -657,7 +703,7 @@ export function createInscapeStore(client: PersistenceClient) {
         },
       ),
       deleteReading: queued(async (readingId: string, now: string) => {
-        const current = get().space;
+        const current = activeSpace();
         return current
           ? persist({
               ...current,

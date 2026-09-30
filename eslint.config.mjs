@@ -7,6 +7,7 @@ export default defineConfig([
   js.configs.recommended,
   ...tseslint.configs.recommended,
   globalIgnores([
+    '.nimi/local/**',
     'dist/**',
     'dist-electron/**',
     'dist-electron-package/**',

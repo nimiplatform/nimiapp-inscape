@@ -8,7 +8,7 @@ export type { RefusalCategory } from '../../domain/reading.ts';
 
 export type RewriteClassification =
   | { readonly ok: true }
-  | { readonly ok: false; readonly category: RefusalCategory; readonly reason: string };
+  | { readonly ok: false; readonly category: RefusalCategory };
 
 const PATTERNS: Record<RefusalCategory, readonly RegExp[]> = {
   money: [
@@ -36,18 +36,10 @@ const PATTERNS: Record<RefusalCategory, readonly RegExp[]> = {
   ],
 };
 
-const REASONS: Record<RefusalCategory, string> = {
-  money: '这条信息涉及金钱情境，Inscape 不在此类情境下提供改写。',
-  employment: '这条信息涉及雇佣 / 职权情境，Inscape 不在此类情境下提供改写。',
-  sexual_consent: '这条信息涉及性同意情境，Inscape 不在此类情境下提供改写。',
-  decision_pressure:
-    '这条信息读起来像在施加决策压力或下最后通牒；改写它可能让施压更容易传达，而这不是这个功能的用途。',
-};
-
 export function classifyRewriteContext(draft: string): RewriteClassification {
   for (const category of Object.keys(PATTERNS) as RefusalCategory[]) {
     if (PATTERNS[category].some((pattern) => pattern.test(draft))) {
-      return { ok: false, category, reason: REASONS[category] };
+      return { ok: false, category };
     }
   }
   return { ok: true };

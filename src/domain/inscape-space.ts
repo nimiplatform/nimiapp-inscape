@@ -1,12 +1,11 @@
-// IS-DATA — InscapeSpace: the single local data root (persisted as the SQLite
-// snapshot today; relational tables land in wave-2.4). Wave-2 entity model.
+// IS-DATA — the single local SQLite data root.
 
 import type { AgeAttestation, Subject } from './subject.ts';
 import type { Relationship } from './relationship.ts';
 import { DEFAULT_INSCAPE_LOCALE, type InscapeLocale } from './locale.ts';
 import type { SavedReading } from './reading.ts';
 
-export const INSCAPE_SPACE_SCHEMA_VERSION = 2;
+export const INSCAPE_SPACE_SCHEMA_VERSION = 3;
 
 export interface InscapeSettings {
   /** Opt-in local-only debug log (Scenario 12). Never network telemetry. */
@@ -27,11 +26,10 @@ export interface QuarantineRecord {
   readonly payload_json: string;
 }
 
-export interface InscapeSpace {
+interface InscapeSpaceBase {
   readonly schema_version: number;
-  /** Top-level 18+ gate (mirrors self_subject.age_attestation; DB CHECK enforces). */
+  /** Historical adult attestation; active subject rows also require the DB gate. */
   readonly attested_adult: boolean;
-  readonly self_subject: Subject;
   readonly other_subjects: readonly Subject[];
   readonly relationships: readonly Relationship[];
   readonly readings: readonly SavedReading[];
@@ -40,6 +38,20 @@ export interface InscapeSpace {
   readonly created_at: string;
   readonly updated_at: string;
 }
+
+export interface ActiveInscapeSpace extends InscapeSpaceBase {
+  readonly self_subject: Subject;
+}
+
+// @nimi-authority: rule.inscape.privacy.r003
+export interface QuarantinedInscapeSpace extends InscapeSpaceBase {
+  readonly self_subject: null;
+  readonly other_subjects: readonly [];
+  readonly relationships: readonly [];
+  readonly readings: readonly [];
+}
+
+export type InscapeSpace = ActiveInscapeSpace | QuarantinedInscapeSpace;
 
 function emptySelfSubject(now: string, attestedAdult: boolean): Subject {
   const age_attestation: AgeAttestation = {
@@ -55,7 +67,6 @@ function emptySelfSubject(now: string, attestedAdult: boolean): Subject {
     type_profile: null,
     profile_baseline: null,
     typing_episodes: [],
-    observation_events: [],
     reflection_entries: [],
   };
 }
@@ -64,7 +75,7 @@ export function createEmptyInscapeSpace(
   now: string,
   attestedAdult: boolean,
   locale: InscapeLocale = DEFAULT_INSCAPE_LOCALE,
-): InscapeSpace {
+): ActiveInscapeSpace {
   return {
     schema_version: INSCAPE_SPACE_SCHEMA_VERSION,
     attested_adult: attestedAdult,

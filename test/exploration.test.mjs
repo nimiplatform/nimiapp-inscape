@@ -195,6 +195,9 @@ test('changed, missing or non-local AI routes prevent dispatch, even after a pri
   let route = 'local';
   let calls = 0;
   const client = createInscapeRuntimeAiClient({
+    beforeGenerate: async () => true,
+    getAgeContext: () => null,
+    canProcess: () => true,
     getClient: () => ({
       aiConfig: {
         get: async () => ({

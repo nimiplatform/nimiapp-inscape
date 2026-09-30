@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   app,
@@ -10,28 +11,48 @@ import {
   session,
   webContents,
 } from 'electron';
-import {
+import { configureNimiElectronAppHostProfile } from '@nimiplatform/kit/shell/electron/host-profile';
+
+let hostProfile;
+try {
+  hostProfile = configureNimiElectronAppHostProfile(app);
+} catch (error) {
+  process.stderr.write(`[nimi-app-host-profile] ${error instanceof Error ? error.message : String(error)}\n`);
+  app.exit(78);
+  throw error;
+}
+
+const {
   createNimiElectronStandardApplicationMenuTemplate,
   isAllowedElectronRendererUrl,
   registerNimiElectronAppAssetProtocolScheme,
   registerNimiElectronAppBridge,
-} from '@nimiplatform/kit/shell/electron/main';
-import { clearInscapeSpace, loadInscapeSpace, saveInscapeSpace } from './persistence.js';
+} = await import('@nimiplatform/kit/shell/electron/main');
+import { clearInscapeSpace, loadInscapeSpaceReply, saveInscapeSpace } from './persistence.js';
+import { resolveDevelopmentRendererUrl } from './renderer-url.js';
 
 const APP_ID = 'nimi.inscape';
 let productLocale = 'zh';
 declare const __NIMI_ELECTRON_PRODUCTION__: boolean;
 const IS_PRODUCTION_BUNDLE =
   typeof __NIMI_ELECTRON_PRODUCTION__ !== 'undefined' && __NIMI_ELECTRON_PRODUCTION__;
+// Product storage is App-owned; Electron's technical profile stays Desktop-owned.
+// Each development registration has its own durable, disposable product space.
+const dataRoot = IS_PRODUCTION_BUNDLE
+  ? path.join(app.getPath('appData'), APP_ID)
+  : path.join(app.getPath('appData'), APP_ID, 'development',
+    createHash('sha256').update(hostProfile.profileRoot).digest('hex'));
+let resettingRenderer = false;
+let quitting = false;
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(currentDir, '..');
 const preloadPath = path.join(currentDir, 'preload.cjs');
 const rendererDistUrl = pathToFileURL(path.join(appRoot, 'dist', 'index.html')).toString();
-const rendererUrl =
-  readDevelopmentRendererUrl() ||
-  (IS_PRODUCTION_BUNDLE ? '' : normalizeText(process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL));
+const rendererUrl = resolveDevelopmentRendererUrl(process.argv,
+  process.env.NIMI_INSCAPE_ELECTRON_RENDERER_URL ?? '', IS_PRODUCTION_BUNDLE);
 
 app.setName('心相 Inscape');
+app.setAppUserModelId('ai.nimi.apps.nimi.inscape');
 Menu.setApplicationMenu(
   Menu.buildFromTemplate(
     createNimiElectronStandardApplicationMenuTemplate({ appName: app.getName() }),
@@ -46,21 +67,23 @@ void app.whenReady().then(async () => {
     allowedRendererUrls: allowedRendererUrls(),
     assetMediaPlatform: { protocol, webRequest: session.defaultSession.webRequest, webContents },
     ipcMain,
+    onSessionInvalidated: resetAccountScopedRenderer,
     appCommandHandlers: {
       inscape_space_load: () => {
-        const raw = loadInscapeSpace(app.getPath('userData'));
-        if (raw) productLocale = JSON.parse(raw).settings.locale;
-        return raw;
+        const reply = loadInscapeSpaceReply(dataRoot);
+        if (reply.kind !== 'schema_incompatible' && reply.snapshotJson) productLocale = JSON.parse(reply.snapshotJson).settings.locale;
+        return reply;
       },
       inscape_space_save: ({ payload }) => {
         saveInscapeSpace(
-          app.getPath('userData'),
+          dataRoot,
           requiredString(payload.snapshotJson, 'snapshotJson'),
           payload.attestedAdult === true,
+          { confirmedQuarantine: payload.confirmedQuarantine === true },
         );
         productLocale = JSON.parse(String(payload.snapshotJson)).settings.locale;
       },
-      inscape_space_clear: () => clearInscapeSpace(app.getPath('userData')),
+      inscape_space_clear: () => clearInscapeSpace(dataRoot),
       inscape_log_renderer_event: ({ payload }) => {
         process.stdout.write(`${JSON.stringify({ source: 'inscape-renderer', ...payload })}\n`);
       },
@@ -73,8 +96,21 @@ void app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin' && !resettingRenderer && BrowserWindow.getAllWindows().length === 0) app.quit();
 });
+app.on('before-quit', () => { quitting = true; });
+
+function resetAccountScopedRenderer(): void {
+  const windows = BrowserWindow.getAllWindows();
+  if (quitting || windows.length === 0) return;
+  resettingRenderer = true;
+  try {
+    for (const window of windows) window.destroy();
+    void createMainWindow().catch((error: unknown) => {
+      process.stderr.write(`[nimi-app-session-reset] ${error instanceof Error ? error.message : String(error)}\n`);
+    });
+  } finally { resettingRenderer = false; }
+}
 
 async function createMainWindow(): Promise<BrowserWindow> {
   const window = new BrowserWindow({
@@ -112,48 +148,17 @@ async function createMainWindow(): Promise<BrowserWindow> {
   window.webContents.on('will-navigate', (event, url) => {
     if (!isAllowedElectronRendererUrl(url, allowedRendererUrls())) event.preventDefault();
   });
-  await window.loadURL(rendererUrl || rendererDistUrl);
+  try {
+    await window.loadURL(rendererUrl || rendererDistUrl);
+  } catch (error) {
+    if (!window.isDestroyed()) throw error;
+  }
   return window;
 }
 
 function allowedRendererUrls(): string[] {
   if (IS_PRODUCTION_BUNDLE) return [rendererDistUrl];
-  const urls = new Set<string>([rendererUrl || rendererDistUrl]);
-  for (const value of normalizeText(process.env.NIMI_INSCAPE_ELECTRON_ALLOWED_RENDERER_URLS).split(
-    ',',
-  )) {
-    const normalized = normalizeText(value);
-    if (normalized) urls.add(normalized);
-  }
-  return [...urls];
-}
-
-function readDevelopmentRendererUrl(): string {
-  const prefix = '--nimi-dev-renderer-url=';
-  const values = process.argv.filter((value) => value.startsWith(prefix));
-  if (IS_PRODUCTION_BUNDLE && values.length > 0) {
-    throw new Error('Production Inscape does not accept development renderer arguments.');
-  }
-  if (values.length === 0) return '';
-  if (values.length !== 1) throw new Error('Nimi development renderer URL must be singular.');
-  const parsed = new URL(values[0].slice(prefix.length));
-  if (
-    parsed.protocol !== 'http:' ||
-    !['127.0.0.1', 'localhost', '[::1]', '::1'].includes(parsed.hostname.toLowerCase()) ||
-    !parsed.port ||
-    parsed.username ||
-    parsed.password ||
-    (parsed.pathname !== '/' && parsed.pathname !== '') ||
-    parsed.search ||
-    parsed.hash
-  ) {
-    throw new Error('Nimi development renderer URL must be exact loopback.');
-  }
-  return parsed.origin;
-}
-
-function normalizeText(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
+  return [rendererUrl || rendererDistUrl];
 }
 
 function requiredString(value: unknown, field: string): string {

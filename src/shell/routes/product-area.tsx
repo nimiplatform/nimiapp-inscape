@@ -1,12 +1,10 @@
-// Wave-3.1 — IA shell. Wires the InscapeStore to SQLite persistence, the
-// first-run 18+ gate, and the three-face navigation. The five value-prop
-// surfaces and AI modes A–E land in wave-3.2..3.4.
+// SQLite boot, adult eligibility and the three product faces.
 
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SaveRecovery } from '../../product/components/interaction.tsx';
 import { useAppStore } from '../app-shell/app-store.js';
-import { RuntimeAppStoragePersistenceAdapter } from '../persistence/runtime-app-storage-adapter.ts';
+import { SqlitePersistenceAdapter } from '../persistence/sqlite-persistence-adapter.ts';
 import { hasElectronInvoke } from '@nimiplatform/kit/shell/renderer/bridge';
 import type { PersistenceClient } from '../../product/persistence/persistence-client.ts';
 import {
@@ -15,19 +13,26 @@ import {
 } from '../../product/state/inscape-store-provider.tsx';
 import { InscapeShell } from '../../product/shell/inscape-shell.tsx';
 import { FirstRunGate } from '../../product/first-run/first-run-gate.tsx';
+import { SpaceRecovery } from '../../product/settings/space-recovery.tsx';
+import { AgeReviewDialog } from '../../product/privacy/age-review-dialog.tsx';
 import { usePersistedInscapeLocaleSync } from '../../product/settings/language-switch.tsx';
 
 function pickPersistenceClient(): PersistenceClient {
   if (!hasElectronInvoke()) throw new Error('Inscape SQLite requires the Electron Host.');
-  return new RuntimeAppStoragePersistenceAdapter();
+  return new SqlitePersistenceAdapter();
 }
 
 export function ProductArea() {
   const user = useAppStore((s) => s.auth.user);
   if (!user?.id) return null;
   if (!hasElectronInvoke())
-    return <CenteredNote text="Inscape local data is unavailable outside the Electron Host." />;
+    return <UnavailableHost />;
   return <ProductAreaWithPersistence />;
+}
+
+function UnavailableHost() {
+  const { t } = useTranslation();
+  return <CenteredNote text={t('Recovery.hostRequired')} />;
 }
 
 function ProductAreaWithPersistence() {
@@ -35,6 +40,7 @@ function ProductAreaWithPersistence() {
   return (
     <InscapeStoreProvider client={client}>
       <InscapeBootGate />
+      <AgeReviewDialog />
       <SaveRecovery />
     </InscapeStoreProvider>
   );
@@ -43,7 +49,7 @@ function ProductAreaWithPersistence() {
 function InscapeBootGate() {
   const { t } = useTranslation();
   const status = useInscapeStore((s) => s.status);
-  const error = useInscapeStore((s) => s.error);
+  const processingBlocked = useInscapeStore((s) => s.processingBlocked);
   const initialize = useInscapeStore((s) => s.initialize);
   usePersistedInscapeLocaleSync();
 
@@ -51,27 +57,24 @@ function InscapeBootGate() {
     void initialize();
   }, [initialize]);
 
+  if (status === 'quarantined') return <SpaceRecovery quarantined />;
   if (status === 'loading') {
-    return <CenteredNote text={t('Status.loading')} />;
+    return <CenteredNote text={t(processingBlocked ? 'AgeGate.processingStopped' : 'Status.loading')} />;
   }
   if (status === 'error') {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
-        <p role="alert">{t('Repair.loadFailure')}</p>
-        <button className="button button-primary" onClick={() => void initialize()}>
-          {t('Runtime.retry')}
-        </button>
-        <details className="technical-note">
-          <summary>{t('Runtime.technicalDetails')}</summary>
-          <p>{error}</p>
-        </details>
-      </div>
-    );
+    return <SpaceRecovery />;
   }
   if (status === 'first-run') {
     return <FirstRunGate />;
   }
-  return <InscapeShell />;
+  // @nimi-authority: rule.inscape.data-model.r007
+  // Keep unrelated drafts mounted while a confirmed quarantine is being saved.
+  return <>
+    <div className="inscape-product" hidden={processingBlocked} inert={processingBlocked}>
+      <InscapeShell />
+    </div>
+    {processingBlocked && <CenteredNote text={t('AgeGate.processingStopped')} />}
+  </>;
 }
 
 function CenteredNote({ text }: { text: string }) {

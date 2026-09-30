@@ -81,6 +81,9 @@ body {
   padding: 0;
 }
 
+.inscape-product { display: contents; }
+.inscape-product[hidden] { display: none; }
+
 /* Inscape's quiet, botanical desktop workspace. */
 
 button,
@@ -169,14 +172,14 @@ button {
 }
 .brand small {
   color: #606456;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   display: block;
   margin-top: 7px;
 }
 .nav-section-label {
   color: #62665a;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.7px;
   margin: 44px 13px 16px;
 }
@@ -230,7 +233,7 @@ button {
   background: #e5e8dc;
   border-radius: 4px;
   padding: 1px 6px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -248,7 +251,7 @@ button {
   max-width: 145px;
 }
 .sidebar-thought small {
-  font-size: 10px;
+  font-size: 11px;
   color: #606357;
 }
 .local-status {
@@ -256,7 +259,7 @@ button {
   align-items: center;
   gap: 7px;
   color: #606658;
-  font-size: 10px;
+  font-size: 11px;
   padding: 10px 11px 19px;
   border-bottom: 1px solid #dfe3d5;
 }
@@ -293,7 +296,7 @@ button {
 .sidebar-profile small {
   display: block;
   color: #62665a;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 3px;
 }
 .collapse-button {
@@ -335,7 +338,7 @@ button {
   gap: 22px;
 }
 .private-label {
-  font-size: 10px;
+  font-size: 11px;
   color: #606458;
   gap: 5px;
 }
@@ -362,7 +365,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.5px;
   font-weight: 500;
 }
@@ -404,7 +407,7 @@ button {
 }
 .hero-content .eyebrow {
   color: #5d6749;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1.1px;
 }
 .hero-content h2 {
@@ -502,7 +505,7 @@ button {
 .small-label {
   display: block;
   color: #616556;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1.5px;
   margin-bottom: 5px;
 }
@@ -525,7 +528,7 @@ button {
   background: #f9f9f4;
   color: #606456;
   padding: 8px 12px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .mood-chip:hover {
   border-color: #a9b39a;
@@ -580,13 +583,13 @@ button {
 .section-heading > div > span {
   display: block;
   color: #64675c;
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 6px;
 }
 .section-kicker,
 .section-heading > span {
   color: #606356;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.7px;
 }
 .path-grid {
@@ -670,7 +673,7 @@ button {
   margin-top: 22px;
   border-top: 1px solid #8c9a7420;
   padding-top: 13px;
-  font-size: 9px;
+  font-size: 11px;
   color: inherit;
   opacity: 0.9;
 }
@@ -693,13 +696,13 @@ button {
   align-items: center;
 }
 .discovery-top .eyebrow {
-  font-size: 9px;
+  font-size: 11px;
   color: #636551;
 }
 .card-index {
   display: inline-block;
   font-family: Georgia, serif;
-  font-size: 10px;
+  font-size: 11px;
   color: #686859;
   margin: 15px 0 10px;
 }
@@ -718,7 +721,7 @@ button {
   align-items: center;
   gap: 7px;
   color: #5c6650;
-  font-size: 10px;
+  font-size: 11px;
 }
 .text-link:hover,
 .discovery-reveal:hover {
@@ -761,7 +764,7 @@ button {
   margin: 11px 0 6px;
 }
 .recent-empty p {
-  font-size: 10px;
+  font-size: 11px;
   color: #64685c;
   margin: 0 0 15px;
 }
@@ -790,7 +793,7 @@ button {
 }
 .recent-list small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #64685c;
   margin-top: 5px;
 }
@@ -811,7 +814,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  font-size: 9px;
+  font-size: 11px;
   color: #62665a;
   padding: 35px 30px 20px;
   line-height: 1.8;
@@ -874,7 +877,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .session-heading {
   margin-bottom: 29px;
@@ -938,7 +941,7 @@ textarea:read-only {
   display: flex;
   justify-content: space-between;
   color: #626758;
-  font-size: 10px;
+  font-size: 11px;
   margin: 17px 0 11px;
 }
 .composer-footer {
@@ -954,7 +957,7 @@ textarea:read-only {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 11px;
   color: #626756;
 }
 .composer-footer > div {
@@ -1015,7 +1018,7 @@ textarea:read-only {
   margin: 7px 0;
 }
 .ai-error details {
-  font-size: 10px;
+  font-size: 11px;
   color: #6c6252;
   overflow-wrap: anywhere;
   margin: 10px 0;
@@ -1062,7 +1065,7 @@ textarea:read-only {
 }
 .roundtable-heading > span {
   color: #626656;
-  font-size: 10px;
+  font-size: 11px;
 }
 .voice-grid {
   display: grid;
@@ -1139,7 +1142,7 @@ textarea:read-only {
   animation: unfold 0.25s ease-out;
 }
 .voice-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--function-ink);
   letter-spacing: 0.5px;
 }
@@ -1193,7 +1196,7 @@ textarea:read-only {
 }
 .experiment .eyebrow {
   color: #68674b;
-  font-size: 9px;
+  font-size: 11px;
 }
 .experiment p {
   color: #65664d;
@@ -1203,7 +1206,7 @@ textarea:read-only {
 }
 .experiment small {
   color: #656455;
-  font-size: 10px;
+  font-size: 11px;
 }
 .experiment-check {
   border: 1px solid #d7dbc2;
@@ -1257,7 +1260,7 @@ textarea:read-only {
 }
 .evidence-panel small {
   color: #63685a;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   display: block;
 }
@@ -1311,7 +1314,7 @@ textarea:read-only {
   border-color: #7b9363;
 }
 .self-tabs span {
-  font-size: 10px;
+  font-size: 11px;
   background: #e9eede;
   border-radius: 4px;
   padding: 1px 5px;
@@ -1359,7 +1362,7 @@ textarea:read-only {
   margin: 0 0 15px;
 }
 .initial-copy small {
-  font-size: 10px;
+  font-size: 11px;
   color: #606457;
 }
 .type-picker {
@@ -1455,7 +1458,7 @@ textarea:read-only {
 .pattern-pill {
   display: inline-block;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11px;
   color: #5e684e;
   padding: 7px 10px;
   border-radius: 16px;
@@ -1504,7 +1507,7 @@ textarea:read-only {
 }
 .function-bar-body small {
   color: #606756;
-  font-size: 10px;
+  font-size: 11px;
 }
 .function-track {
   display: block;
@@ -1527,7 +1530,7 @@ textarea:read-only {
 }
 .confidence-band b {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: #5c6651;
   margin-top: 3px;
@@ -1550,7 +1553,7 @@ textarea:read-only {
 }
 .function-story .eyebrow {
   color: var(--function-ink);
-  font-size: 9px;
+  font-size: 11px;
 }
 .function-story h3 {
   color: var(--function-ink);
@@ -1583,7 +1586,7 @@ textarea:read-only {
 .function-story small {
   margin-top: auto;
   padding-top: 26px;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.9;
   color: #60645a;
 }
@@ -1591,7 +1594,7 @@ textarea:read-only {
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   color: #616856;
   padding: 17px 0;
@@ -1643,7 +1646,7 @@ textarea:read-only {
 .dimension > small {
   display: block;
   text-align: center;
-  font-size: 9px;
+  font-size: 11px;
   color: #5f6756;
   padding-top: 9px;
 }
@@ -1721,7 +1724,7 @@ textarea:read-only {
 .filter-tabs button {
   padding: 8px 11px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   color: #5c6752;
 }
 .filter-tabs button[aria-pressed='true'] {
@@ -1779,7 +1782,7 @@ textarea:read-only {
 }
 .journal-date small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 7px;
 }
 .journal-entry > div:nth-child(2) {
@@ -1950,7 +1953,7 @@ textarea:read-only {
 .connection-card small {
   display: block;
   color: #626a56;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 7px;
 }
 .connection-count {
@@ -2018,7 +2021,7 @@ textarea:read-only {
 }
 .dyad-type > span {
   color: #606855;
-  font-size: 10px;
+  font-size: 11px;
 }
 .dyad-type strong {
   display: block;
@@ -2030,7 +2033,7 @@ textarea:read-only {
 }
 .dyad-type small {
   color: #5c6751;
-  font-size: 10px;
+  font-size: 11px;
 }
 .dyad-summary > p {
   flex: 1;
@@ -2040,7 +2043,7 @@ textarea:read-only {
   min-width: 180px;
 }
 .relationship-grounding {
-  font-size: 10px;
+  font-size: 11px;
   color: #5c6753;
   line-height: 1.9;
   padding-top: 24px;
@@ -2049,7 +2052,7 @@ textarea:read-only {
 }
 .relationship-management {
   margin-top: 19px;
-  font-size: 9px;
+  font-size: 11px;
   color: #626a5a;
 }
 .relationship-management > div,
@@ -2095,7 +2098,7 @@ textarea:read-only {
   white-space: pre-wrap;
 }
 .today-read .button {
-  font-size: 10px;
+  font-size: 11px;
 }
 .welcome-screen {
   width: 100%;
@@ -2141,7 +2144,7 @@ textarea:read-only {
 }
 .welcome-story > small {
   color: #f5f3e8;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1px;
 }
 .welcome-gate {
@@ -2446,7 +2449,7 @@ textarea:read-only {
     gap: 6px;
   }
   .mood-chip {
-    font-size: 9px;
+    font-size: 11px;
     padding: 6px 9px;
   }
   .path-grid {
@@ -2506,7 +2509,7 @@ textarea:read-only {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .voice-selector {
-    font-size: 10px;
+    font-size: 11px;
   }
   .voice-detail {
     padding: 19px;
@@ -2532,7 +2535,7 @@ textarea:read-only {
     gap: 17px;
   }
   .read-actions button {
-    font-size: 10px;
+    font-size: 11px;
   }
   .read-actions button:last-child {
     margin-left: 0;
@@ -2662,13 +2665,13 @@ textarea:read-only {
 .discovery-top .eyebrow,
 .entry-tags,
 .connection-count {
-  font-size: 10px;
+  font-size: 11px;
 }
 .confidence-band {
-  font-size: 9px;
+  font-size: 11px;
 }
 .sidebar-profile small {
-  font-size: 10px;
+  font-size: 11px;
 }
 .experiment small,
 .inline-note,
@@ -2684,7 +2687,7 @@ textarea:read-only {
     padding: 23px;
   }
   .product-footer {
-    font-size: 9px;
+    font-size: 11px;
   }
 }
 
@@ -2762,7 +2765,7 @@ textarea:read-only {
   color: #63784f;
 }
 .variant-heading .text-link {
-  font-size: 10px;
+  font-size: 11px;
 }
 .variant-number {
   font-family: Georgia, serif;
@@ -2777,7 +2780,7 @@ textarea:read-only {
 .rewrite-variant small {
   display: block;
   color: #78876a;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   padding-top: 10px;
   border-top: 1px solid #ecefe5;
@@ -2785,7 +2788,7 @@ textarea:read-only {
 .rewrite-disclaimer {
   margin: 17px 0 0 !important;
   color: #77876a;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
 }
 .rewrite-workshop > textarea {
@@ -3068,3 +3071,10 @@ textarea:read-only {
 .type-suggestion-workshop .product-form {
   margin-top: 16px;
 }
+
+.space-recovery { max-width: 640px; margin: auto; padding: 32px 24px; line-height: 1.7; }
+.space-recovery h1 { margin-top: 28px; font-size: 24px; }
+.space-recovery .technical-note { overflow-wrap: anywhere; }
+
+.age-review-evidence { max-height: 160px; overflow-y: auto; padding: 12px; border-left: 3px solid var(--inscape-border-strong); white-space: pre-wrap; overflow-wrap: anywhere; }
+.age-review-attestation { display: flex; align-items: flex-start; gap: 10px; margin: 20px 0; line-height: 1.6; }

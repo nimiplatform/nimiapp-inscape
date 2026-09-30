@@ -79,18 +79,6 @@ test('addReflectionEntry appends and persists, returning the id', async () => {
   assert.equal(reload.snapshot.self_subject.reflection_entries[0].text, 'felt scattered today');
 });
 
-test('addObservationEvent appends a user-driven signal and persists', async () => {
-  const client = new InMemoryPersistenceAdapter();
-  const store = createInscapeStore(client);
-  await store.getState().initialize();
-  await store.getState().completeFirstRun(NOW);
-  await store.getState().addObservationEvent('today-read feedback: right', 'ai_read_feedback', NOW);
-  const events = store.getState().space.self_subject.observation_events;
-  assert.equal(events.length, 1);
-  assert.equal(events[0].source, 'ai_read_feedback');
-  const reload = await client.load();
-  assert.equal(reload.snapshot.self_subject.observation_events.length, 1);
-});
 
 test('a single reflection cannot overwrite the profile with a large model jump', async () => {
   const store = createInscapeStore(new InMemoryPersistenceAdapter());

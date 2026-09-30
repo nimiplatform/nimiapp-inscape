@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { buildTodaysReadPrompt } from './today-prompts.ts';
 import { AiError, LoadingRead, ReadFeedback } from '../components/primitives.tsx';
 import { ReadingHistory, useReadingHistory } from '../components/reading-history.tsx';
@@ -10,7 +9,7 @@ import { ReadingHistory, useReadingHistory } from '../components/reading-history
 export function TodaysRead() {
   const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const client = useInscapeAiClient();
   const history = useReadingHistory('today-read');
   const [working, setWorking] = useState(false);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -39,7 +38,7 @@ export function TodaysRead() {
           refusal: null,
           other_reference_type: null,
         });
-      else setError(result.failure.detail);
+      else if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
     } finally {
       setWorking(false);
       setLoadingAi(false);

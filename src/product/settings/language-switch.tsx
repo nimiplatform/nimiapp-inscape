@@ -28,7 +28,7 @@ function currentI18nLocale(language: string | undefined): InscapeLocale {
 
 export function usePersistedInscapeLocaleSync() {
   const { i18n } = useTranslation();
-  const locale = useInscapeStore((s) => s.space?.settings.locale ?? null);
+  const locale = useInscapeStore((s) => s.space?.settings.locale ?? s.quarantinedSpace?.settings.locale ?? s.pendingQuarantine?.settings.locale ?? null);
 
   useEffect(() => {
     if (!locale) return;

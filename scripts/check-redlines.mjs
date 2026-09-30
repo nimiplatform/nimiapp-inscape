@@ -1,9 +1,4 @@
-// Inscape redline lint — enforces the IS-* hard boundaries that are source-
-// scannable. Hard-fails on: direct AI provider imports (T1-07 ai-boundary),
-// telemetry/analytics sinks (IS-PROD-06), a cloud route literal (T1-08), and
-// the MBTI(R) trademark in product copy (T1-09). The CSP (T1-06) is reported
-// as a warning — its value needs one live `tauri dev` pass to verify it does
-// not break IPC / the local runtime connection, so it is not silently claimed.
+// Source checks for protected App Access, local-only AI, custody and production CSP.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
@@ -94,7 +89,6 @@ const RULES = [
 ];
 
 const violations = [];
-const warnings = [];
 
 const files = [...walk('src'), ...walk('src-electron')];
 for (const file of files) {
@@ -112,8 +106,10 @@ if (/^permissions\s*:/mu.test(manifest)) {
   violations.push('nimi.app.yaml: [IS-APP-ACCESS legacy-permissions-forbidden] replace permissions with app_access');
 }
 
-for (const warning of warnings) {
-  console.warn(`[redline:warn] ${warning}`);
+const html = readFileSync('index.html', 'utf8');
+const csp = html.match(/<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]+)"/u)?.[1];
+if (!csp || !["default-src 'none'", "script-src 'self'", "connect-src 'none'", "object-src 'none'"].every((directive) => csp.split(';').some((item) => item.trim() === directive))) {
+  violations.push('index.html: production CSP must restrict scripts, connections and objects');
 }
 if (violations.length > 0) {
   for (const violation of violations) {
@@ -122,8 +118,4 @@ if (violations.length > 0) {
   console.error(`\n${violations.length} redline violation(s).`);
   process.exit(1);
 }
-console.log(
-  `redline check passed (${files.length} source files scanned)${
-    warnings.length ? `, ${warnings.length} warning(s)` : ''
-  }.`,
-);
+console.log(`redline check passed (${files.length} source files scanned; production CSP checked).`);

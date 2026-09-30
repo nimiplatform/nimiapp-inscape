@@ -18,7 +18,6 @@ function otherSubject(id, attested = true) {
     type_profile: null,
     profile_baseline: null,
     typing_episodes: [],
-    observation_events: [],
     reflection_entries: [],
   };
 }
@@ -30,7 +29,6 @@ function relationship(otherId) {
     nature: 'coworker',
     type_dyad: { self_type: null, other_type: null },
     communication_logs: [],
-    friction_patterns: [],
     observation_attested: true,
   };
 }

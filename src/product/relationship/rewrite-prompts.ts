@@ -6,9 +6,6 @@ import type { InscapeLocale } from '../../domain/locale.ts';
 import { DEFAULT_AI_OUTPUT_LOCALE, respondInLocale } from '../insight/prompt-directives.ts';
 import type { AiPrompt } from '../today/reflection-prompts.ts';
 
-export const REWRITE_DISCLAIMER =
-  '这些改写仅基于你的视角——对方没有参与此框定。请当作草稿，而非脚本。';
-
 export function buildRewritePrompt(
   draft: string,
   recipientName: string,

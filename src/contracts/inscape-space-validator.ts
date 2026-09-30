@@ -1,6 +1,5 @@
 // IS-DATA fail-close validator. Every persistence read and write runs this;
-// failure surfaces as a typed error, never a silent pass. Deeper IS-INFER
-// posterior-shape checks land with the inference engine (wave-2.5).
+// failure surfaces as a typed error, never a silent pass.
 
 import type { InscapeSpace } from '../domain/inscape-space.ts';
 import { INSCAPE_SPACE_SCHEMA_VERSION } from '../domain/inscape-space.ts';
@@ -9,6 +8,7 @@ import type { Subject } from '../domain/subject.ts';
 import type { CommunicationLog, Relationship } from '../domain/relationship.ts';
 import { isSavedExploration } from '../domain/exploration.ts';
 import { isSavedReading } from '../domain/reading.ts';
+import { isAgeContextCorrection } from '../domain/age-context.ts';
 import {
   BEEBE_ARCHETYPES,
   COGNITIVE_FUNCTIONS,
@@ -90,6 +90,7 @@ function validateAgeAttestation(value: unknown, path: string): InscapeSpaceValid
 
 function validateSubject(value: unknown, path: string): InscapeSpaceValidationResult {
   if (!isObject(value)) return invalid(path, 'must be an object');
+  if ('observation_events' in value) return invalid(path, 'retired observation-event data');
   if (!isNonEmptyString(value.id)) return missing(`${path}.id`);
   if (value.kind !== 'self' && value.kind !== 'other_person') {
     return invalid(`${path}.kind`, 'must be "self" or "other_person"');
@@ -97,7 +98,7 @@ function validateSubject(value: unknown, path: string): InscapeSpaceValidationRe
   if (typeof value.display_name !== 'string') return missing(`${path}.display_name`);
   const ageRes = validateAgeAttestation(value.age_attestation, `${path}.age_attestation`);
   if (!ageRes.ok) return ageRes;
-  for (const arr of ['typing_episodes', 'observation_events', 'reflection_entries'] as const) {
+  for (const arr of ['typing_episodes', 'reflection_entries'] as const) {
     if (!Array.isArray(value[arr])) return missing(`${path}.${arr}`);
   }
   for (const entry of value.reflection_entries as unknown[]) {
@@ -112,6 +113,8 @@ function validateSubject(value: unknown, path: string): InscapeSpaceValidationRe
     if (entry.exploration !== undefined && !isSavedExploration(entry.exploration)) {
       return invalid(`${path}.reflection_entries.exploration`, 'invalid exploration');
     }
+    if (entry.age_context !== undefined && !isAgeContextCorrection(entry.age_context, entry.text))
+      return invalid(`${path}.reflection_entries.age_context`, 'age context does not match this source');
     if (
       isObject(entry.exploration) &&
       entry.exploration.calibration &&
@@ -122,7 +125,7 @@ function validateSubject(value: unknown, path: string): InscapeSpaceValidationRe
         'calibration requires an accepted reading',
       );
   }
-  // type_profile may be null until first typing; deep posterior shape is checked in wave-2.5.
+  // A profile is optional until the user chooses a type reference.
   if (!isProfile(value.type_profile)) return invalid(`${path}.type_profile`, 'invalid profile');
   if (!isProfile(value.profile_baseline))
     return invalid(`${path}.profile_baseline`, 'invalid profile baseline');
@@ -146,7 +149,13 @@ function validateRelationship(value: unknown, path: string): InscapeSpaceValidat
     return invalid(`${path}.nature`, 'unknown relationship kind');
   if (!isObject(value.type_dyad)) return missing(`${path}.type_dyad`);
   if (!Array.isArray(value.communication_logs)) return missing(`${path}.communication_logs`);
-  if (!Array.isArray(value.friction_patterns)) return missing(`${path}.friction_patterns`);
+  for (const log of value.communication_logs) {
+    if (!isObject(log) || !isNonEmptyString(log.id) || typeof log.snippet !== 'string' || !isNonEmptyString(log.created_at))
+      return invalid(`${path}.communication_logs`, 'invalid communication log');
+    if (log.age_context !== undefined && !isAgeContextCorrection(log.age_context, log.snippet))
+      return invalid(`${path}.communication_logs.age_context`, 'age context does not match this source');
+  }
+  if ('friction_patterns' in value) return invalid(path, 'retired friction-pattern data');
   if (typeof value.observation_attested !== 'boolean')
     return missing(`${path}.observation_attested`);
   return OK;
@@ -161,16 +170,22 @@ export function validateInscapeSpace(space: InscapeSpace): InscapeSpaceValidatio
   }
   if (typeof space.attested_adult !== 'boolean') return missing('attested_adult');
 
-  const selfRes = validateSubject(space.self_subject, 'self_subject');
-  if (!selfRes.ok) return selfRes;
-  const self = space.self_subject as Subject;
-  if (self.kind !== 'self') return invalid('self_subject.kind', 'must be "self"');
-  // IS-PRIV: an adult-attested space requires the self subject to be adult-attested.
-  if (space.attested_adult && !self.age_attestation.attested_adult) {
-    return invalid(
-      'self_subject.age_attestation.attested_adult',
-      'must be true when the space is adult-attested',
-    );
+  if (!space.attested_adult) return invalid('attested_adult', 'adult attestation required');
+  // @nimi-authority: rule.inscape.privacy.r003
+  if (space.self_subject === null) {
+    if (![space.other_subjects, space.relationships, space.readings].every((list) => Array.isArray(list) && list.length === 0))
+      return invalid('self_subject', 'a quarantined space cannot contain active material');
+    if (!Array.isArray(space.quarantine) || !space.quarantine.some((record) => {
+      try { return JSON.parse(record.payload_json).subject?.kind === 'self'; }
+      catch { return false; }
+    })) return invalid('quarantine', 'self quarantine material required');
+  } else {
+    const selfRes = validateSubject(space.self_subject, 'self_subject');
+    if (!selfRes.ok) return selfRes;
+    const self = space.self_subject as Subject;
+    if (self.kind !== 'self') return invalid('self_subject.kind', 'must be "self"');
+    if (!self.age_attestation.attested_adult)
+      return invalid('self_subject.age_attestation.attested_adult', 'active subjects must be adult-attested');
   }
 
   if (!Array.isArray(space.other_subjects)) return missing('other_subjects');
@@ -180,6 +195,8 @@ export function validateInscapeSpace(space: InscapeSpace): InscapeSpaceValidatio
     if ((space.other_subjects[i] as Subject).kind !== 'other_person') {
       return invalid(`other_subjects[${i}].kind`, 'must be "other_person"');
     }
+    if (!space.other_subjects[i].age_attestation.attested_adult)
+      return invalid(`other_subjects[${i}].age_attestation.attested_adult`, 'active subjects must be adult-attested');
   }
 
   if (!Array.isArray(space.relationships)) return missing('relationships');
@@ -193,7 +210,7 @@ export function validateInscapeSpace(space: InscapeSpace): InscapeSpaceValidatio
   if (!Array.isArray(space.readings)) return missing('readings');
   const relationIds = new Set(space.relationships.map((r) => r.id));
   const sourceIds = new Set([
-    ...space.self_subject.reflection_entries.map((r) => r.id),
+    ...(space.self_subject?.reflection_entries.map((r) => r.id) ?? []),
     ...space.relationships.flatMap((r) =>
       r.communication_logs.map((log: CommunicationLog) => log.id),
     ),
@@ -207,6 +224,13 @@ export function validateInscapeSpace(space: InscapeSpace): InscapeSpaceValidatio
   }
 
   if (!Array.isArray(space.quarantine)) return missing('quarantine');
+  for (const record of space.quarantine) {
+    if (!isObject(record) || !isNonEmptyString(record.id) || !isNonEmptyString(record.quarantined_at) ||
+        record.reason !== 'under_18_actual_knowledge' || typeof record.payload_json !== 'string')
+      return invalid('quarantine', 'invalid quarantine record');
+    try { if (!isObject(JSON.parse(record.payload_json))) return invalid('quarantine', 'invalid payload'); }
+    catch { return invalid('quarantine', 'invalid payload'); }
+  }
   if (!isObject(space.settings)) return missing('settings');
   if (typeof space.settings.local_debug_logging !== 'boolean') {
     return missing('settings.local_debug_logging');

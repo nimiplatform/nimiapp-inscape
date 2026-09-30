@@ -1,5 +1,5 @@
 // IS-INFER — deterministic seed TypeProfile from a 4-letter type. This is the
-// simplest initial-test output: the type's Beebe stack seeds the function
+// user-selected reference: the type's Beebe stack seeds the function
 // posterior (hero strongest → demon weakest) and the dichotomy distribution.
 // It is a prior with moderate confidence, not a verdict — subsequent reflection
 // signals refine it (anti-fixation).
@@ -74,7 +74,7 @@ export function seedTypeProfileFromType(type: FourLetterType, now: string): Type
     dichotomies[dichotomy] = {
       value: letter === negativePole ? -SEED_DICHOTOMY_MAGNITUDE : SEED_DICHOTOMY_MAGNITUDE,
       confidence: SEED_DICHOTOMY_CONFIDENCE,
-      sources: ['initial_test'],
+      sources: ['user_calibration'],
     };
   }
 

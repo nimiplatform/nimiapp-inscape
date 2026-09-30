@@ -1,7 +1,4 @@
-// Wave-3.1 — first-run 18+ attestation gate (Scenario 1 / IS-PRIV-01). Both
-// boxes must be checked before a space is created and persisted. The initial
-// 60-item test (the first TypingEpisode) lands in wave-3.2; this gate only
-// establishes the adult-attested space.
+// First-run adult attestation. Type references remain optional and user-selected.
 
 import { useState, type ChangeEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

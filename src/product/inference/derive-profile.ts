@@ -9,7 +9,8 @@ import {
 import type { BeebeArchetypeInference, TypeProfile } from '../../domain/type-profile.ts';
 import type { ReflectionEntry } from '../../domain/subject.ts';
 import type { ReflectionCalibration } from '../../domain/exploration.ts';
-import type { PosteriorUpdateProposal } from './ai-proposal-parser.ts';
+import type { ActiveInscapeSpace } from '../../domain/inscape-space.ts';
+import { isBoundedReflectionProposal, parsePosteriorUpdateProposal, type PosteriorUpdateProposal } from './ai-proposal-parser.ts';
 
 // @nimi-authority: rule.inscape.inference.r005
 export function deriveProfile(profile: TypeProfile): TypeProfile {
@@ -108,4 +109,56 @@ export function rebuildProfile(
     dichotomy_distribution,
     updated_at: now,
   });
+}
+
+// @nimi-authority: rule.inscape.inference.r005
+export function withReflections(
+  space: ActiveInscapeSpace,
+  entries: readonly ReflectionEntry[],
+  now: string,
+): ActiveInscapeSpace {
+  const rebuilt = rebuildProfile(space.self_subject.profile_baseline, entries, now);
+  const previous = space.self_subject.type_profile;
+  const same =
+    JSON.stringify(rebuilt ? { ...rebuilt, updated_at: '' } : null) ===
+    JSON.stringify(previous ? { ...previous, updated_at: '' } : null);
+  const profile = same ? previous : rebuilt;
+  return {
+    ...space,
+    self_subject: { ...space.self_subject, reflection_entries: entries, type_profile: profile },
+    relationships: space.relationships.map((r) => ({
+      ...r,
+      type_dyad: { ...r.type_dyad, self_type: profile?.leading_type ?? null },
+    })),
+    updated_at: now,
+  };
+}
+
+// @nimi-authority: rule.inscape.inference.r004
+export function projectReflectionCalibration(
+  profile: TypeProfile,
+  baseline: TypeProfile,
+  entries: readonly ReflectionEntry[],
+  entryId: string,
+  proposal: PosteriorUpdateProposal,
+  now: string,
+): { profile: TypeProfile; calibration: ReflectionCalibration } | null {
+  const entry = entries.find((item) => item.id === entryId);
+  if (!entry?.exploration?.read || entry.exploration.feedback !== 'accepted' ||
+      entry.exploration.calibration || !parsePosteriorUpdateProposal(JSON.stringify(proposal)).ok ||
+      !isBoundedReflectionProposal(proposal, profile)) return null;
+  const calibration = calibrationContribution(proposal, profile, now);
+  const projected = rebuildProfile(baseline, entries.map((item) => item.id === entryId
+    ? { ...item, exploration: { ...entry.exploration!, calibration } } : item), now)!;
+  const equal = (a: number, b: number) => Math.abs(a - b) <= 1e-9;
+  // A saturated history may make the requested absolute value unreachable with
+  // one bounded contribution. Reject the entire proposal, never a partial update.
+  if (!proposal.function_updates.every((u) => {
+    const actual = projected.function_stack_posterior[u.function];
+    return equal(actual.strength, u.proposed_strength) && equal(actual.confidence, u.proposed_confidence);
+  }) || !proposal.axis_updates.every((u) => {
+    const actual = projected.dichotomy_distribution[u.axis];
+    return equal(actual.value, u.proposed_value) && equal(actual.confidence, u.proposed_confidence);
+  })) return null;
+  return { profile: projected, calibration };
 }

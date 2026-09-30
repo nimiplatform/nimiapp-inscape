@@ -45,6 +45,15 @@ safety_profile:
 storage_policy:
   kind: app-owned-os-storage
   os_storage_disclosure:
-    - path_pattern: <Electron userData>/inscape.db
-      purpose: Local SQLite storage for adult attestation, profiles, observations and reflections. Retained after Nimi uninstall; cleared from Inscape settings.
+    - path_pattern: <OS application-data>/nimi.inscape/inscape.db
+      purpose: Local SQLite storage for adult attestation, profiles, relationships and reflections. Retained after Nimi uninstall; cleared from Inscape settings.
       expected_size_band: Starts at a few KiB and grows with saved records; no App-enforced storage cap.
+    - path_pattern: <OS application-data>/nimi.inscape/inscape-quarantine-pending.json*
+      purpose: Confirmed quarantine write intent for restart recovery during a failed SQLite write. Removed after the real commit or explicit local-data reset; never used for analysis.
+      expected_size_band: A transient snapshot of the affected local space, growing with saved records.
+    - path_pattern: <OS application-data>/nimi.inscape/development/*/inscape.db
+      purpose: Isolated development SQLite space per Desktop Host profile, retained across an explicit registration resume. Never reads or converts installed or older development data.
+      expected_size_band: Starts at a few KiB and grows with saved development records.
+    - path_pattern: <OS application-data>/nimi.inscape/development/*/inscape-quarantine-pending.json*
+      purpose: Recovery-only confirmed quarantine intent for the isolated development space. Removed after commit or explicit local-data reset.
+      expected_size_band: A transient snapshot of the affected development space.

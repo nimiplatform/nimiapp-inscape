@@ -33,3 +33,31 @@ pnpm exec nimi-app pack --target windows-x86_64 --production
 Before tagging, follow the [GitHub release setup guide](https://github.com/nimiplatform/nimi/blob/main/app-tools/README.md#publishing-on-github), including the `NIMI_REPOSITORY_ADMIN_TOKEN` Actions secret.
 A protected annotated version tag on the repository default branch runs the managed build, provenance and immutable Release workflow.
 The publisher then submits the immutable Release to [Nimi App Registry](https://github.com/nimiplatform/nimi-app-registry). Registry admission is a separate human review; local builds and GitHub Releases do not create admission or installed state.
+
+## Current repair and iteration scope
+
+Canonical executable rules are in `.nimi/spec/**`; the original product targets
+remain in the topic linked from `AGENTS.md`. Implementation status and journey
+records are evidence, not product authority. Current data uses schema 3 with a
+hard cut from earlier development files and no automatic migration.
+
+Age text produces a review candidate, not actual knowledge. The user confirms
+attribution/current age or corrects quoted, historical and hypothetical context.
+Only confirmed under-18 subjects enter quarantine. Failed quarantine writes keep
+analysis stopped and retain a private recovery-only intent until commit or an
+explicit reset. Ordinary failed saves retain their existing retry/cancel behavior.
+
+The 60-item assessment is a separate iteration. Independent observation records,
+cumulative views and recurring friction analysis remain future product targets;
+removing their empty storage scaffolding does not count as delivering them.
+
+Local Nimi source development uses SDK 0.19.0, Kit/native 0.16.0 and App Tools
+0.11.4 as complete npm archives from `/Users/snwozy/nimi-realm/nimi`.
+`pnpm-workspace.yaml` records the explicit overrides and `pnpm-lock.yaml` pins
+archive integrity. These versions are local development inputs; registry-based
+release reproducibility and installed acceptance remain separate checks.
+Electron's technical profile belongs to Desktop. App-owned SQLite is stored in
+`<OS application-data>/nimi.inscape/`; development uses an isolated `development`
+subdirectory keyed by the public Host profile. Resume a registration selected
+from the current `pnpm exec nimi-app dev --list-registrations` result to reopen its
+space. No old file is moved or converted.

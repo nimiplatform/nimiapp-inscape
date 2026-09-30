@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Checkbox } from '@nimiplatform/kit/ui';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import type { RelationshipNature } from '../../domain/relationship.ts';
 
@@ -80,12 +81,11 @@ export function AddPersonForm({
         </select>
       </div>
       <label className="flex items-start gap-2 text-xs">
-        <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
+        <Checkbox checked={adult} onChange={(e) => setAdult(e.target.checked)} />
         <span>{t('AddPerson.adult')}</span>
       </label>
       <label className="flex items-start gap-2 text-xs">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={observation}
           onChange={(e) => setObservation(e.target.checked)}
         />

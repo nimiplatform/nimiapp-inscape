@@ -52,7 +52,7 @@ function loadConfig() {
   return {
     allowTextPatterns: Array.isArray(audit.allowTextPatterns) ? audit.allowTextPatterns : [],
     excludePathPatterns: Array.isArray(audit.excludePathPatterns) ? audit.excludePathPatterns : [],
-    extensions: Array.isArray(audit.extensions) ? audit.extensions : ['.tsx', '.html'],
+    extensions: Array.isArray(audit.extensions) ? audit.extensions : ['.tsx', '.ts', '.html'],
     scopeDirs: Array.isArray(audit.scopeDirs) ? audit.scopeDirs : [],
   };
 }
@@ -128,9 +128,9 @@ function propertyNameText(name, sourceFile) {
   return name.getText(sourceFile);
 }
 
-function extractTsxCandidates(source, filePath) {
+function extractTypescriptCandidates(source, filePath) {
   const candidates = [];
-  const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
 
   function visit(node) {
     if (ts.isJsxText(node)) {
@@ -160,6 +160,11 @@ function extractTsxCandidates(source, filePath) {
           });
         }
       }
+    }
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) &&
+        /^(?:nimiToast|toast)$/.test(node.expression.expression.getText(sourceFile))) {
+      const text = node.arguments[0] && stringLiteralText(node.arguments[0]);
+      if (text) candidates.push({ kind: 'toast message', line: lineFromSourceFile(sourceFile, node.getStart(sourceFile)), text });
     }
     if (ts.isPropertyAssignment(node)) {
       const name = propertyNameText(node.name, sourceFile);
@@ -207,8 +212,8 @@ function extractHtmlCandidates(source) {
 }
 
 function extractCandidatesFromSource(source, filePath, extension) {
-  if (extension === '.tsx') {
-    return extractTsxCandidates(source, filePath);
+  if (extension === '.tsx' || extension === '.ts') {
+    return extractTypescriptCandidates(source, filePath);
   }
   if (extension === '.html') {
     return extractHtmlCandidates(source);

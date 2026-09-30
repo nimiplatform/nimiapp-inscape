@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, HeartHandshake, Sparkles } from 'lucide-react';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { analyzeDyad } from './dyad-analysis.ts';
 import { buildDyadInsightPrompt, dyadHeadline } from './dyad-prompts.ts';
 import { buildInferTypePrompt } from './infer-type.ts';
@@ -27,7 +26,8 @@ export function DyadInsight({
   const space = useInscapeStore((s) => s.space);
   const feedback = useInscapeStore((s) => s.setReadingFeedback);
   const setType = useInscapeStore((s) => s.setOtherSubjectType);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const client = useInscapeAiClient(relationship.id);
+  const checkAge = useInscapeStore((s) => s.checkAgeDisclosure);
   const selfType = space?.self_subject.type_profile?.leading_type ?? null;
   const otherType = other?.type_profile?.leading_type ?? null;
   const locale = space?.settings.locale;
@@ -70,11 +70,12 @@ export function DyadInsight({
     setLastAction('infer');
     const evidence = description.trim();
     try {
+      if (!(await checkAge(evidence, new Date().toISOString(), relationship.other_subject_id))) return;
       setLoadingAi(true);
       const result = await client.generate(buildInferTypePrompt(evidence, locale));
       setLoadingAi(false);
       if (!result.ok) {
-        setError(result.failure.detail);
+        if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
         return;
       }
       const parsed = parseInferredType(result.text);
@@ -124,7 +125,7 @@ export function DyadInsight({
           other_reference_type: otherType,
           refusal: null,
         });
-      else setError(result.failure.detail);
+      else if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
     } finally {
       setWorking(false);
       setLoadingAi(false);

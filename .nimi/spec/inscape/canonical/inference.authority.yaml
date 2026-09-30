@@ -44,7 +44,7 @@ units:
     kind: rule
     title: Bounded reflection calibration
     modality: must
-    statement: Supply the complete current strengths, signed dichotomy values, confidences, and polarity meanings to the reflection proposer; validate the complete proposal before display and again before acceptance, allowing an absolute change of at most 0.10 in each strength, dichotomy value, or confidence per reflection; persist at most one accepted contribution per reflection and remove it when its feedback is withdrawn or its source is edited or deleted.
+    statement: Supply the complete current strengths, signed dichotomy values, confidences, and polarity meanings to the reflection proposer; validate the whole proposal before display and acceptance, allowing an absolute change of at most 0.10 in each strength, dichotomy value, or confidence and forbidding A_T updates from a single reflection. Use the same contribution rebuild for preview and commit; reject the whole proposal if saturation prevents its proposed absolute values from being reached. Persist at most one accepted contribution per reflection and remove it when its feedback is withdrawn or its source is edited or deleted.
     condition: When a reflection proposes a profile calibration.
     failure: Reject the whole out-of-bounds proposal without clamping or partially applying values, and leave the current profile unchanged.
     relations:

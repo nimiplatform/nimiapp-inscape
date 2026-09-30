@@ -1,5 +1,4 @@
-// Wave-2 — in-memory PersistenceClient used by tests and as the non-browser
-// fallback. Every load / save still runs validateInscapeSpace.
+// Explicit test persistence. Product code always uses the SQLite Host.
 
 import type { InscapeSpace } from '../../domain/inscape-space.ts';
 import { validateInscapeSpace } from '../../contracts/inscape-space-validator.ts';

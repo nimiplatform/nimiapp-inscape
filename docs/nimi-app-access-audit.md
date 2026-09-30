@@ -1,5 +1,7 @@
 # Inscape × Nimi App Access 对接审计报告(第一阶段:只读审计)
 
+> 历史审计记录：以下内容描述 2026-08-08 适配前的状态，不代表当前代码、依赖或能力。当前权威角色见 AGENTS.md，当前验证边界见 nimi-app-access-journey.md。
+
 - 日期:2026-08-08
 - 范围:`nimiapp-inscape` 全仓库只读盘点 + 平台参考仓库 `/Users/snwozy/nimi-realm/nimi`(branch `spec-4`)只读核对。本阶段未修改任何源文件。
 - 参照:canonical 参考 App `nimi/apps/tester`、真实产品适配范例 `nimi/apps/zhiyu`。

@@ -14,7 +14,7 @@
   typology (cognitive-function stack + Beebe archetypes) into daily-life
   application — type as a moving probability distribution, refined only by
   user-driven signals.
-- **Status**: Pre-Alpha. wave-1 build baseline; not yet launched.
+- **Status**: Pre-Alpha; not yet launched. Implementation and actual acceptance are tracked separately.
 
 ## Provenance
 
@@ -24,29 +24,38 @@ interface, the test/build/governance scaffold). ShiJing's product layer
 (astrology pipeline, ShiJingSpace domain, product tabs) was **not** carried
 over. There must be **no** shijing / astrology / `SJG-*` remnants in this repo.
 
-Product authority lives in the nimi-realm topic
+Current executable product rules live under `.nimi/spec/**`. The original
+product targets remain in the nimi-realm topic
 `.nimi/topics/ongoing/2026-05-27-inscape-app-design-and-audit-closure`
-(`product-manual.md`, `user-storyboard.md`, `implementation-approach.md`).
+(`product-manual.md` and `user-storyboard.md`). Unwired targets are not retired
+by their absence from the current implementation. Material product choices
+require the user's decision before canonical rules are updated.
+
+`docs/authority-implementation-status.yaml`, journey reports, and `.nimi/local/**`
+are implementation or historical verification evidence, never product authority.
+Their age or a passing command does not establish current product completion.
 
 ## Architecture
 
 | Layer | Technology | Location |
 |-------|-----------|----------|
 | Desktop shell | Electron 42 + Desktop-supervised App Access carrier | `src-electron/` |
-| Frontend | React 19 + Vite 7 | `src/shell/renderer` (`src/main.tsx`) |
+| Frontend | React 19 + Vite 7 | `src/product`, `src/shell` (`src/main.tsx`) |
 | Consumption layer | protected local App Access bootstrap | `src/shell/{app-shell,infra,persistence}` |
-| Persistence | **Custom SQLite** (G1, `better-sqlite3`) | `src-electron/persistence.ts` + `src/shell/persistence/runtime-app-storage-adapter.ts` |
+| Persistence | **Custom SQLite** (G1, `better-sqlite3`) | `src-electron/persistence.ts` + `src/shell/persistence/sqlite-persistence-adapter.ts` |
 | AI wording | `runtime.consume` via `ai.text.generateCandidate` | `src/shell/ai/**` |
-| UI components | `@nimiplatform/kit` | npm link |
-| Domain (product) | InscapeSpace + IS-* contracts | `src/domain`, `src/contracts` (wave-2) |
+| UI components | `@nimiplatform/kit` | public package exports |
+| Domain (product) | InscapeSpace + IS-* contracts | `src/domain`, `src/contracts` |
 
-`@nimiplatform/{sdk,kit,app-tools}` consume the public package versions selected
-by the published app-tools `sync` command, only through their built exports.
+`@nimiplatform/{sdk,kit,app-tools}` consume complete npm packages through built
+exports, with declared combinations validated by the selected app-tools package.
+Current source development uses explicit local archive overrides; public release
+preflight requires registry resolutions.
 
 ## Hard boundaries
 
 - **18+ fail-close (G1 / T1-04 / T1-05)**: the SQLite layer opens
-  `<electron-user-data>/inscape.db` with `0o600` and
+  `<OS application-data>/nimi.inscape/inscape.db` (isolated by Host profile for development) with `0o600` and
   `CHECK (attested_adult = 1)`; the space is never persisted without an adult
   attestation. Keep this gate at the DB level.
 - **Runtime owns identity**: the app never custodies access/refresh tokens

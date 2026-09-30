@@ -8,12 +8,7 @@
     "technicalDetails": "Technical details"
   },
   "Shell": {
-    "loading": "Loading...",
-    "logout": "Sign out",
-    "accountMenu": "Account menu"
-  },
-  "App": {
-    "brand": "心相 · Inscape"
+    "loading": "Loading..."
   },
   "Language": {
     "ariaLabel": "Interface language",
@@ -27,12 +22,7 @@
     "loading": "Loading..."
   },
   "Common": {
-    "unknown": "Unknown",
-    "none": "None",
-    "listSeparator": ", ",
-    "aiUnavailable": "AI is temporarily unavailable ({{error}}).",
-    "generate": "Generate",
-    "generating": "Generating..."
+    "unknown": "Unknown"
   },
   "Navigation": {
     "ariaLabel": "Product areas",
@@ -46,19 +36,11 @@
     "adult": "I confirm that I am at least 18 years old.",
     "understood": "I understand that Inscape is not a psychological diagnostic tool; if I am in psychological distress, I will seek professional help.",
     "continue": "Enter Inscape",
-    "localNote": "All data stays on this device. Nothing is uploaded."
+    "localNote": "All data stays on this device. Nothing is uploaded. Do not continue if you are under 18."
   },
-  "Today": {},
-  "TodaysRead": {},
-  "DecisionAid": {},
-  "ReflectionJournal": {},
-  "Self": {},
   "InitialTyping": {
     "title": "Set your type prior"
   },
-  "TypeProfile": {},
-  "SelfMirror": {},
-  "Relationship": {},
   "RelationshipNature": {
     "partner": "Partner",
     "parent": "Parent",
@@ -81,7 +63,7 @@
     "addSnippet": "Add snippet",
     "collectedSnippets_one": "{{count}} snippet collected.",
     "collectedSnippets_other": "{{count}} snippets collected.",
-    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine.",
+    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine. Unsaved drafts for this relationship will be discarded.",
     "confirmQuarantine": "Confirm quarantine",
     "cancel": "Cancel",
     "markUnder18": "Mark this person as under 18"
@@ -463,7 +445,6 @@
     "deleteInteraction": "Delete this moment",
     "editInteractionBody": "Editing this moment removes readings and feedback based on it. You can explore it again afterward.",
     "deleteInteractionBody": "This shared moment and readings and feedback based on it will be permanently deleted.",
-    "uncertainType": "These preferences are still taking shape, so there is no type label for now. You can continue using notes, the roundtable, and moment exploration.",
     "dyadNeedsClarity": "Your type tendency is not clear yet. Explore shared moments and communication drafts while the type comparison remains open.",
     "typeDerivationNote": "The current type comes from these four preference dimensions. A near-center or uncertain dimension leaves the type open. Function activity above is a separate observation and does not directly determine the four-letter type.",
     "observationFits": "Fits my observations",
@@ -475,7 +456,7 @@
       "decision_pressure": "This may contain an ultimatum or pressure to commit. Inscape does not polish this kind of message."
     },
     "sourceChanged": "The original has changed. Please explore the revised version.",
-    "calibrationChanged": "Your profile or this note has changed. Request a new adjustment using the current information.",
+    "calibrationChanged": "Your profile, its evidence or this note has changed. Request a new adjustment using the current information.",
     "leaveUnsavedBody": "This content is not saved yet. Keep editing, or discard it before leaving.",
     "saving": "Saving…",
     "discardReading": "Discard this reading",
@@ -483,9 +464,39 @@
     "meaningDiffers": "Not quite what I mean",
     "deleteRecord": "Delete this record",
     "referenceContext": "Reference for this reading",
-    "selfReference": "Your selected reference: {{type}}. Its dominant lens: {{hero}}. Most active function at the time: {{active}}. These are exploration clues, not verified personality facts.",
     "pairReference": "Your reference lens: {{self}}. Their reference lens: {{other}}. These are the types you selected or accepted, not traits confirmed by the other person.",
     "readPairReference": "Lenses when generated: you {{self}} · them {{other}}",
     "mirrorNeedsNotes": "Save a moment in your own words, then return to explore a thread in it."
+  },
+  "AgeGate": {
+    "title": "Inscape is for adults only",
+    "body": "Analysis of this space has stopped and its material is quarantined. You can clear local data. Quarantined material will not return to analysis.",
+    "processingStopped": "Analysis has stopped. Saving the quarantine state.",
+    "saveFailure": "Related analysis has stopped, but quarantine is not yet saved. Retry, or confirm a local-data reset. Cancelling the write cannot resume analysis.",
+    "declareUnder18": "Correct my adult attestation: I am under 18",
+    "confirmTitle": "Correct your adult attestation?",
+    "confirmBody": "Confirming that you are currently under 18 stops all analysis and quarantines this space. This cannot be undone in the app. You can still clear local data. Unsaved drafts will be discarded.",
+    "confirm": "Confirm and stop analysis"
+  },
+  "Recovery": {
+    "versionTitle": "This space uses a different data version",
+    "versionBody": "This development version cannot read the old data. The original file is preserved. You can save a copy of the file before confirming a local-data reset.",
+    "loadTitle": "Your local space could not be opened",
+    "versionDetails": "Stored data version: {{stored}}; current version: {{expected}}.",
+    "hostRequired": "Launch Inscape from Nimi to use local data."
+  },
+  "AgeReview": {
+    "title": "Confirm the age context first",
+    "body": "This could be a quotation, memory or hypothetical. Only the related AI request is paused; text alone does not quarantine records. Confirm the person and whether this is their current age.",
+    "subject": "Whose current age does this describe?",
+    "self": "Me",
+    "notCurrent": "Not a current age (quotation, memory or hypothetical)",
+    "correctionEffect": "Keep the original and record this context correction. Editing the source requires another review.",
+    "selfEffect": "Confirming that you are currently under 18 stops all analysis and quarantines this space without restoring it to active use. You can still clear local data. Other unsaved drafts will be discarded.",
+    "otherEffect": "Confirming this person is currently under 18 quarantines their subject, relationship, this confirmed source and related readings, and withdraws the source’s profile calibration. Unrelated adult records and drafts remain. Unsaved drafts for this person’s relationship will be discarded.",
+    "confirmAge": "I confirm this is the person’s current age and they are under 18.",
+    "cancel": "Cancel this AI request",
+    "correct": "Confirm context and continue",
+    "confirmMinor": "Confirm under 18 and stop related analysis"
   }
 }

@@ -12,7 +12,7 @@ export interface DichotomyValue {
   /** Signed position in [-1, 1]. */
   readonly value: number;
   readonly confidence: Confidence;
-  /** Signal sources contributing to this value (e.g. 'initial_test', 'reflection:<id>'). */
+  /** Signal sources contributing to this value (e.g. 'user_calibration', 'reflection:<id>'). */
   readonly sources: readonly string[];
 }
 

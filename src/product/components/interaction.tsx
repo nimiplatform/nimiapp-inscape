@@ -111,29 +111,45 @@ export function SaveRecovery() {
   const retrying = useInscapeStore((s) => s.retrying);
   const retry = useInscapeStore((s) => s.retrySave);
   const cancel = useInscapeStore((s) => s.cancelSave);
+  const canCancel = useInscapeStore((s) => s.saveCanCancel);
+  const clear = useInscapeStore((s) => s.clearLocalData);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearFailed, setClearFailed] = useState(false);
   useUnsavedWarning(!!error);
   return (
-    <Modal
+    <><Modal
       open={!!error}
       title={t('Repair.saveFailureTitle')}
-      description={t('Repair.saveFailureBody')}
+      description={t(canCancel ? 'Repair.saveFailureBody' : 'AgeGate.saveFailure')}
       onClose={cancel}
-      busy={retrying}
+      busy={retrying || !canCancel}
     >
       <details className="technical-note">
         <summary>{t('Runtime.technicalDetails')}</summary>
         <p>{error}</p>
       </details>
       <div className="dialog-actions">
-        <button className="button button-secondary" disabled={retrying} onClick={cancel}>
+        {canCancel && <button className="button button-secondary" disabled={retrying} onClick={cancel}>
           {t('Repair.backToEditing')}
-        </button>
+        </button>}
+        {!canCancel && <button className="button button-danger" disabled={retrying} onClick={() => setConfirmClear(true)}>
+          {t('PrivacySettings.clear')}
+        </button>}
         <button className="button button-primary" disabled={retrying} onClick={() => void retry()}>
           {retrying && <LoaderCircle size={15} className="spin" />}
           {t('Repair.retrySave')}
         </button>
       </div>
+      {clearFailed && <p role="alert">{t('PrivacySettings.failed')}</p>}
     </Modal>
+    <ConfirmDialog open={confirmClear} title={t('PrivacySettings.confirmTitle')}
+      description={t('PrivacySettings.confirmBody')} confirmLabel={t('PrivacySettings.confirm')}
+      onCancel={() => setConfirmClear(false)} onConfirm={async () => {
+        const cleared = await clear();
+        setClearFailed(!cleared);
+        if (cleared) setConfirmClear(false);
+        return cleared;
+      }} /></>
   );
 }
 

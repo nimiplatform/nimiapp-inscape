@@ -115,6 +115,7 @@ export function parsePosteriorUpdateProposal(raw: string): ProposalParseResult {
   const seenDichotomies = new Set<string>();
   for (const item of dichRaw) {
     if (!isObject(item)) return violation('axis_updates entry must be an object');
+    if (item.axis === 'A_T') return violation('A_T cannot be calibrated from a single reflection');
     if (!isDichotomy(item.axis)) return violation(`unknown dichotomy: ${String(item.axis)}`);
     if (
       seenDichotomies.has(item.axis) ||

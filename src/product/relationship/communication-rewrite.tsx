@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { nimiToast } from '@nimiplatform/kit/ui';
 import { Check, Copy, Sparkles } from 'lucide-react';
 import { AiError, LoadingRead, ReadFeedback } from '../components/primitives.tsx';
 import { ReadingHistory, useReadingHistory } from '../components/reading-history.tsx';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { classifyRewriteContext } from './rewrite-classifier.ts';
 import { buildRewritePrompt } from './rewrite-prompts.ts';
 import { parseRewriteResult } from '../../domain/rewrite.ts';
@@ -24,7 +23,8 @@ export function CommunicationRewrite({
 }) {
   const { t } = useTranslation();
   const space = useInscapeStore((s) => s.space);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const checkAge = useInscapeStore((s) => s.checkAgeDisclosure);
+  const client = useInscapeAiClient(relationshipId);
   const history = useReadingHistory('communication-rewrite', relationshipId);
   const [draft, setDraft] = useState('');
   const [savedInput, setSavedInput] = useState('');
@@ -51,6 +51,8 @@ export function CommunicationRewrite({
     setCopied(null);
     const reference_type = space?.self_subject.type_profile?.leading_type ?? null;
     try {
+      const otherId = space?.relationships.find((r) => r.id === relationshipId)?.other_subject_id;
+      if (!(await checkAge(trimmed, new Date().toISOString(), otherId))) return;
       const classification = classifyRewriteContext(trimmed);
       if (!classification.ok) {
         if (
@@ -72,7 +74,7 @@ export function CommunicationRewrite({
       );
       setLoadingAi(false);
       if (!generated.ok) {
-        setError(generated.failure.detail);
+        if (generated.failure.kind !== 'processing_stopped') setError(generated.failure.detail);
         return;
       }
       const parsed = parseRewriteResult(generated.text);

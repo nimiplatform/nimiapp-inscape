@@ -9,11 +9,14 @@ import {
 } from '@nimiplatform/kit/ui';
 import { LockKeyhole, Settings2, Trash2 } from 'lucide-react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
+import { ConfirmDialog } from '../components/interaction.tsx';
 
 export function PrivacySettings() {
   const { t } = useTranslation();
   const space = useInscapeStore((state) => state.space);
   const clearLocalData = useInscapeStore((state) => state.clearLocalData);
+  const quarantineSelf = useInscapeStore((state) => state.quarantineSelf);
+  const [ageConfirm, setAgeConfirm] = useState(false);
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
@@ -37,7 +40,7 @@ export function PrivacySettings() {
     }
   }
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
+    <><Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
         <button className="settings-trigger" aria-label={t('PrivacySettings.title')}>
           <Settings2 size={17} />
@@ -66,6 +69,9 @@ export function PrivacySettings() {
             </span>
           </div>
         )}
+        {!confirming && <button className="text-link" onClick={() => { changeOpen(false); setAgeConfirm(true); }}>
+          {t('AgeGate.declareUnder18')}
+        </button>}
         {error && (
           <p role="alert" className="ai-error">
             {t('PrivacySettings.failed')}
@@ -99,5 +105,9 @@ export function PrivacySettings() {
         </div>
       </DialogContent>
     </Dialog>
+    <ConfirmDialog open={ageConfirm} title={t('AgeGate.confirmTitle')}
+      description={t('AgeGate.confirmBody')} confirmLabel={t('AgeGate.confirm')}
+      onCancel={() => setAgeConfirm(false)} onConfirm={() => quarantineSelf(new Date().toISOString())} />
+    </>
   );
 }

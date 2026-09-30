@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessagesSquare, Plus, ScanHeart, Sparkles, Pencil, Trash2 } from 'lucide-react';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { buildFrictionPrompt } from './relationship-prompts.ts';
 import { CommunicationRewrite } from './communication-rewrite.tsx';
 import { DyadInsight } from './dyad-insight.tsx';
@@ -46,7 +45,7 @@ export function RelationshipDetail({
   const deletePerson = useInscapeStore((s) => s.deletePerson);
   const quarantine = useInscapeStore((s) => s.quarantineOtherSubject);
   const space = useInscapeStore((s) => s.space);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const client = useInscapeAiClient(relationship.id);
   const history = useReadingHistory('friction-analysis', relationship.id);
   const [tab, setTab] = useState('understand');
   const [snippet, setSnippet] = useState('');
@@ -106,7 +105,7 @@ export function RelationshipDetail({
           refusal: null,
           other_reference_type: other?.type_profile?.leading_type ?? null,
         });
-      else setError(result.failure.detail);
+      else if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
     } finally {
       setWorking(false);
       setLoadingAi(false);

@@ -5,6 +5,7 @@
 // logs are user-pasted snippets only — never passive capture.
 
 import type { FourLetterType } from './typology.ts';
+import type { AgeContextCorrection } from './age-context.ts';
 
 export type RelationshipNature =
   | 'partner'
@@ -26,13 +27,7 @@ export interface CommunicationLog {
   readonly created_at: string;
   /** User-pasted snippet only. */
   readonly snippet: string;
-}
-
-export interface FrictionPattern {
-  readonly id: string;
-  readonly created_at: string;
-  readonly summary: string;
-  readonly instance_count: number;
+  readonly age_context?: AgeContextCorrection;
 }
 
 export interface Relationship {
@@ -42,7 +37,6 @@ export interface Relationship {
   readonly nature: RelationshipNature;
   readonly type_dyad: TypeDyad;
   readonly communication_logs: readonly CommunicationLog[];
-  readonly friction_patterns: readonly FrictionPattern[];
   /** "My observations, based on adult-to-adult interaction" attestation checkbox. */
   readonly observation_attested: boolean;
 }

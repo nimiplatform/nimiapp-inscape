@@ -8,12 +8,7 @@
     "technicalDetails": "技术详情"
   },
   "Shell": {
-    "loading": "加载中...",
-    "logout": "退出登录",
-    "accountMenu": "账户菜单"
-  },
-  "App": {
-    "brand": "心相 · Inscape"
+    "loading": "加载中..."
   },
   "Language": {
     "ariaLabel": "界面语言",
@@ -27,12 +22,7 @@
     "loading": "加载中..."
   },
   "Common": {
-    "unknown": "未知",
-    "none": "无",
-    "listSeparator": "、",
-    "aiUnavailable": "AI 暂不可用（{{error}}）。",
-    "generate": "生成",
-    "generating": "生成中..."
+    "unknown": "未知"
   },
   "Navigation": {
     "ariaLabel": "产品区域",
@@ -46,19 +36,11 @@
     "adult": "我已年满 18 周岁。",
     "understood": "我理解 Inscape 不是心理诊断工具；如有心理困扰我会寻求专业帮助。",
     "continue": "进入心相",
-    "localNote": "所有数据仅保存在本机，不会上传。"
+    "localNote": "所有数据仅保存在本机，不会上传。 未满 18 周岁请勿继续。"
   },
-  "Today": {},
-  "TodaysRead": {},
-  "DecisionAid": {},
-  "ReflectionJournal": {},
-  "Self": {},
   "InitialTyping": {
     "title": "建立你的类型先验"
   },
-  "TypeProfile": {},
-  "SelfMirror": {},
-  "Relationship": {},
   "RelationshipNature": {
     "partner": "伴侣",
     "parent": "父母",
@@ -81,7 +63,7 @@
     "addSnippet": "添加片段",
     "collectedSnippets_one": "已收集 {{count}} 段片段。",
     "collectedSnippets_other": "已收集 {{count}} 段片段。",
-    "quarantineWarning": "确认此人未满 18 岁？记录会退出所有分析，并保留在隔离区。",
+    "quarantineWarning": "确认此人未满 18 岁？记录会退出所有分析，并保留在隔离区。尚未保存的相关草稿会舍弃。",
     "confirmQuarantine": "移入隔离区",
     "cancel": "取消",
     "markUnder18": "标记此人未满 18 岁"
@@ -463,7 +445,6 @@
     "deleteInteraction": "删除这段经历",
     "editInteractionBody": "修改后，基于这段经历的旧解读与反馈会移除，你可以重新探索。",
     "deleteInteractionBody": "这段共同经历及基于它的解读与反馈会永久删除。",
-    "uncertainType": "这些偏好还在变化，现在先不归为一种类型。你仍可以记录经历、使用圆桌和感受探索。",
     "dyadNeedsClarity": "你的类型倾向还不清晰。可以先从共同经历和沟通草稿探索这段关系；类型对照暂时留白。",
     "typeDerivationNote": "当前类型来自下面四个维度的倾向；接近中间或把握不足时会暂时留白。上方的功能活跃度是另一种观察，不会直接决定四字母类型。",
     "observationFits": "符合我的观察",
@@ -475,7 +456,7 @@
       "decision_pressure": "这段话可能包含最后通牒或要求对方立刻表态，心相暂不替这类表达润色。"
     },
     "sourceChanged": "原文已经修改，先基于新版重新探索吧。",
-    "calibrationChanged": "画像或这条手记已经变化，请基于当前信息重新请求微调。",
+    "calibrationChanged": "画像、画像依据或这条手记已经变化，请基于当前信息重新请求微调。",
     "leaveUnsavedBody": "这段内容还没保存。继续编辑，或明确舍弃后离开。",
     "saving": "正在保存…",
     "discardReading": "舍弃这次解读",
@@ -483,9 +464,39 @@
     "meaningDiffers": "还不是我想表达的",
     "deleteRecord": "删除这条记录",
     "referenceContext": "这次使用的参考",
-    "selfReference": "你选择的参考类型：{{type}}；该参考的主导视角：{{hero}}；当时较活跃的功能：{{active}}。这些是探索线索，不是已被证实的性格事实。",
     "pairReference": "你的参考视角：{{self}}；对方的参考视角：{{other}}。它们来自你选择或采纳的类型，并不代表对方确认了这些特征。",
     "readPairReference": "生成时的视角：你 {{self}} · 对方 {{other}}",
     "mirrorNeedsNotes": "先留下一段自己的经历，再回来看看其中的线索。"
+  },
+  "AgeGate": {
+    "title": "心相仅供成年人使用",
+    "body": "这个空间的分析已停止，相关内容已移入隔离保存。你可以清除本机数据；隔离的内容不会重新进入分析。",
+    "processingStopped": "已停止分析，正在保存隔离状态。",
+    "saveFailure": "相关分析已停止，但隔离状态还未保存成功。你可以重试，或确认清除本机数据；不会通过取消保存恢复分析。",
+    "declareUnder18": "更正成年声明：我尚未满 18 周岁",
+    "confirmTitle": "确认更正你的成年声明？",
+    "confirmBody": "确认你目前未满 18 周岁后，这个空间会停止所有分析，相关记录移入隔离保存。此操作无法在应用内撤销；你仍可清除本机数据。尚未保存的草稿会舍弃。",
+    "confirm": "确认并停止分析"
+  },
+  "Recovery": {
+    "versionTitle": "这个空间来自不同的数据版本",
+    "versionBody": "当前开发版本无法读取这些旧数据。原文件已保留。你可以先保存文件副本，再确认清除本机数据并重新开始。",
+    "loadTitle": "暂时无法打开本地空间",
+    "versionDetails": "保存的数据版本：{{stored}}；当前版本：{{expected}}。",
+    "hostRequired": "本地数据需要从 Nimi 启动心相后使用。"
+  },
+  "AgeReview": {
+    "title": "先确认这段年龄信息",
+    "body": "文字可能是引用、回忆或假设。这里只暂停相关 AI 请求，不会仅凭文字就隔离你的记录。请确认人物，以及是否为现在的年龄。",
+    "subject": "这段信息指的是谁的当前年龄？",
+    "self": "我本人",
+    "notCurrent": "不是当前年龄（引用、回忆或假设）",
+    "correctionEffect": "将保留原文并记录这次语境纠正。原文修改后，需要重新确认。",
+    "selfEffect": "如果确认本人目前未成年，这个空间将停止所有分析并移入隔离；不会恢复为活动空间。你仍可清除本机数据。其他尚未保存的草稿会舍弃。",
+    "otherEffect": "如果确认此人目前未成年，对应人物、关系、这次确认的原文及相关解读会移入隔离，其画像校准贡献也会撤回。其他成年人的无关记录和草稿仍保留；该人物关系中尚未保存的草稿会舍弃。",
+    "confirmAge": "我确认这是此人现在的年龄，且未满 18 周岁。",
+    "cancel": "取消这次 AI 请求",
+    "correct": "确认语境并继续",
+    "confirmMinor": "确认未成年并停止相关分析"
   }
 }

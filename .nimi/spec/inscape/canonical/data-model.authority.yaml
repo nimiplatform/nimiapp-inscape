@@ -82,9 +82,9 @@ units:
     kind: rule
     title: Recoverable local writes
     modality: must
-    statement: Commit product state only after a successful validated write. A failed save retains the current screen and pending action, offers retry or cancellation, and never masquerades as a load failure. A load failure offers an explicit reload action.
+    statement: Commit product state only after a successful validated write. An ordinary failed save retains the current screen and pending action, offers retry or cancellation, and never masquerades as a load failure. A private validated confirmed-quarantine write intent is recovery-only, never active analysis material, and is removed after the real commit or explicit reset. A confirmed quarantine write failure keeps related analysis stopped, preserves the committed material and pending action, and offers retry or confirmed local-data deletion; cancellation must not resume analysis. A load failure offers an explicit reload action. Report incompatible development data versions distinctly, preserve the old file, and offer confirmed local-data deletion without automatic conversion.
     condition: When loading or saving local product data fails.
-    failure: Leave committed state unchanged and show the unsaved state until the actual write succeeds or the user cancels it.
+    failure: Leave committed state unchanged until the actual write succeeds or an ordinary save is cancelled; keep confirmed-minor processing stopped during quarantine recovery and never report a reset as a successful quarantine write.
     relations:
       - type: applies_to
         target: definition.inscape.data-model.persistence

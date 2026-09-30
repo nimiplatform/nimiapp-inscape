@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { seedTypeProfileFromType } from '../src/product/inference/seed-profile.ts';
 import { parsePosteriorUpdateProposal } from '../src/product/inference/ai-proposal-parser.ts';
-import { applyPosteriorUpdate } from '../src/product/inference/posterior-update.ts';
 
 const NOW = '2026-06-05T00:00:00Z';
 
@@ -58,28 +57,6 @@ test('T1-11 parser drops an empty proposal (no updates)', () => {
   assert.equal(parsePosteriorUpdateProposal(raw).ok, false);
 });
 
-test('applyPosteriorUpdate replaces only the targeted entries', () => {
-  const seed = seedTypeProfileFromType('INTJ', NOW);
-  const parsed = parsePosteriorUpdateProposal(
-    JSON.stringify({
-      function_updates: [{ function: 'Fe', proposed_strength: 0.24, proposed_confidence: 0.5 }],
-      axis_updates: [{ axis: 'T_F', proposed_value: 0.1, proposed_confidence: 0.6 }],
-      reason: 'accepted by user',
-    }),
-  );
-  assert.equal(parsed.ok, true);
-  const next = applyPosteriorUpdate(
-    seed,
-    parsed.proposal,
-    '2026-07-01T00:00:00Z',
-    'reflection:7842',
-  );
-  assert.equal(next.function_stack_posterior.Fe.strength, 0.24);
-  assert.equal(next.function_stack_posterior.Ni.strength, 0.85); // untouched
-  assert.equal(next.dichotomy_distribution.T_F.value, 0.1);
-  assert.ok(next.dichotomy_distribution.T_F.sources.includes('reflection:7842'));
-  assert.equal(next.updated_at, '2026-07-01T00:00:00Z');
-});
 
 test('proposal parser rejects duplicate targets and missing update arrays as a whole', () => {
   const item = { function: 'Fe', proposed_strength: 0.3, proposed_confidence: 0.4 };

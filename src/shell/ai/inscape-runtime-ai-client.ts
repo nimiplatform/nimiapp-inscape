@@ -12,6 +12,7 @@ export type InscapeTextFailureKind =
   | 'runtime_unavailable'
   | 'scheduling_denied'
   | 'empty_output'
+  | 'processing_stopped'
   | 'unsupported_mode';
 export type InscapeTextResult =
   | { ok: true; text: string }
@@ -19,6 +20,9 @@ export type InscapeTextResult =
 
 export type InscapeRuntimeAiClientOptions = {
   readonly getClient?: () => NimiLocalAppClient;
+  readonly canProcess: () => boolean;
+  readonly beforeGenerate: () => Promise<boolean>;
+  readonly getAgeContext: (request: InscapeTextRequest) => string | null;
 };
 
 export interface InscapeRuntimeAiClient {
@@ -26,9 +30,10 @@ export interface InscapeRuntimeAiClient {
 }
 
 export function createInscapeRuntimeAiClient(
-  options: InscapeRuntimeAiClientOptions = {},
+  options: InscapeRuntimeAiClientOptions,
 ): InscapeRuntimeAiClient {
   const getClient = options.getClient ?? getInscapeNimiClient;
+  const stopped = (): InscapeTextResult => ({ ok: false, failure: { kind: 'processing_stopped', detail: 'Source material is no longer available for analysis.' } });
   return {
     async generate(request) {
       // @nimi-authority: rule.inscape.runtime-ai.r003
@@ -38,9 +43,13 @@ export function createInscapeRuntimeAiClient(
           failure: { kind: 'unsupported_mode', detail: 'Unsupported structured exploration mode.' },
         };
       try {
+        // @nimi-authority: rule.inscape.privacy.r003
+        if (!options.canProcess()) return stopped();
+        if (!(await options.beforeGenerate()) || !options.canProcess()) return stopped();
         // @nimi-authority: rule.inscape.runtime-ai.r002
         const client = getClient();
         const config = await client.aiConfig.get();
+        if (!options.canProcess()) return stopped();
         const binding = config.config?.capabilities.find(
           (item) => item.capabilityContract === 'text.generate',
         );
@@ -53,15 +62,18 @@ export function createInscapeRuntimeAiClient(
             },
           };
         }
+        const context = options.getAgeContext(request);
+        const system = [request.system, context].filter(Boolean).join('\n\n');
         const result = await client.ai.text.generateCandidate({
           messages: [
-            ...(request.system ? [{ role: 'system' as const, text: request.system }] : []),
+            ...(system ? [{ role: 'system' as const, text: system }] : []),
             { role: 'user' as const, text: request.user },
           ],
           temperature: request.temperature ?? 0.7,
           topP: 0.95,
           maxTokens: 3072,
         });
+        if (!options.canProcess()) return stopped();
         const output = result.text.trim();
         if (!output) {
           return {

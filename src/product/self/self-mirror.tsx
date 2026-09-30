@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Fingerprint, Sparkles } from 'lucide-react';
-import { createInscapeRuntimeAiClient } from '../../shell/ai/inscape-runtime-ai-client.ts';
-import { useInscapeStore } from '../state/inscape-store-provider.tsx';
+import { useInscapeStore, useInscapeAiClient } from '../state/inscape-store-provider.tsx';
 import { analyzeSelf } from './self-analysis.ts';
 import { buildSelfMirrorPrompt } from './self-prompts.ts';
 import type { TypeProfile } from '../../domain/type-profile.ts';
@@ -14,7 +13,7 @@ export function SelfMirror({ profile }: { profile: TypeProfile | null }) {
   const space = useInscapeStore((s) => s.space);
   const locale = space?.settings.locale;
   const recent = (space?.self_subject.reflection_entries ?? []).slice(-3);
-  const client = useMemo(() => createInscapeRuntimeAiClient(), []);
+  const client = useInscapeAiClient();
   const history = useReadingHistory('self-mirror');
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
@@ -41,7 +40,7 @@ export function SelfMirror({ profile }: { profile: TypeProfile | null }) {
         refusal: null,
         other_reference_type: null,
       });
-    else setError(result.failure.detail);
+    else if (result.failure.kind !== 'processing_stopped') setError(result.failure.detail);
     setWorking(false);
     setLoadingAi(false);
   }

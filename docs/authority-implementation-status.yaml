@@ -1,7 +1,11 @@
-# NON-AUTHORITY evidence document. Product authority lives only in .nimi/spec/**.
-# Tracks implementation status per authority unit; carried over from the
-# pre-authority rule catalog on 2026-07-23. status: implemented | planned.
-format: inscape.authority-implementation-status/v1
+# NON-AUTHORITY implementation evidence. See AGENTS.md for canonical rules,
+# original product targets and historical evidence. A status is not App acceptance.
+# implemented = current mechanism present; partial = a known coverage gap;
+# planned = no current product delivery. Command checks do not prove model quality.
+format: inscape.authority-implementation-status/v2
+review_date: 2026-09-30
+current_app_acceptance: NOT-VERIFIED
+acceptance_record: docs/nimi-app-access-journey.md
 units:
   - unit: rule.inscape.product.r001
     legacy_id: IS-PROD-01
@@ -14,11 +18,11 @@ units:
   - unit: rule.inscape.product.r003
     legacy_id: IS-PROD-03
     enforcement: observation_attested framing; no personnel-export surface.
-    status: planned
+    status: implemented
   - unit: rule.inscape.product.r004
     legacy_id: IS-PROD-04
     enforcement: permanent non-diagnostic disclaimer; non-pathologizing prompts.
-    status: planned
+    status: implemented
   - unit: rule.inscape.product.r005
     legacy_id: IS-PROD-05
     enforcement: no open chat surface; AI modes are purpose-scoped.
@@ -30,7 +34,7 @@ units:
   - unit: rule.inscape.product.r007
     legacy_id: IS-PROD-07
     enforcement: IA limited to Today/Relationship/Self.
-    status: planned
+    status: implemented
   - unit: rule.inscape.data-model.r001
     legacy_id: IS-DATA-01
     enforcement: src/domain/inscape-space.ts.
@@ -61,8 +65,8 @@ units:
     status: implemented
   - unit: rule.inscape.typology.r003
     legacy_id: IS-TYPO-03
-    enforcement: trademark lint (T1-09).
-    status: planned
+    enforcement: source literal lint (T1-09); generated output and broader marketing coverage need separate review.
+    status: partial
   - unit: rule.inscape.inference.r001
     legacy_id: IS-INFER-01
     enforcement: TypeProfile distribution; seed is a prior not a verdict.
@@ -74,8 +78,8 @@ units:
     status: implemented
   - unit: rule.inscape.inference.r003
     legacy_id: IS-INFER-03
-    enforcement: accept/reject UI gate (wave-3) over applyPosteriorUpdate.
-    status: planned
+    enforcement: explicit adoption gate over shared bounded contribution projection.
+    status: implemented
   - unit: rule.inscape.runtime-ai.r001
     legacy_id: IS-AI-01
     enforcement: src/shell/ai/** + ai-boundary lint (T1-07).
@@ -86,20 +90,20 @@ units:
     status: implemented
   - unit: rule.inscape.runtime-ai.r003
     legacy_id: IS-AI-03
-    enforcement: per-mode prompt templates (wave-3).
-    status: planned
+    enforcement: structured-purpose prompts and dispatch mode validation.
+    status: implemented
   - unit: rule.inscape.ia.r001
     legacy_id: IS-IA-01
-    enforcement: src/shell/routes/** (wave-3).
-    status: planned
+    enforcement: src/product/shell/inscape-shell.tsx and three kept-mounted faces.
+    status: implemented
   - unit: rule.inscape.ia.r002
     legacy_id: IS-IA-02
-    enforcement: type-profile views (wave-3).
-    status: planned
+    enforcement: src/product/self/type-profile-view.tsx; uncertainty and function activity shown separately.
+    status: implemented
   - unit: rule.inscape.ia.r003
     legacy_id: IS-IA-03
-    enforcement: read card controls (wave-3).
-    status: planned
+    enforcement: persistent reading history; reversible feedback; source-bound explicit calibration.
+    status: implemented
   - unit: rule.inscape.privacy.r001
     legacy_id: IS-PRIV-01
     enforcement: src-electron/persistence.ts schema.
@@ -110,12 +114,12 @@ units:
     status: implemented
   - unit: rule.inscape.privacy.r003
     legacy_id: IS-PRIV-03
-    enforcement: quarantine table + quarantine flow (wave-3).
-    status: planned
+    enforcement: manual declarations; candidate age review and source-bound context correction; confirmed quarantine and restart recovery.
+    status: implemented
   - unit: rule.inscape.privacy.r004
     legacy_id: IS-PRIV-04
-    enforcement: rewrite guards (wave-4, T1-10).
-    status: planned
+    enforcement: pre-dispatch context guard, purpose prompt, mandatory disclaimer and refusal history.
+    status: implemented
   # Legacy summary work-item anchor: T1-05.
   - unit: rule.inscape.privacy.r005
     legacy_id: IS-PRIV-05
@@ -127,9 +131,31 @@ units:
     status: implemented
   - unit: rule.inscape.oss.r002
     legacy_id: IS-OSS-02
-    enforcement: question bank + NOTICE (wave-3).
+    enforcement: future question bank provenance; 60-item first assessment is a separate user-confirmed iteration.
     status: planned
   - unit: rule.inscape.oss.r003
     legacy_id: IS-OSS-03
     enforcement: this repository.
     status: implemented
+  - unit: rule.inscape.inference.r004
+    enforcement: whole-proposal schema/A_T/bounds checks; preview and commit share projection; unreachable saturation targets rejected.
+    status: implemented
+  - unit: rule.inscape.inference.r005
+    enforcement: signed-axis threshold derivation; Beebe follows the current type; reversible contributions rebuild from the selected prior.
+    status: implemented
+  - unit: rule.inscape.data-model.r006
+    enforcement: actual SQLite save recovery; ordinary cancellation preserves committed state; confirmed quarantine retains a private recovery intent; typed version error and confirmed reset.
+    status: implemented
+  - unit: rule.inscape.data-model.r007
+    enforcement: source editing/deletion cascades; explicit destructive confirmation; reading history, feedback and kept-mounted drafts.
+    status: implemented
+  - unit: rule.inscape.privacy.r006
+    enforcement: production CSP in index.html; serve-only Vite exceptions; shared argument/environment loopback validation.
+    status: implemented
+future_product_targets:
+  - target: initial_60_item_assessment
+    status: planned
+    decision: User explicitly deferred this to a separate iteration on 2026-09-30; the original target is retained.
+  - target: independent_observations_and_long_term_trends
+    status: planned
+    decision: User explicitly retained this future target on 2026-09-30. Removing empty ObservationEvent/FrictionPattern storage is engineering cleanup, not delivery or target retirement.

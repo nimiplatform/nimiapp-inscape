@@ -1,3 +1,7 @@
+## 0.1.8 · Published platform dependencies
+
+Uses public npm SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.1 and nimi-coding 0.6.5 with frozen registry lockfiles. Local Nimi tarball overrides are removed; Desktop-supervised development and installed Apps use the same published carrier.
+
 # Inscape 0.1.7
 
 本版本仍为未发布候选。2026-09-30 源码修复与迭代：

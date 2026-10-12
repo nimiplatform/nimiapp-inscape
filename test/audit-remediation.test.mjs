@@ -428,7 +428,7 @@ test('a completed other-person quarantine cannot revive an in-flight response af
   assert.equal((await pending).failure.kind, 'processing_stopped');
   const current = createInscapeStoreAiClient(store, undefined, () => ({
     aiConfig: { get: async () => ({ config: { capabilities: [{ capabilityContract: 'text.generate', route: { oneofKind: 'local', local: {} } }] } }) },
-    ai: { text: { generateCandidate: async () => ({ text: 'A new synthetic response.' }) } },
+    ai: { text: { generateCandidate: async () => ({ text: 'A new synthetic response.', finishReason: 'stop', traceId: 'trace-new-source' }) } },
   }));
   assert.equal((await current.generate({ mode: 'today-read', user: 'An adult reflection.' })).ok, true);
 });

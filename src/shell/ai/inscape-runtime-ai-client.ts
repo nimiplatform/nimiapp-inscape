@@ -12,6 +12,8 @@ export type InscapeTextFailureKind =
   | 'runtime_unavailable'
   | 'scheduling_denied'
   | 'empty_output'
+  | 'incomplete_output'
+  | 'content_filtered'
   | 'processing_stopped'
   | 'unsupported_mode';
 export type InscapeTextResult =
@@ -74,6 +76,14 @@ export function createInscapeRuntimeAiClient(
           maxTokens: 3072,
         });
         if (!options.canProcess()) return stopped();
+        if (result.finishReason !== 'stop') {
+          return {
+            ok: false,
+            failure: result.finishReason === 'content-filter'
+              ? { kind: 'content_filtered', detail: 'Runtime filtered this response. No candidate was adopted.' }
+              : { kind: 'incomplete_output', detail: 'Runtime stopped before completing this response. No candidate was adopted.' },
+          };
+        }
         const output = result.text.trim();
         if (!output) {
           return {

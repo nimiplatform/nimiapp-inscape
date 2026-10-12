@@ -139,3 +139,18 @@ test('a cancelled source review prevents obtaining Runtime access or model dispa
   assert.equal(result.ok, false);
   assert.equal(result.failure.kind, 'processing_stopped');
 });
+
+for (const [finishReason, kind] of [['length', 'incomplete_output'], ['content-filter', 'content_filtered']]) {
+  test(`a nonempty ${finishReason} response is never adopted as a complete candidate`, async () => {
+    const client = createInscapeRuntimeAiClient({
+      canProcess: () => true, beforeGenerate: async () => true, getAgeContext: () => null,
+      getClient: () => ({
+        aiConfig: { get: async () => ({ config: { capabilities: [{ capabilityContract: 'text.generate', route: { oneofKind: 'local', local: {} } }] } }) },
+        ai: { text: { generateCandidate: async () => ({ text: 'Nonempty unfinished output', finishReason, traceId: 'trace-incomplete' }) } },
+      }),
+    });
+    const result = await client.generate({ mode: 'today-read', user: 'Reviewed source.' });
+    assert.equal(result.ok, false);
+    assert.equal(result.failure.kind, kind);
+  });
+}

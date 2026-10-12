@@ -210,7 +210,7 @@ test('changed, missing or non-local AI routes prevent dispatch, even after a pri
         text: {
           generateCandidate: async () => {
             calls++;
-            return { text: 'test transport response' };
+            return { text: 'test transport response', finishReason: 'stop', traceId: 'trace-local-route' };
           },
         },
       },

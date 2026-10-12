@@ -44,7 +44,7 @@ i18n.use(initReactI18next).init({
   supportedLngs: INSCAPE_LOCALES,
   interpolation: { escapeValue: false },
   react: { useSuspense: false },
-  initImmediate: false,
+  initAsync: false,
 });
 
 syncDocumentLanguage(initialLanguage);

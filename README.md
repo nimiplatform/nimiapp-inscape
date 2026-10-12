@@ -1,5 +1,15 @@
 # nimiapp-inscape
 
+## Published dependency and Catalog acceptance (2026-10-13)
+
+Current public release: [0.1.8](https://github.com/nimiplatform/nimiapp-inscape/releases/tag/v0.1.8); [Registry admission #80](https://github.com/nimiplatform/nimi-app-registry/pull/80) is merged for macOS arm64 and Windows x64. Frozen locks use published SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.1 and nimi-coding 0.6.5; no local Nimi archive or source-link resolution is required.
+
+Repository checks and managed production builds, package provenance and immutable Release checks passed for both declared targets. Actual Catalog download, installation and AI acceptance ran on macOS arm64 through source Nimi Home and its matching protected Runtime (Nimi main 35498102b). Runtime identity and App Access checks remain enforced.
+
+Catalog update, adult test-space setup, real reflection generation, local save, and a full Home stop/launch preserving the complete reflection passed.
+
+**NOT-VERIFIED:** Windows GUI installation and AI use. Other AI workflows and destructive data-management paths were not rerun.
+
 Inscape helps adults explore Jungian personality patterns through daily observations and reflections, with data stored locally.
 
 ## The experience
@@ -51,11 +61,10 @@ The 60-item assessment is a separate iteration. Independent observation records,
 cumulative views and recurring friction analysis remain future product targets;
 removing their empty storage scaffolding does not count as delivering them.
 
-Local Nimi source development uses SDK 0.19.0, Kit/native 0.16.0 and App Tools
-0.11.4 as complete npm archives from `/Users/snwozy/nimi-realm/nimi`.
-`pnpm-workspace.yaml` records the explicit overrides and `pnpm-lock.yaml` pins
-archive integrity. These versions are local development inputs; registry-based
-release reproducibility and installed acceptance remain separate checks.
+The frozen lock resolves published SDK 0.21.0, Kit/native 0.19.3, App Tools
+0.12.1 and nimi-coding 0.6.5 from npm. Install with
+`pnpm install --frozen-lockfile`; local Nimi archive overrides are removed.
+Development still launches through the matching Nimi Home supervisor.
 Electron's technical profile belongs to Desktop. App-owned SQLite is stored in
 `<OS application-data>/nimi.inscape/`; development uses an isolated `development`
 subdirectory keyed by the public Host profile. Resume a registration selected

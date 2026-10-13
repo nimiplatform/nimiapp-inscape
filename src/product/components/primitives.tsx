@@ -2,17 +2,23 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Check, CheckCheck, Eye, Leaf, LoaderCircle, X } from 'lucide-react';
+import { ArrowUpRight, Check, CheckCheck, Eye, LoaderCircle, X } from 'lucide-react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import type { SavedReading } from '../../domain/reading.ts';
 import { ConfirmDialog, localDate } from './interaction.tsx';
+
+const appIconUrl = new URL('../../../assets/app-icon.png', import.meta.url).href;
+
+export function BrandIcon({ size = 42 }: { size?: number }) {
+  return <img className="brand-icon" src={appIconUrl} alt="Inscape" width={size} height={size} />;
+}
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   return (
     <div className="brand">
       <span className="brand-mark">
-        <Leaf size={23} strokeWidth={1.6} />
+        <BrandIcon />
       </span>
       {!compact && (
         <span>

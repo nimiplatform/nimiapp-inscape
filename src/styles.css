@@ -20,6 +20,7 @@
   --inscape-text-disabled: var(--nimi-text-disabled, #b8bcb4);
   --inscape-brand-primary: #4a6244;
   --inscape-brand-soft: #e9eddf;
+  --inscape-text-on-brand: #fffef9;
   --inscape-border-subtle: #eeeee5;
   --inscape-border-default: #dedfd3;
   --inscape-border-strong: #adb59e;
@@ -42,6 +43,7 @@
   --nimi-action-primary-bg: #4a6244;
   --nimi-action-primary-bg-hover: #3c5137;
   --nimi-action-primary-bg-active: #31442d;
+  --nimi-action-primary-text: var(--inscape-text-on-brand);
 }
 
 html,
@@ -151,13 +153,17 @@ button {
   color: #344b32;
 }
 .brand-mark {
-  background: #e1e6d5;
-  width: 38px;
+  width: 42px;
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 13px 13px 13px 3px;
   flex-shrink: 0;
+}
+.brand-icon {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 22%;
 }
 .brand strong {
   font-family: Georgia, serif;
@@ -2694,9 +2700,6 @@ textarea:read-only {
 .welcome-screen {
   height: 100%;
   overflow-y: auto;
-}
-.welcome-gate > div > button:disabled {
-  color: #fffef9;
 }
 
 .read-prose {

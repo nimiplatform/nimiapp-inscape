@@ -119,6 +119,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
     minWidth: 360,
     minHeight: 640,
     title: '心相 Inscape',
+    icon: path.join(appRoot, 'assets', 'app-icon.png'),
     backgroundColor: '#f7f3ec',
     autoHideMenuBar: true,
     webPreferences: {

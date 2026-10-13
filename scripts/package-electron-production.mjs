@@ -107,6 +107,8 @@ try {
   const workspace = parseYaml(await readFile(path.join(appRoot, 'pnpm-workspace.yaml'), 'utf8'));
   await writeFile(path.join(productionSourceRoot, 'pnpm-workspace.yaml'), stringifyYaml({ ...rebaseLocalPackagePaths(workspace, appRoot, productionSourceRoot), packages: ['.'] }));
   await cp(path.join(appRoot, 'dist'), path.join(productionSourceRoot, 'dist'), { recursive: true, force: false });
+  await mkdir(path.join(productionSourceRoot, 'assets'), { recursive: true });
+  await copyFile(path.join(appRoot, 'assets', 'app-icon.png'), path.join(productionSourceRoot, 'assets', 'app-icon.png'));
   await copyFile(path.join(appRoot, 'dist-electron', 'main.js'), path.join(productionSourceRoot, 'dist-electron', 'main.js'));
   await copyFile(path.join(appRoot, 'dist-electron', 'preload.cjs'), path.join(productionSourceRoot, 'dist-electron', 'preload.cjs'));
   await installProductionDependencies(productionSourceRoot);
@@ -133,6 +135,7 @@ try {
     arch: NATIVE_ARCH,
     appBundleId: "ai.nimi.apps.nimi.inscape",
     name: APP_EXECUTABLE_NAME,
+    icon: path.join(appRoot, 'assets', MACOS_BUILD ? 'app-icon.icns' : 'app-icon.ico'),
     executableName: APP_EXECUTABLE_NAME,
     appVersion: RESOURCE_VERSION,
     buildVersion: RESOURCE_VERSION,

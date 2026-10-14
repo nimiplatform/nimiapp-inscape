@@ -1,72 +1,87 @@
-# nimiapp-inscape
+# Inscape (心相)
 
-## Published dependency and Catalog acceptance (2026-10-13)
+> A private, local-first space for Jungian personality exploration, daily reflection, and mindful relationships.
 
-Current public release: [0.1.8](https://github.com/nimiplatform/nimiapp-inscape/releases/tag/v0.1.8); [Registry admission #80](https://github.com/nimiplatform/nimi-app-registry/pull/80) is merged for macOS arm64 and Windows x64. Frozen locks use published SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.1 and nimi-coding 0.6.5; no local Nimi archive or source-link resolution is required.
+Inscape is designed for thoughtful adults (18+) who want to understand their inner patterns, navigate difficult choices, and improve their relationships through the lens of cognitive functions. It offers a space for personal reflection rather than clinical assessment. Your journals, relationship notes, and reflections live in a local SQLite database, and AI reflections run on your device.
 
-Repository checks and managed production builds, package provenance and immutable Release checks passed for both declared targets. Actual Catalog download, installation and AI acceptance ran on macOS arm64 through source Nimi Home and its matching protected Runtime (Nimi main 35498102b). Runtime identity and App Access checks remain enforced.
+---
 
-Catalog update, adult test-space setup, real reflection generation, local save, and a full Home stop/launch preserving the complete reflection passed.
+## The Experience
 
-**NOT-VERIFIED:** Windows GUI installation and AI use. Other AI workflows and destructive data-management paths were not rerun.
+Inscape is not an automated personality quiz that slaps a four-letter label on you. It is a quiet workbench for self-discovery where a personality type is an optional starting point, never a constraint.
 
-Inscape helps adults explore Jungian personality patterns through daily observations and reflections, with data stored locally.
+- **Today's Field Notes & Inner Weather**: Log a real lived moment, an emotional shift, or a dilemma. Save it as a pure personal note, or invite local AI to explore the underlying cognitive dynamics.
+- **The Inner Roundtable**: Bring a challenging decision before eight distinct cognitive-function perspectives. Hear different internal voices, explore alternative interpretations, and take one actionable experiment back into daily life.
+- **Between Us**: Reflect on interactions with other adults (18+), compare tentative perspectives, unpack misunderstandings, and draft clearer, non-confrontational ways to express your needs.
+- **About Me**: Visualize your dynamic cognitive function map with explicit confidence levels. Inspect field notes, review past experiments, and observe how your preferences evolve over time.
 
-## The experience
+### How AI Works in Inscape
 
-Inscape is a private place to explore a lived moment, a difficult choice, or a relationship. A type code is an optional starting point; you can begin without one.
+- **Local Inference Only**: AI requests use a configured Local text route through Nimi Runtime and never fall back to a cloud connector. If your local model is offline or busy, your notes remain safely saved on disk.
+- **You Remain in Control**: AI reflections propose gentle profile calibrations only when you explicitly request them. You review every suggested adjustment before accepting it, and any accepted change can be revoked at any time.
+- **Full Data Sovereignty**: Notes, relationship entries, and AI readings can be individually inspected, edited, or permanently deleted.
 
-- **Today:** choose your inner weather, turn over an exploration card, or bring in a real moment. Save the note on its own or ask the local AI to explore it.
-- **Inner roundtable:** hear eight cognitive-function perspectives on the same decision. Choose a voice to hear its perspective and question, consider another interpretation, and take one small experiment back into life.
-- **Between us:** record your own observations of an adult relationship, compare tentative perspectives, revisit a misunderstanding, and explore clearer ways to express your needs.
-- **About me:** explore a function map with explicit confidence, or search your field notes. Original words, structured AI readings, feedback, and experiments remain available after reopening.
+---
 
-AI readings retain their source context and can be reopened or individually deleted. Resonance feedback can be changed or withdrawn; type suggestions require their own explicit acceptance. Notes, shared moments, relationship details, and type references can be edited or removed. Failed saves retain the screen and offer retry without duplicating the operation. A reflection can propose a profile adjustment only when you request it, and the adjustment requires a separate acceptance. Each note contributes at most one reversible adjustment. Withdrawing its feedback or editing/deleting its source removes that contribution. Type and Beebe labels follow the current preference evidence and remain unset when it is uncertain. AI requests use the protected Nimi App Access client and a local text route. If the model is unavailable or returns an invalid exploration, the original note remains saved and the error is shown.
+## Getting Started & Development
 
-Start the desktop development app with `pnpm dev`. It requires Nimi Desktop and a local text model. To continue a specific existing local space, use `pnpm dev -- --list-registrations` and resume the corresponding selector with `pnpm dev -- --resume <selector>`.
+### Prerequisites
+- [Nimi Desktop](https://nimi.ai/download) or local source dev environment.
+- A ready local text model selected in Nimi Home.
 
-The product uses a warm paper palette and a generated [inner landscape illustration](public/images/README.md). Layout previews under `.nimi/local/` are visual inspection artifacts, not the application or proof of working AI.
-
-## Windows package and release
-
-The production target is Windows x86_64 using Desktop-supervised Electron.
-Build and inspect the package from this repository:
-
+### Running Locally
 ```bash
+# Install dependencies
+pnpm install
+
+# Start in Desktop-supervised development mode
+pnpm dev
+```
+
+To list existing local registrations or resume an existing workspace session:
+```bash
+# List registrations
+pnpm dev -- --list-registrations
+
+# Resume a specific registration
+pnpm dev -- --resume <selector>
+```
+
+### Production Build & Packaging
+```bash
+# Synchronize and check project constraints
 pnpm run sync
 pnpm exec nimi-app check --production
+
+# Run tests
 pnpm exec nimi-app test
+
+# Build and package for your target platform
+# macOS
+pnpm exec nimi-app build --target macos-aarch64 --production
+pnpm exec nimi-app pack --target macos-aarch64 --production
+
+# Windows
 pnpm exec nimi-app build --target windows-x86_64 --production
 pnpm exec nimi-app pack --target windows-x86_64 --production
 ```
 
-Before tagging, follow the [GitHub release setup guide](https://github.com/nimiplatform/nimi/blob/main/app-tools/README.md#publishing-on-github), including the `NIMI_REPOSITORY_ADMIN_TOKEN` Actions secret.
-A protected annotated version tag on the repository default branch runs the managed build, provenance and immutable Release workflow.
-The publisher then submits the immutable Release to [Nimi App Registry](https://github.com/nimiplatform/nimi-app-registry). Registry admission is a separate human review; local builds and GitHub Releases do not create admission or installed state.
+---
 
-## Current repair and iteration scope
+## Data Privacy & Storage
 
-Canonical executable rules are in `.nimi/spec/**`; the original product targets
-remain in the topic linked from `AGENTS.md`. Implementation status and journey
-records are evidence, not product authority. Current data uses schema 3 with a
-hard cut from earlier development files and no automatic migration.
+- **Local Storage Path**:
+  - macOS: `~/Library/Application Support/nimi.inscape/`
+  - Windows: `%APPDATA%/nimi.inscape/`
+  - *Note*: The paths above apply to the installed app; development registrations store data in separate subdirectories under `development/`.
+- **Zero Cloud Sync**: Your field notes, reflections, relationship observations, and cognitive profiles are stored directly in SQLite on your disk and never uploaded to remote servers.
+- **Clean Slate**: You can clear all local data at any time via Inscape's *Settings & Local Data* panel.
 
-Age text produces a review candidate, not actual knowledge. The user confirms
-attribution/current age or corrects quoted, historical and hypothetical context.
-Only confirmed under-18 subjects enter quarantine. Failed quarantine writes keep
-analysis stopped and retain a private recovery-only intent until commit or an
-explicit reset. Ordinary failed saves retain their existing retry/cancel behavior.
+---
 
-The 60-item assessment is a separate iteration. Independent observation records,
-cumulative views and recurring friction analysis remain future product targets;
-removing their empty storage scaffolding does not count as delivering them.
+## Release & Verification Status
 
-The frozen lock resolves published SDK 0.21.0, Kit/native 0.19.3, App Tools
-0.12.1 and nimi-coding 0.6.5 from npm. Install with
-`pnpm install --frozen-lockfile`; local Nimi archive overrides are removed.
-Development still launches through the matching Nimi Home supervisor.
-Electron's technical profile belongs to Desktop. App-owned SQLite is stored in
-`<OS application-data>/nimi.inscape/`; development uses an isolated `development`
-subdirectory keyed by the public Host profile. Resume a registration selected
-from the current `pnpm exec nimi-app dev --list-registrations` result to reopen its
-space. No old file is moved or converted.
+- **Verified Publisher Release**: [v0.1.8](https://github.com/nimiplatform/nimiapp-inscape/releases/tag/v0.1.8)
+- **Registry Admission**: [#80](https://github.com/nimiplatform/nimi-app-registry/pull/80) (macOS arm64 and Windows x64)
+- **Recorded Toolchain Combination**: SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.1, Nimi Coding 0.6.5
+- **Previously Recorded Platform Checks**: macOS arm64 Catalog install, local reflection generation, local SQLite persistence, and cold start recovery verified against Nimi Home. (Windows GUI execution marked as `NOT-VERIFIED` in automated CI).

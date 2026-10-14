@@ -1,9 +1,9 @@
 {
   "Runtime": {
     "unavailableTitle": "Nimi Runtime is unavailable",
-    "unavailableBody": "Keep this window open, check Nimi Desktop, then retry on the same Host.",
+    "unavailableBody": "Keep this window open, check Nimi Desktop, and retry in this same session.",
     "accountRequiredTitle": "Open Nimi Desktop to continue",
-    "accountRequiredBody": "Account and access actions are available only in Nimi Desktop. Inscape never handles your sign-in credentials.",
+    "accountRequiredBody": "Sign-in and account access are handled in Nimi Desktop. Inscape never touches your credentials.",
     "retry": "Retry",
     "technicalDetails": "Technical details"
   },
@@ -39,7 +39,7 @@
     "localNote": "All data stays on this device. Nothing is uploaded. Do not continue if you are under 18."
   },
   "InitialTyping": {
-    "title": "Set your type prior"
+    "title": "Set your starting type"
   },
   "RelationshipNature": {
     "partner": "Partner",
@@ -63,7 +63,7 @@
     "addSnippet": "Add snippet",
     "collectedSnippets_one": "{{count}} snippet collected.",
     "collectedSnippets_other": "{{count}} snippets collected.",
-    "quarantineWarning": "Confirm this person is under 18? This subject will be removed from all analysis immediately and moved into quarantine. Unsaved drafts for this relationship will be discarded.",
+    "quarantineWarning": "Confirm this person is under 18? Their records will be removed from all analysis immediately and moved to quarantine. Unsaved drafts for this relationship will be discarded.",
     "confirmQuarantine": "Confirm quarantine",
     "cancel": "Cancel",
     "markUnder18": "Mark this person as under 18"
@@ -72,7 +72,7 @@
     "inferHint": "Describe a few adult-to-adult interactions you observed",
     "descriptionPlaceholder": "For example: in meetings, they ask for a written plan and time to think before deciding.",
     "infer": "Infer from description",
-    "inferFailed": "Could not infer a type reliably from the description. Choose the code directly.",
+    "inferFailed": "Could not infer a clear type from this description. Please choose a type directly.",
     "generate": "Generate interaction insight"
   },
   "CommunicationRewrite": {
@@ -85,7 +85,7 @@
   },
   "Quarantine": {
     "title": "Quarantine",
-    "description": "The subjects below were identified as under 18, removed from all analysis, and will never be processed. You can delete them permanently or leave them quarantined.",
+    "description": "Entries marked as under 18 are removed from all analysis and are never processed. You can delete them permanently or leave them in quarantine.",
     "quarantinedAt": "Quarantined at {{time}}",
     "delete": "Delete permanently"
   },
@@ -151,7 +151,7 @@
     "listening": "Reading this moment from a few new angles…",
     "listeningNote": "Your local AI is thinking. Take a little moment to pause.",
     "aiError": "AI could not respond this time.",
-    "aiErrorNote": "Your words are still here. Check the available local text model in Nimi Desktop, then try again.",
+    "aiErrorNote": "Your words are still here. Make sure a local text model is available in Nimi Desktop, then try again.",
     "invalidRead": "The model did not return a complete exploration. This result was not saved.",
     "oneMoment": "The moment you want to bring in",
     "onlyYou": "Your words stay on this device",
@@ -177,7 +177,7 @@
     "noEvidence": "No lived moments yet. This reading only uses the type leaning you selected.",
     "evidenceNote": "These lenses draw on your words and the cognitive-function framework. They are possibilities, not established facts or someone else’s perspective.",
     "calibrate": "Let this discovery help refine my map",
-    "noCalibration": "No usable adjustment was produced this time. Your map is unchanged.",
+    "noCalibration": "No clear map adjustment emerged this time. Your map remains unchanged.",
     "calibrationSaved": "Your map now includes the adjustment you accepted.",
     "calibrationTitle": "This discovery might gently move your map",
     "calibrationNote": "This suggestion uses your original note. Your map only changes if you accept it.",
@@ -268,8 +268,8 @@
     "rewriteDescription": "Keep what you mean. Try a way of saying it that may be easier to hear.",
     "copied": "Copied",
     "copyFailed": "Could not copy. Please select the text manually.",
-    "addYourMoment": "Add your own experience or answer after the question before exploring.",
-    "invalidRewrite": "Three complete drafts were not returned. Your original message is still here.",
+    "addYourMoment": "Add your own thoughts or experience below the prompt before exploring.",
+    "invalidRewrite": "Could not generate all three drafts this time. Your original message is still here—please try again.",
     "copyThisDraft": "Copy this draft",
     "connectionCount_one": "{{count}} shared moment",
     "connectionCount_other": "{{count}} shared moments"
@@ -382,7 +382,7 @@
     "clear": "Clear local data…",
     "confirmTitle": "Clear this device’s Inscape space?",
     "confirmBody": "All notes, AI readings, your map, connections and adult attestation will be deleted. This cannot be undone in the app; the next visit will start fresh.",
-    "confirm": "Confirm clearing all local data",
+    "confirm": "Clear all local data",
     "clearing": "Clearing…",
     "failed": "The data could not be cleared and is still here. Please try again later.",
     "notes_one": "{{count}} note",
@@ -444,7 +444,7 @@
     "editInteraction": "Edit this moment",
     "deleteInteraction": "Delete this moment",
     "editInteractionBody": "Editing this moment removes readings and feedback based on it. You can explore it again afterward.",
-    "deleteInteractionBody": "This shared moment and readings and feedback based on it will be permanently deleted.",
+    "deleteInteractionBody": "This shared moment and any readings or feedback based on it will be permanently deleted.",
     "dyadNeedsClarity": "Your type tendency is not clear yet. Explore shared moments and communication drafts while the type comparison remains open.",
     "typeDerivationNote": "The current type comes from these four preference dimensions. A near-center or uncertain dimension leaves the type open. Function activity above is a separate observation and does not directly determine the four-letter type.",
     "observationFits": "Fits my observations",
@@ -472,7 +472,7 @@
     "title": "Inscape is for adults only",
     "body": "Analysis of this space has stopped and its material is quarantined. You can clear local data. Quarantined material will not return to analysis.",
     "processingStopped": "Analysis has stopped. Saving the quarantine state.",
-    "saveFailure": "Related analysis has stopped, but quarantine is not yet saved. Retry, or confirm a local-data reset. Cancelling the write cannot resume analysis.",
+    "saveFailure": "Related analysis has stopped, but the quarantine state is not saved yet. Retry saving, or confirm a local-data reset. Canceling will not resume analysis.",
     "declareUnder18": "Correct my adult attestation: I am under 18",
     "confirmTitle": "Correct your adult attestation?",
     "confirmBody": "Confirming that you are currently under 18 stops all analysis and quarantines this space. This cannot be undone in the app. You can still clear local data. Unsaved drafts will be discarded.",
@@ -491,9 +491,9 @@
     "subject": "Whose current age does this describe?",
     "self": "Me",
     "notCurrent": "Not a current age (quotation, memory or hypothetical)",
-    "correctionEffect": "Keep the original and record this context correction. Editing the source requires another review.",
+    "correctionEffect": "Keep the original text and record this context confirmation. Editing the source later will trigger another review.",
     "selfEffect": "Confirming that you are currently under 18 stops all analysis and quarantines this space without restoring it to active use. You can still clear local data. Other unsaved drafts will be discarded.",
-    "otherEffect": "Confirming this person is currently under 18 quarantines their subject, relationship, this confirmed source and related readings, and withdraws the source’s profile calibration. Unrelated adult records and drafts remain. Unsaved drafts for this person’s relationship will be discarded.",
+    "otherEffect": "Confirming this person is currently under 18 quarantines their record, relationship, this confirmed source, and related readings, and withdraws the source’s profile adjustment. Unrelated adult records and drafts remain. Unsaved drafts for this relationship will be discarded.",
     "confirmAge": "I confirm this is the person’s current age and they are under 18.",
     "cancel": "Cancel this AI request",
     "correct": "Confirm context and continue",

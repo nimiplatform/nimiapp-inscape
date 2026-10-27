@@ -46,6 +46,8 @@ let resettingRenderer = false;
 let quitting = false;
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(currentDir, '..');
+// Native presentation is separate from metadata.icon artwork shown in Nimi Home.
+const nativeAppIconPath = path.join(appRoot, 'assets', 'native', process.platform === 'win32' ? 'windows.ico' : process.platform === 'darwin' ? 'macos.png' : 'app.png');
 const preloadPath = path.join(currentDir, 'preload.cjs');
 const rendererDistUrl = pathToFileURL(path.join(appRoot, 'dist', 'index.html')).toString();
 const rendererUrl = resolveDevelopmentRendererUrl(process.argv,
@@ -62,6 +64,7 @@ app.commandLine.appendSwitch('disable-background-networking');
 registerNimiElectronAppAssetProtocolScheme(protocol);
 
 void app.whenReady().then(async () => {
+  if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(nativeAppIconPath);
   registerNimiElectronAppBridge({
     appId: APP_ID,
     allowedRendererUrls: allowedRendererUrls(),
@@ -119,7 +122,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
     minWidth: 360,
     minHeight: 640,
     title: '心相 Inscape',
-    icon: path.join(appRoot, 'assets', 'app-icon.png'),
+    icon: nativeAppIconPath,
     backgroundColor: '#f7f3ec',
     autoHideMenuBar: true,
     webPreferences: {

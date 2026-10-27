@@ -49,8 +49,8 @@ Their age or a passing command does not establish current product completion.
 
 `@nimiplatform/{sdk,kit,app-tools}` consume complete npm packages through built
 exports, with declared combinations validated by the selected app-tools package.
-Current source development uses explicit local archive overrides; public release
-preflight requires registry resolutions.
+Current development resolves the published combination from the registry.
+Complete local archive overrides remain available for explicit platform iteration.
 
 ## Hard boundaries
 
@@ -112,6 +112,7 @@ pnpm lint
 - Keep App-owned product behavior, Host code, business accounts and non-AI services with this repository. Use the SDK/Kit Local App carrier for Nimi AI, configuration, storage and session access.
 - Development may consume complete local npm tarballs through the supported explicit overrides and version matrix; public-release preflight uses registry resolutions. Do not substitute source-workspace or directory links.
 - App Tools owns its lifecycle skill, this block, managed workflow and declared engineering fields; preserve other instructions, product source and licenses. Existing adoption does not create fresh scaffold intent or lock.
+- Maintain root NIMI_APP.md for the App’s actual users: purpose, first steps, configuration, data handling, limitations and help. Keep engineering instructions and acceptance logs in README/developer documentation. metadata.readme and README fallback are not supported; sync never overwrites or recreates this App-owned introduction.
 - Product-operation guides apply to their specific business tasks; they do not replace the Nimi development boundary.
 - Reuse the user's confirmed scope and authorization. Report command checks separately from actual App journeys; unrun relevant paths remain NOT-VERIFIED.
 <!-- nimi-app:managed:end -->

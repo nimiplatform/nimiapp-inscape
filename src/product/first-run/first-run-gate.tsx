@@ -7,10 +7,12 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Brand, BrandIcon } from '../components/primitives.tsx';
 import { normalizeInscapeLocale, DEFAULT_INSCAPE_LOCALE } from '../../domain/locale.ts';
 import { StandaloneLanguageSwitch } from '../settings/language-switch.tsx';
+import { useInscapeSettings } from '../settings/settings-context.tsx';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 
 export function FirstRunGate() {
   const { t, i18n } = useTranslation();
+  const settings = useInscapeSettings();
   const completeFirstRun = useInscapeStore((s) => s.completeFirstRun);
   const [adult, setAdult] = useState(false);
   const [understood, setUnderstood] = useState(false);
@@ -42,6 +44,7 @@ export function FirstRunGate() {
       <section className="welcome-gate">
         <div>
           <div className="welcome-language">
+            {settings?.accountControlSlot}
             <StandaloneLanguageSwitch />
           </div>
           <BrandIcon size={56} />
@@ -67,7 +70,9 @@ export function FirstRunGate() {
             {t('FirstRun.continue')}
             <ArrowRight size={17} />
           </Button>
-          <p className="welcome-local-note">{t('FirstRun.localNote')}</p>
+          <p className="welcome-local-note">
+            {t(settings?.isWeb ? 'FirstRun.localNoteWeb' : 'FirstRun.localNote')}
+          </p>
         </div>
       </section>
     </div>

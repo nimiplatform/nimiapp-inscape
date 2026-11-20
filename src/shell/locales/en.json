@@ -36,7 +36,8 @@
     "adult": "I confirm that I am at least 18 years old.",
     "understood": "I understand that Inscape is not a psychological diagnostic tool; if I am in psychological distress, I will seek professional help.",
     "continue": "Enter Inscape",
-    "localNote": "All data stays on this device. Nothing is uploaded. Do not continue if you are under 18."
+    "localNote": "All data stays on this device. Nothing is uploaded. Do not continue if you are under 18.",
+    "localNoteWeb": "All data is stored in your connected primary PC Runtime and is never uploaded to third-party clouds. Do not continue if you are under 18."
   },
   "InitialTyping": {
     "title": "Set your starting type"
@@ -90,6 +91,7 @@
     "delete": "Delete permanently"
   },
   "Experience": {
+    "appTitle": "Inscape",
     "brandLine": "A little further inward",
     "mySpace": "My space",
     "archive": "Field notes",
@@ -102,6 +104,7 @@
     "collapseNav": "Collapse navigation",
     "expandNav": "Expand navigation",
     "private": "Private · Saved locally",
+    "privateWeb": "Private · Primary PC",
     "disclaimer": "Inscape helps you explore, not define yourself. Cognitive functions are a lens for reflection, not a psychological diagnosis.",
     "savedLocally": "Saved on this device",
     "back": "Back to your space",
@@ -151,7 +154,7 @@
     "listening": "Reading this moment from a few new angles…",
     "listeningNote": "Your local AI is thinking. Take a little moment to pause.",
     "aiError": "AI could not respond this time.",
-    "aiErrorNote": "Your words are still here. Make sure a local text model is available in Nimi Desktop, then try again.",
+    "aiErrorNote": "Your words are still saved. Open Settings to check your connected local text model, then try again.",
     "invalidRead": "The model did not return a complete exploration. This result was not saved.",
     "oneMoment": "The moment you want to bring in",
     "onlyYou": "Your words stay on this device",
@@ -379,6 +382,7 @@
   "PrivacySettings": {
     "title": "Settings & local data",
     "description": "Your notes, map and connections are stored on this device. Uninstalling the app does not automatically remove them. You can clear this local Inscape space here.",
+    "descriptionWeb": "On Web, your notes, map and connections are stored in your connected primary PC Runtime. Manage your connection, local text model, or clear this space here.",
     "clear": "Clear local data…",
     "confirmTitle": "Clear this device’s Inscape space?",
     "confirmBody": "All notes, AI readings, your map, connections and adult attestation will be deleted. This cannot be undone in the app; the next visit will start fresh.",
@@ -498,5 +502,16 @@
     "cancel": "Cancel this AI request",
     "correct": "Confirm context and continue",
     "confirmMinor": "Confirm under 18 and stop related analysis"
+  },
+  "Settings": {
+    "openModelSettings": "Check local model settings",
+    "connectionTitle": "Nimi connection & account",
+    "connectionActive": "Connected to your primary Runtime; data and local models stay on your host.",
+    "connectionDisconnected": "Not connected to your primary Runtime. Reconnect to save or explore.",
+    "reconnect": "Reconnect",
+    "localModelTitle": "Local text model",
+    "localModelNote": "Inscape uses only local text models on your host and never falls back to cloud routes.",
+    "localModelOnlyError": "Inscape supports local text models only and cannot switch to a cloud route.",
+    "aiConfigError": "Could not update AI configuration. Check your Nimi connection and try again."
   }
 }

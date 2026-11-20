@@ -1,6 +1,8 @@
 node_modules/
 dist/
+dist-web/
 dist-electron/
+nimi-web-*.zip
 artifacts/
 .codex-artifacts/
 .DS_Store

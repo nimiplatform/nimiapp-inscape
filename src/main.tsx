@@ -1,25 +1,7 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { I18nextProvider } from 'react-i18next';
-import { NimiThemeProvider, NimiToaster, TooltipProvider } from '@nimiplatform/kit/ui';
 import { installNimiShellRuntimeBridge } from '@nimiplatform/kit/shell/renderer/bridge';
-import { App } from './shell/App.js';
-import { i18n } from './shell/i18n/index.js';
-import { installInscapeGlobalErrorLogging } from './shell/infra/renderer-log.js';
-import './styles.css';
+import { createDesktopNimiAppSession } from '@nimiplatform/kit/auth/app/desktop';
+import { mountInscape } from './shell/mount-inscape.js';
 
-installInscapeGlobalErrorLogging();
 installNimiShellRuntimeBridge();
-
-createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <I18nextProvider i18n={i18n}>
-      <NimiThemeProvider accentPack="nimi-accent" defaultScheme="light">
-        <TooltipProvider>
-          <App />
-          <NimiToaster />
-        </TooltipProvider>
-      </NimiThemeProvider>
-    </I18nextProvider>
-  </React.StrictMode>,
-);
+const dispose = mountInscape(createDesktopNimiAppSession(), { kind: 'desktop' });
+if (import.meta.hot) import.meta.hot.dispose(dispose);

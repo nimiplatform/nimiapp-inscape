@@ -18,12 +18,14 @@ import { SelfFace } from '../faces/self-face.tsx';
 import { PersistedLanguageSwitch } from '../settings/language-switch.tsx';
 import { Brand } from '../components/primitives.tsx';
 import { PrivacySettings } from '../settings/privacy-settings.tsx';
+import { useInscapeSettings } from '../settings/settings-context.tsx';
 
 const icons = { today: Compass, relationship: Users, self: Fingerprint };
 
 // @nimi-authority: rule.inscape.product.r007
 export function InscapeShell() {
   const { t } = useTranslation();
+  const settings = useInscapeSettings();
   const [active, setActive] = useState<FaceId>('today');
   const [collapsed, setCollapsed] = useState(false);
   const [archive, setArchive] = useState(false);
@@ -114,8 +116,9 @@ export function InscapeShell() {
           <div className="topbar-right">
             <span className="private-label">
               <LockKeyhole size={12} />
-              {t('Experience.private')}
+              {t(settings?.isWeb ? 'Experience.privateWeb' : 'Experience.private')}
             </span>
+            {settings?.accountControlSlot}
             <PersistedLanguageSwitch />
           </div>
         </header>

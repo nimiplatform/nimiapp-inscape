@@ -1,11 +1,12 @@
-// SQLite boot, adult eligibility and the three product faces.
+// Desktop SQLite / Web Runtime-storage boot, adult eligibility and the three product faces.
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SaveRecovery } from '../../product/components/interaction.tsx';
-import { useAppStore } from '../app-shell/app-store.js';
-import { SqlitePersistenceAdapter } from '../persistence/sqlite-persistence-adapter.ts';
+import { NimiAccountControl, type NimiAppScope } from '@nimiplatform/kit/auth/app';
 import { hasElectronInvoke } from '@nimiplatform/kit/shell/renderer/bridge';
+import { SaveRecovery } from '../../product/components/interaction.tsx';
+import { SqlitePersistenceAdapter } from '../persistence/sqlite-persistence-adapter.ts';
+import { RuntimeStoragePersistenceAdapter } from '../persistence/runtime-storage-persistence-adapter.ts';
 import type { PersistenceClient } from '../../product/persistence/persistence-client.ts';
 import {
   InscapeStoreProvider,
@@ -16,18 +17,31 @@ import { FirstRunGate } from '../../product/first-run/first-run-gate.tsx';
 import { SpaceRecovery } from '../../product/settings/space-recovery.tsx';
 import { AgeReviewDialog } from '../../product/privacy/age-review-dialog.tsx';
 import { usePersistedInscapeLocaleSync } from '../../product/settings/language-switch.tsx';
+import { InscapeSettingsProvider } from '../../product/settings/settings-context.tsx';
+import { ensureLocalAIConfig, InscapeRuntimeSettingsSection } from '../ai/inscape-ai-config.tsx';
+import { setInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
+import { describeError, logRendererEvent } from '../infra/renderer-log.ts';
+import type { InscapePlatform } from '../mount-inscape.tsx';
 
-function pickPersistenceClient(): PersistenceClient {
+function createPersistenceClient(scope: NimiAppScope, platform: InscapePlatform): PersistenceClient {
+  if (platform.kind === 'web') {
+    return new RuntimeStoragePersistenceAdapter(scope);
+  }
   if (!hasElectronInvoke()) throw new Error('Inscape SQLite requires the Electron Host.');
   return new SqlitePersistenceAdapter();
 }
 
-export function ProductArea() {
-  const user = useAppStore((s) => s.auth.user);
-  if (!user?.id) return null;
-  if (!hasElectronInvoke())
+export function ProductArea({
+  scope,
+  platform,
+}: {
+  readonly scope: NimiAppScope;
+  readonly platform: InscapePlatform;
+}) {
+  if (platform.kind === 'desktop' && !hasElectronInvoke()) {
     return <UnavailableHost />;
-  return <ProductAreaWithPersistence />;
+  }
+  return <ProductAreaWithPersistence scope={scope} platform={platform} />;
 }
 
 function UnavailableHost() {
@@ -35,14 +49,68 @@ function UnavailableHost() {
   return <CenteredNote text={t('Recovery.hostRequired')} />;
 }
 
-function ProductAreaWithPersistence() {
-  const client = useMemo(() => pickPersistenceClient(), []);
+function ProductAreaWithPersistence({
+  scope,
+  platform,
+}: {
+  readonly scope: NimiAppScope;
+  readonly platform: InscapePlatform;
+}) {
+  const { i18n } = useTranslation();
+  const language = i18n.language.startsWith('zh') ? 'zh' : 'en';
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const openSettings = useCallback(() => setSettingsOpen(true), []);
+
+  useEffect(() => {
+    setInscapeNimiClient(scope.client);
+    void ensureLocalAIConfig(scope).catch((error) => {
+      if (scope.signal.aborted) return;
+      logRendererEvent({
+        level: 'warn',
+        area: 'ai-config',
+        message: 'action:ensure-local-ai-config-deferred',
+        details: { error: describeError(error) },
+      });
+    });
+    return () => {
+      setInscapeNimiClient(null);
+    };
+  }, [scope]);
+
+  const persistenceClient = useMemo(
+    () => createPersistenceClient(scope, platform),
+    [scope, platform],
+  );
+  const getAiClient = useCallback(() => {
+    scope.signal.throwIfAborted();
+    return scope.client;
+  }, [scope]);
+
+  const settingsControls = useMemo(
+    () => ({
+      open: settingsOpen,
+      setOpen: setSettingsOpen,
+      openSettings,
+      isWeb: platform.kind === 'web',
+      runtimeSettingsSlot: <InscapeRuntimeSettingsSection scope={scope} />,
+      accountControlSlot:
+        platform.kind === 'web' ? <NimiAccountControl language={language} /> : undefined,
+    }),
+    [settingsOpen, openSettings, platform.kind, scope, language],
+  );
+
   return (
-    <InscapeStoreProvider client={client}>
-      <InscapeBootGate />
-      <AgeReviewDialog />
-      <SaveRecovery />
-    </InscapeStoreProvider>
+    <InscapeSettingsProvider value={settingsControls}>
+      <InscapeStoreProvider
+        client={persistenceClient}
+        getAiClient={getAiClient}
+        aiSignal={scope.signal}
+      >
+        <InscapeBootGate />
+        <AgeReviewDialog />
+        <SaveRecovery />
+      </InscapeStoreProvider>
+    </InscapeSettingsProvider>
   );
 }
 

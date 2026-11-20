@@ -9,6 +9,7 @@ export default defineConfig([
   globalIgnores([
     '.nimi/local/**',
     'dist/**',
+    'dist-web/**',
     'dist-electron/**',
     'dist-electron-package/**',
     'src-tauri/target/**',

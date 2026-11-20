@@ -6,12 +6,14 @@ export function createInscapeStoreAiClient(
   store: InscapeStore,
   relationshipId?: string,
   getClient?: InscapeRuntimeAiClientOptions['getClient'],
+  signal?: AbortSignal,
 ) {
   const initial = store.getState();
   const createdAt = initial.space?.created_at;
   const quarantine = initial.pendingQuarantine?.quarantine ?? initial.space?.quarantine;
   return createInscapeRuntimeAiClient({
     getClient,
+    signal,
     beforeGenerate: async () => {
       const space = store.getState().space;
       if (!space) return false;

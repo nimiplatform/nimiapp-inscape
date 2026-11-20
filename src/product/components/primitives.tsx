@@ -4,6 +4,7 @@ import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Check, CheckCheck, Eye, LoaderCircle, X } from 'lucide-react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
+import { useInscapeSettings } from '../settings/settings-context.tsx';
 import type { SavedReading } from '../../domain/reading.ts';
 import { ConfirmDialog, localDate } from './interaction.tsx';
 
@@ -70,6 +71,7 @@ export function LoadingRead() {
 
 export function AiError({ detail, onRetry }: { detail: string; onRetry?: () => void }) {
   const { t } = useTranslation();
+  const settings = useInscapeSettings();
   return (
     <div className="ai-error" role="alert">
       <strong>{t('Experience.aiError')}</strong>
@@ -78,10 +80,23 @@ export function AiError({ detail, onRetry }: { detail: string; onRetry?: () => v
         <summary>{t('Runtime.technicalDetails')}</summary>
         <p>{detail}</p>
       </details>
-      {onRetry && (
-        <button className="button button-secondary" onClick={onRetry}>
-          {t('Runtime.retry')}
-        </button>
+      {(onRetry || settings) && (
+        <div className="button-row">
+          {settings && (
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={settings.openSettings}
+            >
+              {t('Settings.openModelSettings')}
+            </button>
+          )}
+          {onRetry && (
+            <button type="button" className="button button-secondary" onClick={onRetry}>
+              {t('Runtime.retry')}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -10,20 +10,24 @@ import {
 import { LockKeyhole, Settings2, Trash2 } from 'lucide-react';
 import { useInscapeStore } from '../state/inscape-store-provider.tsx';
 import { ConfirmDialog } from '../components/interaction.tsx';
+import { useInscapeSettings } from './settings-context.tsx';
 
 export function PrivacySettings() {
   const { t } = useTranslation();
   const space = useInscapeStore((state) => state.space);
   const clearLocalData = useInscapeStore((state) => state.clearLocalData);
   const quarantineSelf = useInscapeStore((state) => state.quarantineSelf);
+  const settings = useInscapeSettings();
   const [ageConfirm, setAgeConfirm] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState(false);
+  const open = settings ? settings.open : localOpen;
   function changeOpen(next: boolean) {
     if (working) return;
-    setOpen(next);
+    if (settings) settings.setOpen(next);
+    else setLocalOpen(next);
     if (!next) {
       setConfirming(false);
       setError(false);
@@ -47,7 +51,10 @@ export function PrivacySettings() {
           <span>{t('PrivacySettings.title')}</span>
         </button>
       </DialogTrigger>
-      <DialogContent className="privacy-dialog" onClose={() => changeOpen(false)}>
+      <DialogContent
+        className={`privacy-dialog${settings?.runtimeSettingsSlot ? ' privacy-dialog--wide' : ''}`}
+        onClose={() => changeOpen(false)}
+      >
         <span className="round-icon">
           <LockKeyhole size={23} />
         </span>
@@ -55,8 +62,15 @@ export function PrivacySettings() {
           {t(confirming ? 'PrivacySettings.confirmTitle' : 'PrivacySettings.title')}
         </DialogTitle>
         <DialogDescription>
-          {t(confirming ? 'PrivacySettings.confirmBody' : 'PrivacySettings.description')}
+          {t(
+            confirming
+              ? 'PrivacySettings.confirmBody'
+              : settings?.isWeb
+                ? 'PrivacySettings.descriptionWeb'
+                : 'PrivacySettings.description',
+          )}
         </DialogDescription>
+        {!confirming && settings?.runtimeSettingsSlot}
         {!confirming && (
           <div className="privacy-counts">
             <span>

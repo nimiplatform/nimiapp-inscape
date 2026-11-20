@@ -1,6 +1,8 @@
+schema_version: 1
 app_id: nimi.inscape
+public_slug: inscape
 display_name: Inscape
-version: 0.1.8
+version: 0.1.9
 profile: standalone
 manifest_role: submitted-input
 app_access:
@@ -8,6 +10,12 @@ app_access:
 local_development:
   electron:
     renderer_origin: http://127.0.0.1:1431
+  web:
+    command: pnpm run dev:web-renderer
+    local:
+      origin: https://127.0.0.1:4431
+      redirect_uri: https://127.0.0.1:4431/
+      client_id: nimi.inscape.web.dev
 metadata:
   summary: 面向成年人的本地性格探索与日常反思工具，用认知功能视角理解自己和关系。
   icon: assets/app-icon.png

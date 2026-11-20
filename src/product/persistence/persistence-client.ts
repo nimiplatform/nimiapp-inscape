@@ -5,7 +5,7 @@
 import type { InscapeSpace } from '../../domain/inscape-space.ts';
 import type { InscapeSpaceValidationError } from '../../contracts/inscape-space-validator.ts';
 
-export type PersistenceAdapterKind = 'in_memory' | 'local_sqlite';
+export type PersistenceAdapterKind = 'in_memory' | 'local_sqlite' | 'nimi_storage';
 
 export type PersistenceError =
   | { kind: 'load_incompatible_version'; adapter: PersistenceAdapterKind; storedVersion: number; expectedVersion: number }

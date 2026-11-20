@@ -1,6 +1,8 @@
 import { isStructuredAiMode, type StructuredAiMode } from '../../domain/ai-mode.ts';
-import type { NimiLocalAppClient } from '@nimiplatform/sdk/app';
+import type { NimiAppRuntimeClient } from '@nimiplatform/sdk';
 import { getInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
+
+export type InscapeAiRuntimeClient = Pick<NimiAppRuntimeClient, 'aiConfig' | 'ai'>;
 
 export type InscapeTextRequest = {
   readonly mode: StructuredAiMode;
@@ -21,7 +23,8 @@ export type InscapeTextResult =
   | { ok: false; failure: { kind: InscapeTextFailureKind; detail: string } };
 
 export type InscapeRuntimeAiClientOptions = {
-  readonly getClient?: () => NimiLocalAppClient;
+  readonly getClient?: () => InscapeAiRuntimeClient;
+  readonly signal?: AbortSignal;
   readonly canProcess: () => boolean;
   readonly beforeGenerate: () => Promise<boolean>;
   readonly getAgeContext: (request: InscapeTextRequest) => string | null;
@@ -36,6 +39,7 @@ export function createInscapeRuntimeAiClient(
 ): InscapeRuntimeAiClient {
   const getClient = options.getClient ?? getInscapeNimiClient;
   const stopped = (): InscapeTextResult => ({ ok: false, failure: { kind: 'processing_stopped', detail: 'Source material is no longer available for analysis.' } });
+  const isActive = () => !options.signal?.aborted && options.canProcess();
   return {
     async generate(request) {
       // @nimi-authority: rule.inscape.runtime-ai.r003
@@ -46,12 +50,12 @@ export function createInscapeRuntimeAiClient(
         };
       try {
         // @nimi-authority: rule.inscape.privacy.r003
-        if (!options.canProcess()) return stopped();
-        if (!(await options.beforeGenerate()) || !options.canProcess()) return stopped();
+        if (!isActive()) return stopped();
+        if (!(await options.beforeGenerate()) || !isActive()) return stopped();
         // @nimi-authority: rule.inscape.runtime-ai.r002
         const client = getClient();
         const config = await client.aiConfig.get();
-        if (!options.canProcess()) return stopped();
+        if (!isActive()) return stopped();
         const binding = config.config?.capabilities.find(
           (item) => item.capabilityContract === 'text.generate',
         );
@@ -75,7 +79,7 @@ export function createInscapeRuntimeAiClient(
           topP: 0.95,
           maxTokens: 3072,
         });
-        if (!options.canProcess()) return stopped();
+        if (!isActive()) return stopped();
         if (result.finishReason !== 'stop') {
           return {
             ok: false,
@@ -93,6 +97,7 @@ export function createInscapeRuntimeAiClient(
         }
         return { ok: true, text: output };
       } catch (error) {
+        if (options.signal?.aborted) return stopped();
         return {
           ok: false,
           failure: {

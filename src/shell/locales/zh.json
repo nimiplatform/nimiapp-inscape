@@ -36,7 +36,8 @@
     "adult": "我已年满 18 周岁。",
     "understood": "我理解心相不是心理诊断工具；如有心理困扰我会寻求专业帮助。",
     "continue": "进入心相",
-    "localNote": "所有数据仅保存在本机，不会上传。未满 18 周岁请勿继续。"
+    "localNote": "所有数据仅保存在本机，不会上传。未满 18 周岁请勿继续。",
+    "localNoteWeb": "所有数据保存在你连接的主 PC Runtime 中，不会上传至第三方云端。未满 18 周岁请勿继续。"
   },
   "InitialTyping": {
     "title": "选择你的初始类型参考"
@@ -90,6 +91,7 @@
     "delete": "永久删除"
   },
   "Experience": {
+    "appTitle": "心相 Inscape",
     "brandLine": "心相 · 向内探索",
     "mySpace": "我的空间",
     "archive": "探索手记",
@@ -102,6 +104,7 @@
     "collapseNav": "收起导航",
     "expandNav": "展开导航",
     "private": "私密 · 本地保存",
+    "privateWeb": "私密 · 主 PC 保存",
     "disclaimer": "心相陪你探索，不定义你。认知功能是一种理解视角，本应用不提供心理诊断。",
     "savedLocally": "已保存在这台设备",
     "back": "回到探索空间",
@@ -151,7 +154,7 @@
     "listening": "正在换几个角度，读懂这件事…",
     "listeningNote": "本地 AI 正在思考，你可以先停一小会儿。",
     "aiError": "这次，AI 暂时没能回应。",
-    "aiErrorNote": "你的文字仍然在本地。请在 Nimi Desktop 检查可用的本地文字模型，再回来重试。",
+    "aiErrorNote": "你的文字仍然已保存。请在设置中检查已连接的本地文字模型，再回来重试。",
     "invalidRead": "模型没有返回完整的探索内容，本次结果未保存。",
     "oneMoment": "想带进来的那件事",
     "onlyYou": "文字只留在这台设备",
@@ -379,6 +382,7 @@
   "PrivacySettings": {
     "title": "设置与本机数据",
     "description": "手记、画像和关系记录保存在这台设备上。卸载应用不会自动删除这些记录。你可以在这里清除心相的本机空间。",
+    "descriptionWeb": "网页版的手记、画像和关系记录保存在你连接的主 PC Runtime 中。你可以在这里管理连接、本地文字模型或清除空间数据。",
     "clear": "清除本机数据…",
     "confirmTitle": "清除这台设备上的心相空间？",
     "confirmBody": "所有手记、AI 解读、画像、关系记录和成年确认都会被删除。此操作无法在应用内撤销，下次进入时需要重新开始。",
@@ -498,5 +502,16 @@
     "cancel": "取消这次 AI 请求",
     "correct": "确认语境并继续",
     "confirmMinor": "确认未成年并停止相关分析"
+  },
+  "Settings": {
+    "openModelSettings": "检查本地模型设置",
+    "connectionTitle": "Nimi 连接与账号",
+    "connectionActive": "已连接到你的主 Runtime；数据与本地模型都在你的主机上运行。",
+    "connectionDisconnected": "尚未连接主 Runtime，请重连后继续保存或探索。",
+    "reconnect": "重新连接",
+    "localModelTitle": "本地文字模型",
+    "localModelNote": "心相仅使用你主机上的本地文字模型，不会回退或转发至云端。",
+    "localModelOnlyError": "心相仅支持本地文字模型，不允许切换到云端路由。",
+    "aiConfigError": "AI 配置操作未完成，请确认 Nimi 连接可用后重试。"
   }
 }

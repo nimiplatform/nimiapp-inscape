@@ -57,7 +57,7 @@
     "@electron/packager": "^20.3.0",
     "@electron/rebuild": "^4.2.1",
     "@eslint/js": "^10.0.1",
-    "@nimiplatform/app-tools": "^0.16.0-rc.10",
+    "@nimiplatform/app-tools": "^0.16.0-rc.12",
     "@nimiplatform/nimi-coding": "0.7.0",
     "@tailwindcss/vite": "^4.3.0",
     "@types/better-sqlite3": "^9.6.0",

@@ -4,6 +4,7 @@
 
 # Binary assets — never touch.
 *.png binary
+*.webp binary
 *.ico binary
 *.icns binary
 

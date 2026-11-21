@@ -17,12 +17,89 @@ local_development:
       redirect_uri: https://127.0.0.1:4431/
       client_id: nimi.inscape.web.dev
 metadata:
-  summary: 面向成年人的本地性格探索与日常反思工具，用认知功能视角理解自己和关系。
+  summary: A local-first personality exploration and daily reflection space for adults (18+), applying Jungian cognitive functions to self-understanding and relationships.
   icon: assets/app-icon.png
   release_notes: RELEASE_NOTES.md
   author: Nimi Team
   homepage_url: https://github.com/nimiplatform/nimiapp-inscape
   support_url: https://github.com/nimiplatform/nimiapp-inscape/issues
+  storefront:
+    category: lifestyle
+    default_locale: en
+    locales:
+      en:
+        tags:
+          - Cognitive Functions
+          - Self-Reflection
+          - Inner Roundtable
+          - Relationships
+          - Local-Only AI
+        highlights:
+          - title: Eight-Voice Inner Roundtable
+            description: Bring a tough choice or mixed feeling before eight Jungian cognitive-function lenses, see another angle, and take one tiny experiment back into daily life.
+          - title: User-Controlled Cognitive Map
+            description: Treat type as a living reference with explicit confidence levels. Resonance feedback never auto-edits your map—you review, accept, or revoke every calibration.
+          - title: Between Us & Communication Drafts
+            description: Compare tentative function lenses across adult relationships, unpack recurring friction, and draft clearer, non-confrontational ways to express your needs.
+          - title: Private & Local-Only Inference
+            description: Desktop records stay in local SQLite and Web saves to your primary PC Runtime. AI uses only your local text model with zero cloud fallback and full delete control.
+      zh:
+        display_name: 心相
+        summary: 面向成年人的本地性格探索与日常反思工具，用认知功能视角理解自己和关系。
+        introduction: NIMI_APP.zh.md
+        tags:
+          - 荣格八维
+          - 日常反思
+          - 内心圆桌
+          - 关系理解
+          - 纯本地 AI
+        highlights:
+          - title: 八维视角内心圆桌
+            description: 带着纠结的决定或复杂感受进入圆桌，聆听八种认知功能的不同声音与追问，带走一个能在生活中尝试的小实验。
+          - title: 由你掌控的动态内在地图
+            description: 把类型当作开放起点而非标签；共鸣反馈不会自动改写画像，只有经你发起、预览并确认后才会微调，并可随时撤回。
+          - title: 关系理解与沟通改写
+            description: 在成年人关系中记录真实互动片段，对照彼此的认知功能视角，并生成温和清晰、可复制的沟通表达草稿。
+          - title: 纯本地推理与隐私可控
+            description: 桌面端存于本机 SQLite，网页端存于主 PC Runtime；仅调用本机文字模型不回退云端，支持逐条编辑、删除与一键清空。
+    media:
+      cover:
+        path: assets/storefront/cover-en.webp
+        locales:
+          zh: assets/storefront/cover-zh.webp
+      gallery:
+        - id: inner-roundtable
+          kind: image
+          path: assets/storefront/roundtable-en.webp
+          locales:
+            zh: assets/storefront/roundtable-zh.webp
+          caption:
+            en: "Inner Roundtable: explore a real decision through eight Jungian cognitive-function voices and a tiny everyday experiment"
+            zh: 内心圆桌：从荣格八维认知功能的不同视角拆解现实抉择，带走一个可执行的小实验
+        - id: inner-map
+          kind: image
+          path: assets/storefront/inner-map-en.webp
+          locales:
+            zh: assets/storefront/inner-map-zh.webp
+          caption:
+            en: "Inner Map: eight cognitive-function lenses with explicit confidence bands, daily practices, and four preference dimensions"
+            zh: 内在地图：八种认知视角与依据置信度、日常练习提示及四维偏好倾向
+        - id: between-us
+          kind: image
+          path: assets/storefront/between-us-en.webp
+          locales:
+            zh: assets/storefront/between-us-zh.webp
+          caption:
+            en: "Between Us: compare tentative cognitive-function lenses across adult relationships and unpack real interaction patterns"
+            zh: 关系之间：对照成年人关系中的认知功能视角，复盘真实互动中的默契与错位
+        - id: finding-words
+          kind: image
+          path: assets/storefront/rewrite-en.webp
+          locales:
+            zh: assets/storefront/rewrite-zh.webp
+          caption:
+            en: "Finding the Words: turn tense moments into three clear, non-confrontational communication drafts grounded in your real need"
+            zh: 把话说开：把容易引发防备的表达改写为三条温和、清晰、可复制的沟通草稿
 capability_contract_refs:
   - text.generate
 required_standardized_feature_refs: []

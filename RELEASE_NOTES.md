@@ -1,3 +1,8 @@
+## 0.1.9 · Platform 0.24 carrier & bilingual storefront
+
+- Adopted published Nimi SDK 0.24 (`^0.24.0-rc.10`), Kit 0.24 (`^0.24.0-rc.16`), and App Tools 0.16 (`^0.16.0-rc.12`) with local-only `text.generate` AI config enforcement and updated Runtime storage support.
+- Added bilingual (`en` / `zh`) storefront presentation (`metadata.storefront`), localized user guides (`NIMI_APP.md` and `NIMI_APP.zh.md`), category (`lifestyle`), highlights, tags, and static real-UI cover & gallery media.
+
 ## 0.1.8 · Published platform dependencies
 
 Uses public npm SDK 0.21.0, Kit/native 0.19.3, App Tools 0.12.1 and nimi-coding 0.6.5 with frozen registry lockfiles. Local Nimi tarball overrides are removed; Desktop-supervised development and installed Apps use the same published carrier.

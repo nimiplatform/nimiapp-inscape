@@ -1,51 +1,60 @@
-# 心相 Inscape 使用指南
+# Inscape User Guide
 
-心相是一个面向成年人的本地性格探索与日常反思空间。它借助荣格八维认知功能的视角，陪伴你厘清内心秩序、从容应对选择，并改善与重要他人的关系。
-
----
-
-## 核心体验流程
-
-### 1. 从一件真实的小事开始
-- 在「今天」页面，随手记下一个真实的瞬间、一次情绪起伏，或一个眼前的决定。
-- 你可以将它作为纯粹的私密手记留存，也可以点击**「探索」**，邀请本地 AI 从认知功能的角度提供多元解读，陪你探寻情绪背后的脉络。
-
-### 2. 八维内心圆桌
-- 面临纠结或重要抉择时，开启**「内心圆桌」**。
-- 聆听八种认知功能（Ni、Ne、Si、Se、Ti、Te、Fi、Fe）针对同一件事给出的不同视角与追问。
-- 对照这些声音，带走一个可以在现实生活中尝试的小实验，并在行动后记录自己的真实反馈。
-
-### 3. 共鸣反馈与画像微调
-- 阅读 AI 解读后，你可以标记「这像我」或「不太像我」。
-- **画像始终由你掌控**：日常反馈不会自动改写你的认知画像。只有当你主动发起微调请求、预览调整建议并明确点击确认时，画像才会更新。
-- 每条手记最多贡献一次画像微调，重复打开不会叠加权重；你也可以随时撤回任何已采纳的调整。
-
-### 4. 关系探索（Between Us）
-- 在关系页面记录与成年伴侣、家人或朋友的共同经历与互动细节；关系探索对象同样需要年满 18 岁。
-- 借助认知功能视角复盘彼此的沟通差异，练习用温和、清晰且不带防备的方式表达自己的需求。
+Inscape is a private, local-first personality exploration and daily reflection space for adults (18+). Drawing on Jungian cognitive functions (Ni, Ne, Si, Se, Ti, Te, Fi, Fe), it helps you examine feelings, navigate choices, and understand adult relationships without locking you into a rigid four-letter label.
 
 ---
 
-## 数据自主与隐私保障
+## Core Experience & Getting Started
 
-- **私密记录留在你的主机**：
-  - **桌面端**：手记、关系记录、AI 解读与认知画像保存在本机的 SQLite 数据库中。
-  - **网页端**：登录你的 Nimi 账号并连接主 PC Runtime 后使用（首次使用需在电脑的 Nimi Home 确认来源）；所有手记、关系记录与解读保存在你连接的主 PC Runtime 应用存储中，不会上传至第三方云端。
-- **完整的编辑与删除权**：
-  - 手记和共同经历均可逐条编辑或永久删除。
-  - 编辑或删除手记时，关联的 AI 解读及已采纳的画像微调会自动同步撤销。
-  - 在「设置与本机数据」中，你可以管理 Nimi 连接、选择本地文字模型，或随时一键清空当前空间数据。
-- **纯本地推理与离线安全**：AI 调用仅使用你在主 PC 上配置的本地文字模型，不会回退或转发至云端。当本地模型未配置、离线或繁忙时，手记依然会安全保存，界面会给出明确提示并支持在设置中检查本地模型后重试。
+### 1. Adult Attestation & Optional Starting Type
+- On first launch, confirm that you are at least 18 years old and understand that Inscape is a personal reflection space rather than a psychological diagnostic tool.
+- Choosing an initial 16-type code is optional—you can leave it unset and begin directly from everyday moments.
+
+### 2. Start with a Real Moment (Today)
+- In **Today**, check in with your current inner weather, draw a curiosity card, or jot down a real moment, mixed feeling, or lingering question.
+- Save any entry as a plain private note, or choose **Let's look together** (**Behind the feeling**) to invite your local AI model to offer alternative cognitive-function readings.
+
+### 3. Eight-Voice Inner Roundtable
+- When facing a tough decision or inner tug-of-war, open **Inner roundtable**.
+- Listen to all eight cognitive-function perspectives (`Ni`, `Ne`, `Si`, `Se`, `Ti`, `Te`, `Fi`, `Fe`) weigh in on the same situation with distinct observations and questions.
+- Walk away with one tiny, concrete experiment you can try in daily life and mark it as tried afterward.
+
+### 4. Resonance Feedback & User-Controlled Inner Map (About Me)
+- Mark any AI reading as **This feels like me** or **Not quite me** (and toggle or withdraw your feedback anytime).
+- **You control your map**: everyday feedback never rewrites your cognitive profile automatically. Your map updates only when you explicitly request a calibration, preview the bounded adjustment, and confirm it.
+- Each note contributes at most one accepted calibration, and any accepted adjustment can be withdrawn at any time.
+
+### 5. Adult Relationships & Communication Drafts (Between Us)
+- Record personal observations and shared moments from adult-to-adult relationships (every added person requires an 18+ confirmation).
+- Compare tentative cognitive-function lenses to unpack misunderstandings, or open **Finding the words** to rewrite a tense draft into three clearer, non-confrontational options you can copy and adapt.
 
 ---
 
-## 本地数据存储路径
+## Local AI & Connection Requirements
 
-- **macOS**：`~/Library/Application Support/nimi.inscape/`
-- **Windows**：`%APPDATA%/nimi.inscape/`
-
-开发模式下注册的应用数据独立保存在上述路径的 `development/` 子目录中，与正式安装版互不干扰。
+- **Strictly Local Text Model**: Inscape runs AI reflections only through a **local text model** configured on your primary PC's Nimi Runtime (`text.generate`). It never falls back to or forwards your notes to cloud routes.
+- **Desktop & Hosted Web**:
+  - **Desktop**: Launch Inscape from Nimi Home. Your session follows Nimi Home's signed-in account.
+  - **Hosted Web**: Open [Inscape on Nimi](https://nimi.ai/apps/inscape) or [inscape.nimi.xyz](https://inscape.nimi.xyz/), sign in with your Nimi account, confirm the source once in Nimi Home on your primary PC, and keep your primary PC's Nimi Home and Runtime online.
+- **Offline Safety**: If your local model is unconfigured, offline, or busy, your notes still save safely; configure a local text model in **Settings & local data** (or Nimi Home) and retry when ready.
 
 ---
 
-心相旨在提供探索与反思的视角，并非临床心理测量工具，也不会替你或他人妄下定论。愿它成为你日常生活中一处安静、可靠的心灵工坊。
+## Privacy, Data Storage & Controls
+
+- **Where Your Data Lives**:
+  - **Desktop**: Adult attestation, field notes, relationships, AI readings, and your cognitive map are saved in a local SQLite database on your device:
+    - **macOS**: `~/Library/Application Support/nimi.inscape/`
+    - **Windows**: `%APPDATA%/nimi.inscape/`
+    - Development registrations use isolated subdirectories under `development/` and never mix with installed data. Uninstalling Nimi does not automatically delete this local folder; you can clear the entire space at any time inside **Settings & local data**.
+  - **Hosted Web**: Your records are stored in your connected primary PC Runtime's private app storage, never uploaded to publisher or third-party cloud servers.
+- **Full Edit & Delete Control**: Notes and shared moments can be edited or permanently deleted one by one. Editing or deleting a note automatically removes readings based on the old text and withdraws any accepted profile calibration from that note.
+- **Age-Context Review & Safeguards**: If text mentions an age that may refer to a minor, Inscape pauses only the related AI request so you can confirm whether it is a memory, quote, hypothetical, or current age. Confirmed under-18 records are quarantined out of all analysis and may be permanently deleted.
+
+---
+
+## Limitations & Help
+
+- Inscape is exclusively for adults (18+) and offers structured perspectives for reflection—not clinical psychological assessment, medical diagnosis, or therapy.
+- **Communication Rewrite** declines contexts involving money, employment or authority, sexual consent, or decision pressure/ultimatums. Refusals stay in local history so you can revise your wording or delete the record.
+- Source code and issue support: [GitHub Repository](https://github.com/nimiplatform/nimiapp-inscape) · [Report an Issue](https://github.com/nimiplatform/nimiapp-inscape/issues)

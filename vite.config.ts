@@ -5,6 +5,10 @@ import tailwindcss from '@tailwindcss/vite';
 // @nimi-authority: rule.inscape.privacy.r006
 export default defineConfig({
   base: './',
+  build: {
+    outDir: 'dist/renderer',
+    emptyOutDir: true,
+  },
   plugins: [react(), tailwindcss(), {
     name: 'inscape-development-csp',
     apply: 'serve',

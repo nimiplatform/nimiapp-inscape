@@ -5,7 +5,7 @@ units:
   - id: definition.inscape.privacy.adult-attestation
     kind: definition
     title: Adult attestation
-    meaning: The database-level 18+ attestation gate prevents a non-adult subject row from existing under CHECK attested_adult = 1.
+    meaning: The persistence-layer 18+ attestation gate prevents a non-adult subject from being persisted unless adult attestation is explicitly true.
   - id: definition.inscape.privacy.token-custody
     kind: definition
     title: Token custody
@@ -16,11 +16,11 @@ units:
     meaning: The CommunicationRewrite four-layer anti-manipulation defence consists of a prompt-injection guard, keyword classifier, mandatory disclaimer, and history audit, with refusal of money, employment, sexual-consent, and decision-pressure contexts.
   - id: rule.inscape.privacy.r001
     kind: rule
-    title: Database adult gate
+    title: Persistence adult gate
     modality: must
-    statement: Gate every subject row at the database level with CHECK attested_adult = 1 so that a non-adult subject row cannot exist.
-    condition: When a subject row is inserted or updated.
-    failure: Reject the database write when adult attestation is not exactly 1.
+    statement: Gate every persisted space and subject at the persistence layer so that unattested or non-adult subject data cannot be written.
+    condition: When an InscapeSpace snapshot is persisted.
+    failure: Reject the persistence write when adult attestation is not explicitly true.
     relations:
       - type: applies_to
         target: definition.inscape.privacy.adult-attestation
@@ -56,11 +56,11 @@ units:
         target: definition.inscape.privacy.rewrite-defence
   - id: rule.inscape.privacy.r005
     kind: rule
-    title: Restricted local persistence
+    title: Restricted private persistence
     modality: must
-    statement: Set SQLite file permissions to 0o600 and provide no telemetry sink.
+    statement: Persist product data exclusively in Nimi-mediated private app storage and provide no telemetry sink.
     condition: Always.
-    failure: Abort database access when file permissions are not 0o600 and reject any telemetry emission.
+    failure: Reject persistence outside Nimi-mediated private app storage and reject any telemetry emission.
     relations:
       - type: applies_to
         target: definition.inscape.data-model.persistence
@@ -68,9 +68,9 @@ units:
     kind: rule
     title: Restricted renderer resources
     modality: must
-    statement: Enforce a production renderer Content Security Policy that denies external connections, inline scripts, objects and frames; retain only resources needed by the local UI. Development exceptions permit the Vite refresh preamble and exact loopback HMR only. Validate every used development renderer URL, whether supplied by argument or environment, and prohibit production development-renderer arguments.
+    statement: Enforce a production renderer Content Security Policy that denies external connections, inline scripts, objects and frames; retain only resources needed by the local UI. Development exceptions permit the Vite refresh preamble and exact loopback HMR only.
     condition: When creating the renderer or building its document.
-    failure: Reject invalid renderer origins and block resources outside the declared policy; never relax the production policy to make a journey pass.
+    failure: Block resources outside the declared policy and never relax the production policy to make a journey pass.
     relations:
       - type: applies_to
         target: definition.inscape.product.inscape-app

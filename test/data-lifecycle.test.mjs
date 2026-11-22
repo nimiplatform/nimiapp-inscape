@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { setImmediate } from 'node:timers/promises';
-import Database from 'better-sqlite3';
 import { createInscapeStore } from '../src/product/state/inscape-store.ts';
-import { sqliteClient, reflectionFixture } from './helpers/sqlite-client.mjs';
+import {
+  createRuntimeStorageFixture,
+  INSCAPE_SPACE_STORAGE_PATH,
+  reflectionFixture,
+} from './helpers/runtime-storage-client.mjs';
 
 const NOW = '2026-09-11T12:00:00Z';
 function proposalContext(store) {
@@ -22,37 +22,27 @@ function accept(store, proposal, now, sourceId) {
   );
 }
 
-async function setup(t, beforeCleanup = () => {}) {
-  const root = mkdtempSync(path.join(tmpdir(), 'inscape-lifecycle-'));
-  t.after(() => {
-    // Windows requires open SQLite connections to close before removing their files.
-    beforeCleanup();
-    rmSync(root, { recursive: true, force: true });
-  });
-  const client = sqliteClient(root);
+async function setup() {
+  const { client, backend } = createRuntimeStorageFixture();
   const store = createInscapeStore(client);
   await store.getState().initialize();
   await store.getState().completeFirstRun(NOW, 'zh');
-  return { root, client, store };
+  return { client, backend, store };
 }
 
 test(
-  'a real SQLite lock preserves the live store and retry completes one original save before queued changes',
+  'a storage write failure preserves the live store and retry completes one original save before queued changes',
   { timeout: 15000 },
-  async (t) => {
-    let lock;
-    const { root, client, store } = await setup(t, () => {
-      if (lock?.open) lock.close();
-    });
-    lock = new Database(path.join(root, 'inscape.db'));
-    lock.exec('BEGIN EXCLUSIVE');
+  async () => {
+    const { client, backend, store } = await setup();
+    backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
     const pending = store.getState().addReflectionEntry('Retain this draft.', NOW);
     const queued = store.getState().setLocale('en', NOW);
     await setImmediate();
     assert.equal(store.getState().status, 'ready');
     assert.equal(store.getState().space.self_subject.reflection_entries.length, 0);
     assert.equal(store.getState().saveError, 'persistence_save_write_failed');
-    lock.exec('ROLLBACK');
+    backend.setFailWritePath(null);
     assert.equal(await store.getState().retrySave(), true);
     assert.ok(await pending);
     assert.equal(await queued, true);
@@ -67,20 +57,16 @@ test(
 test(
   'cancelling a real failed save returns no successful id and allows later saves',
   { timeout: 15000 },
-  async (t) => {
-    let lock;
-    const { root, store } = await setup(t, () => {
-      if (lock?.open) lock.close();
-    });
-    lock = new Database(path.join(root, 'inscape.db'));
-    lock.exec('BEGIN EXCLUSIVE');
+  async () => {
+    const { backend, store } = await setup();
+    backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
     const pending = store.getState().addReflectionEntry('Unsaved only.', NOW);
     await setImmediate();
     store.getState().cancelSave();
     assert.equal(await pending, '');
     assert.equal(store.getState().status, 'ready');
     assert.equal(store.getState().space.self_subject.reflection_entries.length, 0);
-    lock.exec('ROLLBACK');
+    backend.setFailWritePath(null);
     assert.ok(await store.getState().addReflectionEntry('Saved later.', NOW));
   },
 );

@@ -381,7 +381,7 @@
   },
   "PrivacySettings": {
     "title": "Settings & local data",
-    "description": "Your notes, map and connections are stored on this device. Uninstalling the app does not automatically remove them. You can clear this local Inscape space here.",
+    "description": "Your notes, map and connections are stored in Nimi's private app storage on this PC. You can manage your local text model or clear this Inscape space here.",
     "descriptionWeb": "On Web, your notes, map and connections are stored in your connected primary PC Runtime. Manage your connection, local text model, or clear this space here.",
     "clear": "Clear local data…",
     "confirmTitle": "Clear this device’s Inscape space?",
@@ -486,8 +486,7 @@
     "versionTitle": "This space uses a different data version",
     "versionBody": "This development version cannot read the old data. The original file is preserved. You can save a copy of the file before confirming a local-data reset.",
     "loadTitle": "Your local space could not be opened",
-    "versionDetails": "Stored data version: {{stored}}; current version: {{expected}}.",
-    "hostRequired": "Launch Inscape from Nimi to use local data."
+    "versionDetails": "Stored data version: {{stored}}; current version: {{expected}}."
   },
   "AgeReview": {
     "title": "Confirm the age context first",

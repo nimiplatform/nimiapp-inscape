@@ -9,24 +9,19 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "postinstall": "install-electron --no",
     "dev": "nimi-app dev --shell electron",
     "dev:renderer": "vite --host 127.0.0.1 --port 1431 --strictPort",
-    "dev:electron": "nimi-app dev --shell electron",
     "dev:shell": "nimi-app dev",
     "dev:web": "nimi-app dev --platform web",
     "dev:web-renderer": "vite --config vite.web.config.ts --mode web",
     "build:renderer": "vite build",
     "build:web": "pnpm run typecheck:renderer && vite build --config vite.web.config.ts",
     "build:web:release": "pnpm run typecheck:renderer && vite build --config vite.web.config.ts --mode web-release",
-    "rebuild:electron-native": "electron-rebuild -f -w better-sqlite3",
-    "build:electron": "pnpm run rebuild:electron-native && tsc -p tsconfig.electron.json && node scripts/bundle-electron-preload.mjs",
     "typecheck:renderer": "tsc --noEmit",
-    "typecheck:electron": "tsc -p tsconfig.electron.json --noEmit",
-    "typecheck": "pnpm run typecheck:renderer && pnpm run typecheck:electron",
-    "build": "pnpm run typecheck && pnpm run build:electron && pnpm run build:renderer",
+    "typecheck": "pnpm run typecheck:renderer",
+    "build": "pnpm run typecheck && pnpm run build:renderer",
     "lint": "pnpm run typecheck && eslint . --max-warnings 0",
-    "test": "pnpm run rebuild:electron-native && node scripts/run-electron-node-tests.mjs",
+    "test": "node --test test/*.test.mjs",
     "check": "pnpm run typecheck && pnpm run test && pnpm run lint && pnpm run check:redlines && pnpm run check:i18n",
     "validate": "nimi-app check",
     "check:redlines": "node scripts/check-redlines.mjs",
@@ -38,13 +33,11 @@
     "spec:authority:check": "nimicoding authority check .nimi/spec",
     "spec:authority:compile": "nimicoding authority compile .nimi/spec",
     "sync": "nimi-app sync",
-    "pack": "nimi-app pack",
-    "build:electron:production": "node scripts/clean-electron-production.mjs && pnpm run build && node scripts/package-electron-production.mjs"
+    "pack": "nimi-app pack"
   },
   "dependencies": {
     "@nimiplatform/kit": "^0.24.0-rc.16",
     "@nimiplatform/sdk": "^0.24.0-rc.10",
-    "better-sqlite3": "^13.0.3",
     "i18next": "^26.4.2",
     "lucide-react": "^1.44.0",
     "react": "^19.1.0",
@@ -54,19 +47,14 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
-    "@electron/packager": "^20.3.0",
-    "@electron/rebuild": "^4.2.1",
     "@eslint/js": "^10.0.1",
-    "@nimiplatform/app-tools": "^0.16.0-rc.12",
+    "@nimiplatform/app-tools": "^0.16.0-rc.13",
     "@nimiplatform/nimi-coding": "0.7.0",
     "@tailwindcss/vite": "^4.3.0",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.1.2",
-    "electron": "^45.4.1",
-    "esbuild": "^0.28.0",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
     "tailwindcss": "^4.3.0",
@@ -77,6 +65,5 @@
     "yaml": "^2.9.0"
   },
   "author": "Nimi Team",
-  "license": "MIT",
-  "main": "dist-electron/main.js"
+  "license": "MIT"
 }

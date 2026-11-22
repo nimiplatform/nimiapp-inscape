@@ -1,4 +1,4 @@
-// Explicit test persistence. Product code always uses the SQLite Host.
+// Explicit test persistence. Product code always uses Nimi Runtime private app storage.
 
 import type { InscapeSpace } from '../../domain/inscape-space.ts';
 import { validateInscapeSpace } from '../../contracts/inscape-space-validator.ts';

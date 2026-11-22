@@ -17,11 +17,11 @@ units:
   - id: definition.inscape.data-model.quarantine
     kind: definition
     title: Quarantine
-    meaning: The dedicated quarantine region and table receives under-18 material.
+    meaning: The dedicated quarantine region receives under-18 material.
   - id: definition.inscape.data-model.persistence
     kind: definition
     title: Persistence
-    meaning: Persistence is relational SQLite with per-row CHECK constraints.
+    meaning: Persistence uses Nimi-mediated private app storage validated by fail-closed domain invariants.
   - id: rule.inscape.data-model.r001
     kind: rule
     title: Single local data root
@@ -68,11 +68,11 @@ units:
         target: definition.inscape.data-model.persistence
   - id: rule.inscape.data-model.r005
     kind: rule
-    title: Relational constrained persistence
+    title: Constrained Nimi-mediated persistence
     modality: must
-    statement: Persist InscapeSpace in relational SQLite with per-row CHECK constraints and a dedicated quarantine table.
+    statement: Persist InscapeSpace in Nimi-mediated private app storage with fail-closed validation, adult attestation enforcement, and a dedicated quarantine recovery intent.
     condition: Always.
-    failure: Refuse database initialization or migration when the relational constraints or quarantine table are absent.
+    failure: Refuse persistence writes when validation, adult attestation, or quarantine recovery invariants fail.
     relations:
       - type: applies_to
         target: definition.inscape.data-model.persistence

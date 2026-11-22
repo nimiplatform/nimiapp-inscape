@@ -43,11 +43,9 @@ Inscape is a private, local-first personality exploration and daily reflection s
 ## Privacy, Data Storage & Controls
 
 - **Where Your Data Lives**:
-  - **Desktop**: Adult attestation, field notes, relationships, AI readings, and your cognitive map are saved in a local SQLite database on your device:
-    - **macOS**: `~/Library/Application Support/nimi.inscape/`
-    - **Windows**: `%APPDATA%/nimi.inscape/`
-    - Development registrations use isolated subdirectories under `development/` and never mix with installed data. Uninstalling Nimi does not automatically delete this local folder; you can clear the entire space at any time inside **Settings & local data**.
-  - **Hosted Web**: Your records are stored in your connected primary PC Runtime's private app storage, never uploaded to publisher or third-party cloud servers.
+  - **Desktop & Hosted Web**: Adult attestation, field notes, relationships, AI readings, and your cognitive map are stored in your primary PC Runtime's private app storage (`nimi-mediated-default`), isolated by your Nimi account and app registration, and never uploaded to publisher or third-party cloud servers. You can clear the entire space at any time inside **Settings & local data**.
+  - **Desktop Managed Container Preferences**: Non-sensitive interface preferences stored in the desktop managed container's browser technical profile (such as language selection) may remain on disk after uninstalling the app.
+  - **Pre-0.1.9 Local SQLite Notice**: Earlier native pre-release builds stored data in a standalone SQLite database (`~/Library/Application Support/nimi.inscape/` or `%APPDATA%/nimi.inscape/`); version `0.1.9` switches Desktop to Nimi-mediated private app storage without automatic SQLite import.
 - **Full Edit & Delete Control**: Notes and shared moments can be edited or permanently deleted one by one. Editing or deleting a note automatically removes readings based on the old text and withdraws any accepted profile calibration from that note.
 - **Age-Context Review & Safeguards**: If text mentions an age that may refer to a minor, Inscape pauses only the related AI request so you can confirm whether it is a memory, quote, hypothetical, or current age. Confirmed under-18 records are quarantined out of all analysis and may be permanently deleted.
 

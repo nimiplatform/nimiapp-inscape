@@ -1,6 +1,8 @@
-## 0.1.9 · Platform 0.24 carrier & bilingual storefront
+## 0.1.9 · Shared managed-web desktop carrier & bilingual storefront
 
-- Adopted published Nimi SDK 0.24 (`^0.24.0-rc.10`), Kit 0.24 (`^0.24.0-rc.16`), and App Tools 0.16 (`^0.16.0-rc.12`) with local-only `text.generate` AI config enforcement and updated Runtime storage support.
+- Migrated Desktop distribution to the shared Nimi Managed Web Desktop Carrier (`managed-web-pnpm-vite`, `desktop-universal`) on App Tools `^0.16.0-rc.13`, removing the standalone Electron binary and local SQLite host.
+- Unified Desktop and Web persistence on Nimi-mediated private app storage (`nimi-mediated-default`, `RuntimeStoragePersistenceAdapter`) with adult attestation and quarantine fail-closed enforcement (pre-0.1.9 local SQLite files are not automatically imported).
+- Adopted published Nimi SDK 0.24 (`^0.24.0-rc.10`) and Kit 0.24 (`^0.24.0-rc.16`) with local-only `text.generate` AI config enforcement.
 - Added bilingual (`en` / `zh`) storefront presentation (`metadata.storefront`), localized user guides (`NIMI_APP.md` and `NIMI_APP.zh.md`), category (`lifestyle`), highlights, tags, and static real-UI cover & gallery media.
 
 ## 0.1.8 · Published platform dependencies

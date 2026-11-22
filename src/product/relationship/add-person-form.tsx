@@ -1,6 +1,6 @@
 // IS-DATA / IS-PRIV — add an other_person to the relationship graph. Both the
 // 18+ confirmation and the observation-framing attestation are required (the
-// SQLite CHECKs enforce them too).
+// persistence-layer adult attestation checks enforce them too).
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

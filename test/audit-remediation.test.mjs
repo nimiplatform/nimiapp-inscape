@@ -1,10 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { setImmediate } from 'node:timers/promises';
-import Database from 'better-sqlite3';
 import { createInscapeStore } from '../src/product/state/inscape-store.ts';
 import { createInscapeStoreAiClient } from '../src/product/state/inscape-ai-client.ts';
 import { createEmptyInscapeSpace } from '../src/domain/inscape-space.ts';
@@ -12,21 +8,21 @@ import { validateInscapeSpace } from '../src/contracts/inscape-space-validator.t
 import { findUnder18Candidate } from '../src/product/privacy/age-disclosure.ts';
 import { projectReflectionCalibration } from '../src/product/inference/derive-profile.ts';
 import { parsePosteriorUpdateProposal } from '../src/product/inference/ai-proposal-parser.ts';
-import { loadInscapeSpaceReply } from '../src-electron/persistence.ts';
-import { resolveDevelopmentRendererUrl } from '../src-electron/renderer-url.ts';
 import { buildTodaysReadPrompt } from '../src/product/today/today-prompts.ts';
-import { sqliteClient, reflectionFixture } from './helpers/sqlite-client.mjs';
+import {
+  createRuntimeStorageFixture,
+  INSCAPE_QUARANTINE_PENDING_STORAGE_PATH,
+  INSCAPE_SPACE_STORAGE_PATH,
+  reflectionFixture,
+} from './helpers/runtime-storage-client.mjs';
 
 const NOW = '2026-09-30T00:00:00Z';
-async function setup(t) {
-  const root = mkdtempSync(path.join(tmpdir(), 'inscape-remediation-'));
-  const locks = [];
-  t.after(() => { for (const db of locks) if (db.open) db.close(); rmSync(root, { recursive: true, force: true }); });
-  const client = sqliteClient(root);
+async function setup() {
+  const { client, backend } = createRuntimeStorageFixture();
   const store = createInscapeStore(client);
   await store.getState().initialize();
   assert.equal(await store.getState().completeFirstRun(NOW, 'zh'), true);
-  return { root, client, store, locks };
+  return { client, backend, store };
 }
 async function acceptedNote(store, text = 'Synthetic arithmetic source.') {
   return store.getState().addReflectionEntry(text, NOW, reflectionFixture);
@@ -43,8 +39,8 @@ async function accept(store, entryId, update) {
   return store.getState().applyAcceptedPosteriorUpdate(update, NOW, 'reflection:' + entryId, entry.text, context(store));
 }
 
-test('calibration preview equals the actual SQLite result and survives reload', async (t) => {
-  const { store, client } = await setup(t);
+test('calibration preview equals the persisted result and survives reload', async () => {
+  const { store, client } = await setup();
   await store.getState().setInitialType('INTJ', NOW);
   const id = await acceptedNote(store);
   const subject = store.getState().space.self_subject;
@@ -92,8 +88,8 @@ test('current minor-age declarations are distinguished from adult, quoted, histo
   assert.equal(findUnder18Candidate('She is 17 years old.', 'Lin'), null);
 });
 
-test('confirmed self disclosure removes active SQLite subjects and cannot be bypassed by ordinary product actions or reload', async (t) => {
-  const { store, client, root, locks } = await setup(t);
+test('confirmed self disclosure removes active subjects and cannot be bypassed by ordinary product actions or reload', async () => {
+  const { store, client } = await setup();
   await store.getState().addReflectionEntry('An existing adult-attested note.', NOW);
   const text = '我今年17岁，想了解自己。';
   const sourceId = await store.getState().addReflectionEntry(text, NOW);
@@ -110,15 +106,12 @@ test('confirmed self disclosure removes active SQLite subjects and cannot be byp
   assert.equal(await store.getState().addReflectionEntry('A later note.', NOW), '');
   const loaded = (await client.load()).snapshot;
   assert.equal(loaded.self_subject, null);
+  assert.equal(loaded.other_subjects.length, 0);
   assert.equal(validateInscapeSpace(loaded).ok, true);
   const payload = JSON.parse(loaded.quarantine.at(-1).payload_json);
   assert.equal(payload.subject.age_attestation.attested_adult, false);
   assert.equal(payload.subject.reflection_entries.length, 2);
   assert.match(payload.disclosure, /17/);
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM subjects').get().count, 0);
-  assert.throws(() => db.prepare("INSERT INTO subjects (id,kind,display_name,age_attested_adult,age_attested_at,age_attestation_method) VALUES ('forged','self','',1,?,'test')").run(NOW), /self quarantine forbids/);
-  db.close();
   assert.equal((await client.save(createEmptyInscapeSpace(NOW, true))).ok, false);
   const reopened = createInscapeStore(client); await reopened.getState().initialize();
   assert.equal(reopened.getState().status, 'quarantined');
@@ -141,8 +134,8 @@ test('manual self re-declaration and confirmed review of an edited note close an
   assert.equal((await second.client.load()).snapshot.self_subject, null);
 });
 
-test('identified relationship disclosure quarantines that person while preserving the adult self', async (t) => {
-  const { store, client, root, locks } = await setup(t);
+test('identified relationship disclosure quarantines that person while preserving the adult self', async () => {
+  const { store, client } = await setup();
   const relationshipId = await store.getState().addPerson('小林', 'friend', NOW);
   const subjectId = store.getState().space.relationships[0].other_subject_id;
   const review = store.getState().checkAgeDisclosure('对方今年17岁。', NOW, subjectId);
@@ -158,17 +151,16 @@ test('identified relationship disclosure quarantines that person while preservin
   assert.match(JSON.parse(space.quarantine[0].payload_json).disclosure, /17/);
   assert.equal(await store.getState().addCommunicationLog(relationshipId, 'A later interaction.', NOW), false);
   assert.equal(await store.getState().checkAgeDisclosure('A later draft.', NOW, subjectId), false);
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  db.pragma('foreign_keys = ON');
-  assert.throws(() => db.prepare("INSERT INTO relationships (id,other_subject_id,nature,observation_attested) VALUES ('orphan','missing','friend',1)").run(), /FOREIGN KEY/);
-  db.close();
+  assert.equal(validateInscapeSpace({
+    ...space,
+    relationships: [{ id: 'orphan', other_subject_id: 'missing', nature: 'friend', observation_attested: true, communication_logs: [], shared_moments: [] }],
+  }).ok, false);
 });
 
-test('a locked quarantine save blocks processing immediately, cannot be cancelled and remains recoverable', { timeout: 15000 }, async (t) => {
-  const { store, root, client, locks } = await setup(t);
+test('a failed quarantine save blocks processing immediately, cannot be cancelled and remains recoverable', { timeout: 15000 }, async () => {
+  const { store, backend, client } = await setup();
   const before = store.getState().space;
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  db.exec('BEGIN EXCLUSIVE');
+  backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
   const pending = store.getState().quarantineSelf(NOW);
   await setImmediate();
   assert.equal(store.getState().space, before, 'failed writes do not masquerade as a committed snapshot');
@@ -176,38 +168,23 @@ test('a locked quarantine save blocks processing immediately, cannot be cancelle
   assert.equal(store.getState().saveCanCancel, false);
   store.getState().cancelSave();
   assert.ok(store.getState().saveError);
-  db.exec('ROLLBACK');
+  backend.setFailWritePath(null);
   assert.equal(await store.getState().retrySave(), true);
   assert.equal(await pending, true);
   assert.equal((await client.load()).snapshot.self_subject, null);
 });
 
-test('unsupported development versions are reported distinctly without changing the old database', (t) => {
+test('unsupported development versions are reported distinctly without changing the old stored payload', async () => {
   for (const version of [1, 2]) {
-    const root = mkdtempSync(path.join(tmpdir(), 'inscape-old-version-'));
-    t.after(() => rmSync(root, { recursive: true, force: true }));
-    const file = path.join(root, 'inscape.db');
-    const db = new Database(file);
-    db.exec('CREATE TABLE space_meta (id INTEGER PRIMARY KEY, schema_version INTEGER NOT NULL)');
-    db.prepare('INSERT INTO space_meta VALUES (1, ?)').run(version); db.close();
-    const before = readFileSync(file);
-    assert.deepEqual(loadInscapeSpaceReply(root), { kind: 'schema_incompatible', storedVersion: version, expectedVersion: 3 });
-    assert.deepEqual(readFileSync(file), before);
-    const check = new Database(file);
-    assert.equal(check.prepare('SELECT COUNT(*) AS count FROM sqlite_master WHERE type = ?').get('table').count, 1);
-    check.close();
+    const { client, backend } = createRuntimeStorageFixture();
+    const raw = new TextEncoder().encode(JSON.stringify({ schema_version: version }));
+    backend.files.set(INSCAPE_SPACE_STORAGE_PATH, raw);
+    assert.deepEqual(await client.load(), {
+      ok: false,
+      error: { kind: 'load_incompatible_version', adapter: 'nimi_storage', storedVersion: version, expectedVersion: 3 },
+    });
+    assert.deepEqual(backend.files.get(INSCAPE_SPACE_STORAGE_PATH), raw);
   }
-});
-
-test('environment and argument renderer URLs share strict validation, while production cannot use dev arguments', () => {
-  for (const url of ['http://example.com:1431', 'https://127.0.0.1:1431', 'http://127.0.0.1:1431/path', 'http://user:pass@127.0.0.1:1431', 'http://localhost', 'http://localhost:0', 'http://localhost:1431?x=1']) {
-    assert.throws(() => resolveDevelopmentRendererUrl([], url, false));
-    assert.throws(() => resolveDevelopmentRendererUrl(['--nimi-dev-renderer-url=' + url], '', false));
-  }
-  assert.equal(resolveDevelopmentRendererUrl([], 'http://127.0.0.1:1431/', false), 'http://127.0.0.1:1431');
-  assert.equal(resolveDevelopmentRendererUrl(['--nimi-dev-renderer-url=http://[::1]:1431'], '', false), 'http://[::1]:1431');
-  assert.throws(() => resolveDevelopmentRendererUrl(['--nimi-dev-renderer-url=http://localhost:1431'], '', true));
-  assert.equal(resolveDevelopmentRendererUrl([], 'http://example.com:1431', true), '');
 });
 
 
@@ -253,40 +230,36 @@ test('review allows attribution correction before confirmed quarantine', async (
   assert.equal(store.getState().space.other_subjects.length, 0);
 });
 
-test('confirmed quarantine save failure has an explicit reset exit that resolves the pending action', { timeout: 15000 }, async (t) => {
-  const { store, root, client, locks } = await setup(t);
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  db.exec('BEGIN EXCLUSIVE');
+test('confirmed quarantine save failure has an explicit reset exit that resolves the pending action', { timeout: 15000 }, async () => {
+  const { store, backend, client } = await setup();
+  backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
   const pending = store.getState().quarantineSelf(NOW);
   await setImmediate();
   assert.equal(store.getState().processingBlocked, true);
-  db.exec('ROLLBACK'); db.close();
+  backend.setFailWritePath(null);
   assert.equal(await store.getState().clearLocalData(), true);
   assert.equal(await pending, false, 'the failed save is not reported as completed');
   assert.equal(store.getState().status, 'first-run');
   assert.equal((await client.load()).snapshot, null);
 });
 
-test('confirmed quarantine remains stopped across restart while SQLite is locked', { timeout: 15000 }, async (t) => {
-  const { store, root, client, locks } = await setup(t);
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  db.exec('BEGIN EXCLUSIVE');
+test('confirmed quarantine remains stopped across restart while storage write fails', { timeout: 15000 }, async () => {
+  const { store, backend, client } = await setup();
+  backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
   const first = store.getState().quarantineSelf(NOW);
   await setImmediate();
-  const intentFile = path.join(root, 'inscape-quarantine-pending.json');
-  assert.equal(existsSync(intentFile), true);
-  if (process.platform !== 'win32') assert.equal(statSync(intentFile).mode & 0o777, 0o600);
+  assert.equal(backend.files.has(INSCAPE_QUARANTINE_PENDING_STORAGE_PATH), true);
   const reopened = createInscapeStore(client);
   const initializing = reopened.getState().initialize();
   await setImmediate();
   assert.equal(reopened.getState().processingBlocked, true);
   assert.equal(reopened.getState().space, null);
   assert.ok(reopened.getState().saveError);
-  db.exec('ROLLBACK'); db.close();
+  backend.setFailWritePath(null);
   assert.equal(await reopened.getState().retrySave(), true);
   await initializing;
   assert.equal(reopened.getState().status, 'quarantined');
-  assert.equal(existsSync(intentFile), false);
+  assert.equal(backend.files.has(INSCAPE_QUARANTINE_PENDING_STORAGE_PATH), false);
   assert.equal((await client.load()).snapshot.self_subject, null);
   // Resolve the old in-memory pending action, simulating its obsolete process.
   assert.equal(await store.getState().retrySave(), true);
@@ -310,8 +283,8 @@ test('relationship context corrections belong to the exact shared moment and are
   assert.equal((await client.load()).snapshot.relationships[0].communication_logs[0].age_context, undefined);
 });
 
-test('confirmed minor material in a self note and its derived readings and calibration leave active SQLite data', async (t) => {
-  const { store, client } = await setup(t);
+test('confirmed minor material in a self note and its derived readings and calibration leave active stored data', async () => {
+  const { store, client } = await setup();
   await store.getState().setInitialType('INTJ', NOW);
   await store.getState().addPerson('小林', 'friend', NOW);
   const subjectId = store.getState().space.other_subjects[0].id;
@@ -381,8 +354,8 @@ test('corrected attribution quarantines the confirmed shared moment while preser
   assert.equal(removed.relationships[0].id, removedRelationshipId);
 });
 
-test('a failed source quarantine retains its full recovery intent and stops stale clients after retry', { timeout: 15000 }, async (t) => {
-  const { store, client, root, locks } = await setup(t);
+test('a failed source quarantine retains its full recovery intent and stops stale clients after retry', { timeout: 15000 }, async () => {
+  const { store, client, backend } = await setup();
   await store.getState().addPerson('Lin', 'friend', NOW);
   const subjectId = store.getState().space.other_subjects[0].id;
   const text = 'Lin is 17 years old.';
@@ -391,8 +364,7 @@ test('a failed source quarantine retains its full recovery intent and stops stal
   const ai = createInscapeStoreAiClient(store, undefined, () => { throw new Error('must not obtain runtime access'); });
   const checking = store.getState().checkAgeDisclosure(text, NOW, undefined, { kind: 'reflection', id: sourceId });
   await setImmediate();
-  const db = new Database(path.join(root, 'inscape.db')); locks.push(db);
-  db.exec('BEGIN EXCLUSIVE');
+  backend.setFailWritePath(INSCAPE_SPACE_STORAGE_PATH);
   store.getState().resolveAgeReview(store.getState().ageReview.id, { kind: 'confirmed_minor', subjectId });
   await setImmediate();
   assert.equal(store.getState().space, previous);
@@ -401,7 +373,7 @@ test('a failed source quarantine retains its full recovery intent and stops stal
   assert.deepEqual(pending.self_subject.reflection_entries, []);
   assert.equal(JSON.parse(pending.quarantine[0].payload_json).reflection_entries[0].id, sourceId);
   assert.equal((await ai.generate({ mode: 'today-read', user: text })).failure.kind, 'processing_stopped');
-  db.exec('ROLLBACK'); db.close();
+  backend.setFailWritePath(null);
   assert.equal(await store.getState().retrySave(), true);
   assert.equal(await checking, false);
   assert.equal(store.getState().processingBlocked, false);

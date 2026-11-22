@@ -1,16 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { isSavedExploration, parseExplorationRead } from '../src/domain/exploration.ts';
 import { COGNITIVE_FUNCTIONS } from '../src/domain/typology.ts';
 import { createEmptyInscapeSpace } from '../src/domain/inscape-space.ts';
 import { validateInscapeSpace } from '../src/contracts/inscape-space-validator.ts';
-import { loadInscapeSpace, saveInscapeSpace } from '../src-electron/persistence.ts';
 import { createInscapeStore } from '../src/product/state/inscape-store.ts';
 import { buildExplorationPrompt } from '../src/product/explore/exploration-prompts.ts';
 import { createInscapeRuntimeAiClient } from '../src/shell/ai/inscape-runtime-ai-client.ts';
+import { createRuntimeStorageFixture } from './helpers/runtime-storage-client.mjs';
 
 const NOW = '2026-09-11T08:00:00Z';
 const read = {
@@ -95,84 +92,67 @@ test('plain notes and pending explorations are valid; feedback and completion re
   assert.equal(validateInscapeSpace(invalid).ok, false);
 });
 
-test('actual SQLite retains exploration, original words, response, rejection and completed experiment across repeated store reloads', async () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'inscape-exploration-'));
-  const client = {
-    adapter_kind: 'local_sqlite',
-    async load() {
-      const raw = loadInscapeSpace(root);
-      return { ok: true, snapshot: raw === null ? null : JSON.parse(raw) };
-    },
-    async save(snapshot) {
-      const valid = validateInscapeSpace(snapshot);
-      assert.equal(valid.ok, true);
-      saveInscapeSpace(root, JSON.stringify(snapshot), snapshot.attested_adult);
-      return { ok: true };
-    },
-  };
-  try {
-    const store = createInscapeStore(client);
-    await store.getState().initialize();
-    await store.getState().completeFirstRun(NOW, 'zh');
-    await store.getState().setInitialType('INFP', NOW);
-    const originalProfile = store.getState().space.self_subject.type_profile;
-    const id = await store
-      .getState()
-      .addReflectionEntry('I want to rest but miss my friends.', NOW, {
-        mode: 'roundtable',
-        mood: 'tangled',
-      });
-    assert.ok(id);
-    const originalText = store.getState().space.self_subject.reflection_entries[0].text;
-    await store
-      .getState()
-      .updateExploration(id, { mode: 'roundtable', mood: 'tangled', read }, NOW);
-    await store
-      .getState()
-      .updateExploration(
-        id,
-        { mode: 'roundtable', mood: 'tangled', read, feedback: 'rejected', experiment_done: true },
-        NOW,
-      );
-    const reload = createInscapeStore(client);
-    await reload.getState().initialize();
-    const entry = reload.getState().space.self_subject.reflection_entries[0];
-    assert.equal(entry.text, originalText);
-    assert.deepEqual(entry.exploration, {
+test('Runtime storage retains exploration, original words, response, rejection and completed experiment across repeated store reloads', async () => {
+  const { client } = createRuntimeStorageFixture();
+  const store = createInscapeStore(client);
+  await store.getState().initialize();
+  await store.getState().completeFirstRun(NOW, 'zh');
+  await store.getState().setInitialType('INFP', NOW);
+  const originalProfile = store.getState().space.self_subject.type_profile;
+  const id = await store
+    .getState()
+    .addReflectionEntry('I want to rest but miss my friends.', NOW, {
       mode: 'roundtable',
       mood: 'tangled',
-      read,
-      feedback: 'rejected',
-      experiment_done: true,
     });
-    assert.deepEqual(
-      reload.getState().space.self_subject.type_profile,
-      originalProfile,
-      'AI feedback must not change the profile automatically',
+  assert.ok(id);
+  const originalText = store.getState().space.self_subject.reflection_entries[0].text;
+  await store
+    .getState()
+    .updateExploration(id, { mode: 'roundtable', mood: 'tangled', read }, NOW);
+  await store
+    .getState()
+    .updateExploration(
+      id,
+      { mode: 'roundtable', mood: 'tangled', read, feedback: 'rejected', experiment_done: true },
+      NOW,
     );
-    await Promise.all([
-      reload.getState().addReflectionEntry('A second ordinary note.', NOW),
-      reload.getState().setLocale('en', NOW),
-    ]);
-    const roundTrip = JSON.parse(loadInscapeSpace(root));
-    assert.equal(roundTrip.self_subject.reflection_entries.length, 2);
-    assert.equal(
-      roundTrip.settings.locale,
-      'en',
-      'concurrent language changes must not overwrite a note',
-    );
-    assert.deepEqual(
-      roundTrip.self_subject.reflection_entries[0],
-      entry,
-      'full snapshot rewrites must retain related exploration rows',
-    );
-    assert.equal(
-      await reload.getState().updateExploration('missing', { mode: 'resonance', mood: '' }, NOW),
-      false,
-    );
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
+  const reload = createInscapeStore(client);
+  await reload.getState().initialize();
+  const entry = reload.getState().space.self_subject.reflection_entries[0];
+  assert.equal(entry.text, originalText);
+  assert.deepEqual(entry.exploration, {
+    mode: 'roundtable',
+    mood: 'tangled',
+    read,
+    feedback: 'rejected',
+    experiment_done: true,
+  });
+  assert.deepEqual(
+    reload.getState().space.self_subject.type_profile,
+    originalProfile,
+    'AI feedback must not change the profile automatically',
+  );
+  await Promise.all([
+    reload.getState().addReflectionEntry('A second ordinary note.', NOW),
+    reload.getState().setLocale('en', NOW),
+  ]);
+  const roundTrip = (await client.load()).snapshot;
+  assert.equal(roundTrip.self_subject.reflection_entries.length, 2);
+  assert.equal(
+    roundTrip.settings.locale,
+    'en',
+    'concurrent language changes must not overwrite a note',
+  );
+  assert.deepEqual(
+    roundTrip.self_subject.reflection_entries[0],
+    entry,
+    'full snapshot rewrites must retain related exploration rows',
+  );
+  assert.equal(
+    await reload.getState().updateExploration('missing', { mode: 'resonance', mood: '' }, NOW),
+    false,
+  );
 });
 
 test('exploration does not require a type and separates experience text from instructions', () => {

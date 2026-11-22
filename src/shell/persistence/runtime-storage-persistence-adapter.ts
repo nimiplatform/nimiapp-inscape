@@ -56,7 +56,10 @@ function hasSelfQuarantineRecord(space: InscapeSpace): boolean {
 }
 
 // @nimi-authority: rule.inscape.data-model.r004
+// @nimi-authority: rule.inscape.data-model.r005
 // @nimi-authority: rule.inscape.data-model.r006
+// @nimi-authority: rule.inscape.privacy.r001
+// @nimi-authority: rule.inscape.privacy.r005
 export class RuntimeStoragePersistenceAdapter implements PersistenceClient {
   readonly adapter_kind = 'nimi_storage' as const;
   private readonly scope: InscapeStorageScope;
@@ -222,7 +225,8 @@ export class RuntimeStoragePersistenceAdapter implements PersistenceClient {
 
     if (
       snapshot.attested_adult !== true ||
-      (snapshot.self_subject && snapshot.self_subject.age_attestation.attested_adult !== true)
+      (snapshot.self_subject && snapshot.self_subject.age_attestation.attested_adult !== true) ||
+      snapshot.other_subjects.some((subject) => subject.age_attestation.attested_adult !== true)
     ) {
       return {
         ok: false,

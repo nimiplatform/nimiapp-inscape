@@ -3,15 +3,7 @@ import assert from 'node:assert/strict';
 import { validateInscapeSpace } from '../src/contracts/inscape-space-validator.ts';
 import { createEmptyInscapeSpace } from '../src/domain/inscape-space.ts';
 import { InMemoryPersistenceAdapter } from '../src/product/persistence/in-memory-adapter.ts';
-import { mkdtempSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-import Database from 'better-sqlite3';
-import { clearInscapeSpace, loadInscapeSpace, saveInscapeSpace } from '../src-electron/persistence.ts';
-
-// Wave-1 baseline: the InscapeSpace fail-close validator + the in-memory
-// PersistenceClient. The runtime-backed SQLite adapter is exercised by the
-// app launch smoke (Increment 3), not the Node test runner.
+import { createRuntimeStorageFixture } from './helpers/runtime-storage-client.mjs';
 
 test('validateInscapeSpace accepts an empty attested space', () => {
   const space = createEmptyInscapeSpace('2026-06-05T00:00:00Z', true);
@@ -51,20 +43,29 @@ test('in-memory adapter round-trips an attested space', async () => {
   assert.deepEqual(load.snapshot, space);
 });
 
-test('Electron SQLite round-trips relational state with DB fail-close gates', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'inscape-sqlite-'));
+test('RuntimeStoragePersistenceAdapter round-trips state with fail-close adult gates', async () => {
+  const { client } = createRuntimeStorageFixture();
   const space = createEmptyInscapeSpace('2026-06-05T00:00:00Z', true);
-  saveInscapeSpace(root, JSON.stringify(space), true);
-  assert.deepEqual(JSON.parse(loadInscapeSpace(root)), space);
-  // Windows stat does not expose POSIX owner/group/other permission bits.
-  if (process.platform !== 'win32') {
-    assert.equal(statSync(path.join(root, 'inscape.db')).mode & 0o777, 0o600);
-  }
+  assert.equal((await client.save(space)).ok, true);
+  assert.deepEqual((await client.load()).snapshot, space);
 
-  const db = new Database(path.join(root, 'inscape.db'));
-  assert.throws(() => db.prepare("INSERT INTO subjects (id, kind, display_name, type_profile_json, age_attested_adult, age_attested_at, age_attestation_method) VALUES ('x', 'other_person', 'x', NULL, 0, '2026-06-05T00:00:00Z', 'test')").run(), /CHECK constraint failed/);
-  db.close();
-  assert.throws(() => saveInscapeSpace(root, JSON.stringify({ ...space, attested_adult: false }), false), /adult attestation required/);
-  clearInscapeSpace(root);
-  assert.equal(loadInscapeSpace(root), null);
+  const unattested = await client.save({ ...space, attested_adult: false });
+  assert.equal(unattested.ok, false);
+
+  const unattestedOther = await client.save({
+    ...space,
+    other_subjects: [{
+      id: 'x',
+      kind: 'other_person',
+      display_name: 'x',
+      type_profile: null,
+      age_attestation: { attested_adult: false, attested_at: '2026-06-05T00:00:00Z', method: 'test' },
+      typing_episodes: [],
+      reflection_entries: [],
+    }],
+  });
+  assert.equal(unattestedOther.ok, false);
+
+  assert.equal((await client.clear()).ok, true);
+  assert.deepEqual(await client.load(), { ok: true, snapshot: null });
 });

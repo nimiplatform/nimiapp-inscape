@@ -1,11 +1,9 @@
-// Desktop SQLite / Web Runtime-storage boot, adult eligibility and the three product faces.
+// Unified Nimi Runtime-storage boot, adult eligibility and the three product faces.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NimiAccountControl, type NimiAppScope } from '@nimiplatform/kit/auth/app';
-import { hasElectronInvoke } from '@nimiplatform/kit/shell/renderer/bridge';
 import { SaveRecovery } from '../../product/components/interaction.tsx';
-import { SqlitePersistenceAdapter } from '../persistence/sqlite-persistence-adapter.ts';
 import { RuntimeStoragePersistenceAdapter } from '../persistence/runtime-storage-persistence-adapter.ts';
 import type { PersistenceClient } from '../../product/persistence/persistence-client.ts';
 import {
@@ -23,12 +21,8 @@ import { setInscapeNimiClient } from '../infra/inscape-nimi-client.ts';
 import { describeError, logRendererEvent } from '../infra/renderer-log.ts';
 import type { InscapePlatform } from '../mount-inscape.tsx';
 
-function createPersistenceClient(scope: NimiAppScope, platform: InscapePlatform): PersistenceClient {
-  if (platform.kind === 'web') {
-    return new RuntimeStoragePersistenceAdapter(scope);
-  }
-  if (!hasElectronInvoke()) throw new Error('Inscape SQLite requires the Electron Host.');
-  return new SqlitePersistenceAdapter();
+function createPersistenceClient(scope: NimiAppScope): PersistenceClient {
+  return new RuntimeStoragePersistenceAdapter(scope);
 }
 
 export function ProductArea({
@@ -38,15 +32,7 @@ export function ProductArea({
   readonly scope: NimiAppScope;
   readonly platform: InscapePlatform;
 }) {
-  if (platform.kind === 'desktop' && !hasElectronInvoke()) {
-    return <UnavailableHost />;
-  }
   return <ProductAreaWithPersistence scope={scope} platform={platform} />;
-}
-
-function UnavailableHost() {
-  const { t } = useTranslation();
-  return <CenteredNote text={t('Recovery.hostRequired')} />;
 }
 
 function ProductAreaWithPersistence({
@@ -78,8 +64,8 @@ function ProductAreaWithPersistence({
   }, [scope]);
 
   const persistenceClient = useMemo(
-    () => createPersistenceClient(scope, platform),
-    [scope, platform],
+    () => createPersistenceClient(scope),
+    [scope],
   );
   const getAiClient = useCallback(() => {
     scope.signal.throwIfAborted();

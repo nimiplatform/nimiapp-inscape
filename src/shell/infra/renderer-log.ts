@@ -1,5 +1,3 @@
-import { hasElectronInvoke, invoke, type JsonValue } from '@nimiplatform/kit/shell/renderer/bridge';
-
 export type InscapeRendererLogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 type JsonObject = Record<string, unknown>;
@@ -71,13 +69,11 @@ export function describeError(error: unknown): JsonObject {
 }
 
 export function logRendererEvent(payload: InscapeRendererLogPayload): void {
-  const sanitized: InscapeRendererLogPayload = {
+  // Sanitize payloads without emitting telemetry or calling custom host IPC.
+  void {
     ...payload,
     details: sanitize(payload.details),
   };
-  if (hasElectronInvoke()) {
-    void invoke('inscape_log_renderer_event', sanitized as unknown as JsonValue).catch(() => {});
-  }
 }
 
 export function installInscapeGlobalErrorLogging(): void {

@@ -7,7 +7,7 @@ import {
   INSCAPE_SPACE_SCHEMA_VERSION,
 } from '../src/domain/inscape-space.ts';
 
-import { reflectionFixture } from './helpers/sqlite-client.mjs';
+import { reflectionFixture } from './helpers/runtime-storage-client.mjs';
 
 const NOW = '2026-06-05T00:00:00Z';
 

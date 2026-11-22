@@ -42,7 +42,7 @@ metadata:
           - title: Between Us & Communication Drafts
             description: Compare tentative function lenses across adult relationships, unpack recurring friction, and draft clearer, non-confrontational ways to express your needs.
           - title: Private & Local-Only Inference
-            description: Desktop records stay in local SQLite and Web saves to your primary PC Runtime. AI uses only your local text model with zero cloud fallback and full delete control.
+            description: Both Desktop and Web save to your primary PC Runtime's private app storage. AI uses only your local text model with zero cloud fallback and full delete control.
       zh:
         display_name: 心相
         summary: 面向成年人的本地性格探索与日常反思工具，用认知功能视角理解自己和关系。
@@ -61,7 +61,7 @@ metadata:
           - title: 关系理解与沟通改写
             description: 在成年人关系中记录真实互动片段，对照彼此的认知功能视角，并生成温和清晰、可复制的沟通表达草稿。
           - title: 纯本地推理与隐私可控
-            description: 桌面端存于本机 SQLite，网页端存于主 PC Runtime；仅调用本机文字模型不回退云端，支持逐条编辑、删除与一键清空。
+            description: 桌面端与网页端均存于主 PC Runtime 应用私有存储；仅调用本机文字模型不回退云端，支持逐条编辑、删除与一键清空。
     media:
       cover:
         path: assets/storefront/cover-en.webp
@@ -127,27 +127,11 @@ safety_profile:
     sensitive_data_categories: []
   high_impact_decision_uses: []
 storage_policy:
-  kind: app-owned-os-storage
-  os_storage_disclosure:
-    - path_pattern: <OS application-data>/nimi.inscape/inscape.db
-      purpose: Local SQLite storage for adult attestation, profiles, relationships and
-        reflections. Retained after Nimi uninstall; cleared from Inscape
-        settings.
-      expected_size_band: Starts at a few KiB and grows with saved records; no
-        App-enforced storage cap.
-    - path_pattern: <OS application-data>/nimi.inscape/inscape-quarantine-pending.json*
-      purpose: Confirmed quarantine write intent for restart recovery during a failed
-        SQLite write. Removed after the real commit or explicit local-data
-        reset; never used for analysis.
-      expected_size_band: A transient snapshot of the affected local space, growing
-        with saved records.
-    - path_pattern: <OS application-data>/nimi.inscape/development/*/inscape.db
-      purpose: Isolated development SQLite space per Desktop Host profile, retained
-        across an explicit registration resume. Never reads or converts
-        installed or older development data.
-      expected_size_band: Starts at a few KiB and grows with saved development records.
-    - path_pattern: <OS
-        application-data>/nimi.inscape/development/*/inscape-quarantine-pending.json*
-      purpose: Recovery-only confirmed quarantine intent for the isolated development
-        space. Removed after commit or explicit local-data reset.
-      expected_size_band: A transient snapshot of the affected development space.
+  kind: nimi-mediated-default
+desktop:
+  window:
+    width: 1280
+    height: 860
+    min_width: 360
+    min_height: 640
+    title_bar_style: native

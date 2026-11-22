@@ -19,8 +19,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src-electron/**/*.ts",
-    "src-electron/**/*.cts",
     "test/**/*.mjs"
   ]
 }

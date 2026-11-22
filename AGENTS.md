@@ -39,11 +39,11 @@ Their age or a passing command does not establish current product completion.
 
 | Layer | Technology | Location |
 |-------|-----------|----------|
-| Desktop shell | Electron 42 + Desktop-supervised App Access carrier | `src-electron/` |
-| Frontend | React 19 + Vite 7 | `src/product`, `src/shell` (`src/main.tsx`) |
-| Consumption layer | protected local App Access bootstrap | `src/shell/{app-shell,infra,persistence}` |
-| Persistence | **Custom SQLite** (G1, `better-sqlite3`) | `src-electron/persistence.ts` + `src/shell/persistence/sqlite-persistence-adapter.ts` |
-| AI wording | `runtime.consume` via `ai.text.generateCandidate` | `src/shell/ai/**` |
+| Desktop carrier | Shared Nimi Managed Web Desktop Carrier (`managed-web-pnpm-vite`, `desktop-universal`) | managed by Nimi Home (`NimiAppHost`) |
+| Frontend | React 19 + Vite 8 | `src/product`, `src/shell` (`src/main.tsx`, `src/main.web.tsx`) |
+| Consumption layer | protected App Access bootstrap (`createDesktopNimiAppSession` / `createWebNimiAppSession`) | `src/shell/{infra,persistence,routes}` |
+| Persistence | **Nimi-mediated private app storage** (`nimi-mediated-default`) | `src/shell/persistence/runtime-storage-persistence-adapter.ts` |
+| AI wording | `runtime.consume` via `ai.text.generateCandidate` (local-only) | `src/shell/ai/**` |
 | UI components | `@nimiplatform/kit` | public package exports |
 | Domain (product) | InscapeSpace + IS-* contracts | `src/domain`, `src/contracts` |
 
@@ -54,10 +54,11 @@ Complete local archive overrides remain available for explicit platform iteratio
 
 ## Hard boundaries
 
-- **18+ fail-close (G1 / T1-04 / T1-05)**: the SQLite layer opens
-  `<OS application-data>/nimi.inscape/inscape.db` (isolated by Host profile for development) with `0o600` and
-  `CHECK (attested_adult = 1)`; the space is never persisted without an adult
-  attestation. Keep this gate at the DB level.
+- **18+ fail-close (G1 / T1-04 / T1-05)**: `RuntimeStoragePersistenceAdapter`
+  persists `product/inscape-space.json` (and recovery-only
+  `product/inscape-quarantine-pending.json`) in Nimi-mediated private app
+  storage and refuses any write unless `attested_adult === true` on the space
+  and every active subject. Keep this gate at the persistence boundary.
 - **Runtime owns identity**: the app never custodies access/refresh tokens
   (protected local App Access `auth.status` + `currentUser.get`). No app-owned
   token surface.
@@ -68,7 +69,7 @@ Complete local archive overrides remain available for explicit platform iteratio
 ## Verification
 
 ```bash
-pnpm build     # typecheck + Electron host/preload + Vite renderer
+pnpm build     # typecheck + Vite renderer (dist/renderer)
 pnpm test      # node --test test/*.test.mjs
 pnpm lint
 ```

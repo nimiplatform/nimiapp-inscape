@@ -90,7 +90,7 @@ const RULES = [
 
 const violations = [];
 
-const files = [...walk('src'), ...walk('src-electron')];
+const files = walk('src');
 for (const file of files) {
   const code = stripComments(readFileSync(file, 'utf8'));
   for (const rule of RULES) {

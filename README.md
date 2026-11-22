@@ -8,7 +8,7 @@ Upgrade verification: public-registry installation, frozen-lockfile installation
 
 > A private, local-first space for Jungian personality exploration, daily reflection, and mindful relationships.
 
-Inscape is designed for thoughtful adults (18+) who want to understand their inner patterns, navigate difficult choices, and improve their relationships through the lens of cognitive functions. It offers a space for personal reflection rather than clinical assessment. Your journals, relationship notes, and reflections live in a local SQLite database, and AI reflections run on your device.
+Inscape is designed for thoughtful adults (18+) who want to understand their inner patterns, navigate difficult choices, and improve their relationships through the lens of cognitive functions. It offers a space for personal reflection rather than clinical assessment. Your journals, relationship notes, and reflections live in your primary PC Nimi Runtime's private app storage, and AI reflections run locally on your device.
 
 ---
 
@@ -62,26 +62,17 @@ pnpm exec nimi-app check --production
 # Run tests
 pnpm exec nimi-app test
 
-# Build and package for your target platform
-# macOS
-pnpm exec nimi-app build --target macos-aarch64 --production
-pnpm exec nimi-app pack --target macos-aarch64 --production
-
-# Windows
-pnpm exec nimi-app build --target windows-x86_64 --production
-pnpm exec nimi-app pack --target windows-x86_64 --production
+# Build and package for the shared managed-web desktop carrier
+pnpm exec nimi-app build --target desktop-universal --production
+pnpm exec nimi-app pack --target desktop-universal --production
 ```
 
 ---
 
 ## Data Privacy & Storage
 
-- **Local Storage Path**:
-  - macOS: `~/Library/Application Support/nimi.inscape/`
-  - Windows: `%APPDATA%/nimi.inscape/`
-  - *Note*: The paths above apply to the installed app; development registrations store data in separate subdirectories under `development/`.
-- **Zero Cloud Sync**: Your field notes, reflections, relationship observations, and cognitive profiles are stored directly in SQLite on your disk and never uploaded to remote servers.
-- **Clean Slate**: You can clear all local data at any time via Inscape's *Settings & Local Data* panel.
+- **Nimi-Mediated Private App Storage**: Desktop and Hosted Web store your adult attestation, field notes, relationships, AI readings, and cognitive profiles inside your primary PC Nimi Runtime's private app storage (`nimi-mediated-default`), isolated by Nimi account and app registration, and never uploaded to publisher or third-party servers.
+- **Clean Slate**: You can clear all saved space data at any time via Inscape's *Settings & Local Data* panel. Pre-`0.1.9` native SQLite folders are not automatically imported.
 
 ---
 

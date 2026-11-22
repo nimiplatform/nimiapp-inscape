@@ -1,4 +1,4 @@
-// IS-DATA — the single local SQLite data root.
+// IS-DATA — the single local InscapeSpace data root.
 
 import type { AgeAttestation, Subject } from './subject.ts';
 import type { Relationship } from './relationship.ts';

@@ -10,9 +10,6 @@ export default defineConfig([
     '.nimi/local/**',
     'dist/**',
     'dist-web/**',
-    'dist-electron/**',
-    'dist-electron-package/**',
-    'src-tauri/target/**',
     'node_modules/**',
     '*.config.ts',
     '*.config.mjs',
@@ -20,7 +17,7 @@ export default defineConfig([
     'scripts/**',
   ]),
   {
-    files: ['src/**/*.{ts,tsx}', 'src-electron/**/*.ts', 'src-electron/**/*.cts'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
